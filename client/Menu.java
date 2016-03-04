@@ -16,9 +16,16 @@ public abstract class Menu {
         map.put("Login-Email", LoginEmail.class);
         map.put("Login-Password", LoginPassword.class);
         map.put("Home", MainMenu.class);
-        map.put("UserRegister-Name",  UserRegisterName.class);
         map.put("UserRegister-Email", UserRegisterEmail.class);
+        map.put("UserRegister-Name",  UserRegisterName.class);
         map.put("UserRegister-Password", UserRegisterPassword.class);
+        map.put("UserVault", UserVault.class);
+        map.put("UserVault-AddAccount-Name",  UserVaultAddAccountName.class);
+        map.put("UserVault-AddAccount-Password", UserVaultAddAccountPassword.class);
+        map.put("UserVault-AddAccount-Username", UserVaultAddAccountUsername.class);
+        map.put("UserVault-Erase", UserVaultErase.class);
+        map.put("UserVault-ListAccounts", UserVaultListAccounts.class);
+        map.put("UserVault-Settings", UserVaultSettings.class);
         return Collections.unmodifiableMap(map);
     }
 
@@ -28,10 +35,28 @@ public abstract class Menu {
 
     /**
      * Process user's input
+     * Default: Look for appropriate action based on selected menu option
      *
      * @return name of next menu to display (or null to remain on same menu)
      */
-    public abstract String handleInput(String input);
+    public String handleInput(String input) {
+        try {
+            int i = Integer.parseInt(input);
+            if (i >= 1 && i <= this.options.size()) {
+                MenuOption option = this.options.get(i - 1);
+
+                if (option.hasAction()) {
+                    option.getAction().run();
+                }
+
+                return option.getNextMenuIdentifier();
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public String toString() {
         String out = "";
@@ -61,7 +86,7 @@ public abstract class Menu {
     public static Class<?> getClassForIdentifier(String identifier) {
     	return identifierClassMap.get(identifier);
     }
-    
+
 
     public class MenuOption {
         private String title;

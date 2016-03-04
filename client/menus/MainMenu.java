@@ -22,24 +22,4 @@ public class MainMenu extends Menu {
         this.options = options;
         this.prompt = "Please select an option (1 or 2): ";
     }
-
-    @Override
-    public String handleInput(String input) {
-        try {
-            int i = Integer.parseInt(input);
-            if (i >= 1 && i <= this.options.size()) {
-                MenuOption option = this.options.get(i - 1);
-
-                if (option.hasAction()) {
-                    option.getAction().run();
-                }
-
-                return option.getNextMenuIdentifier();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            return null;
-        }
-    }
 }

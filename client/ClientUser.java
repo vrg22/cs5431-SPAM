@@ -4,8 +4,6 @@ import java.util.*;
 
 public class ClientUser extends Client {
 
-    private String MENU_PREFIX = "USER-";
-
     public ClientUser() {
         super();
 
