@@ -1,4 +1,6 @@
+.gitignore
 *.class
 .DS_Store
 .classpath
 .project
+*.patch
