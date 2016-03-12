@@ -6,6 +6,12 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
+//Imported for XML parsing by the DOM method
+//Adapted from http://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+
+
 public class StoreAndRetrieveUnit {
 	//Communication with CommServer
 	private String hostName;
@@ -69,6 +75,9 @@ public class StoreAndRetrieveUnit {
 	
 	//METHODS FOR STORAGE
 	//createFile()
+	public boolean createFile(){
+		
+	}
 	//deleteFile()
 	//storePassword()
 	
