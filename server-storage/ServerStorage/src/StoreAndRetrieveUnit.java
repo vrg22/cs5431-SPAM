@@ -9,6 +9,8 @@ import java.net.*;
 //Imported for XML parsing by the DOM method
 //Adapted from http://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
 import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
 import javax.xml.parsers.*;
 
 
@@ -20,11 +22,12 @@ public class StoreAndRetrieveUnit {
 	private ServerSocket server;
 	private ObjectOutputStream commOutputStream;
 	private ObjectInputStream commInputStream;
+	//XML
+	private Document DOM;
 	//Storage
-	public static final String PASSWORD_FILE_LOCATION = "password.txt"; //"storage.json";
+	public static final String PASSWORD_FILE_LOCATION = "password.xml"; //"storage.json";
 	//Logging
 	public static final String LOG_FILE_LOCATION = "log.txt";
-	//TODO use json or xml or some other appropriate format
 	
 	//Constructors
 	private StoreAndRetrieveUnit() {
@@ -73,12 +76,81 @@ public class StoreAndRetrieveUnit {
 		//Throw exception if something unexpected
 	}
 	
-	//METHODS FOR STORAGE
-	//createFile()
-	public boolean createFile(){
-		
+	
+	//Basic file-methods
+	
+	
+	//XML DOM is read in, modify, then write back.
+	//So is XML even a good choice???
+	//Then, if creating a new file, create it, but check if file exists first
+	//Function that creates XML if DNE, writes basic info. otherwise, nothing
+	//Function that loads existing XML into DOM, ready for editing
+	//Function that saves existing DOM and closes everything
+	//WHAT vars need to be IN this class? The main DOM, anything else that we dont wanna create/destroy for one session
+	/*
+	 * DOM
+	 * String
+	 * 
+	 */
+	//Idea of THREADS making diff modifications to the elements....
+	
+	/**
+	 * Returns a handle to a newly-created file with the specified name.
+	 * Throws exception if file creation failed.
+	 * @return
+	 */
+	public void createXMLFile(String name){
+        File newFile = new File(name);
+        createDOM();        //Set up the file and let DOM equal the file
 	}
+	
 	//deleteFile()
+
+	
+	//XML File parsing methods
+	//At all times, have entirety of the password file in memory???
+	//Or is the event-based triggering in SAX more secure?
+	//When to do the encryption? Easier/more efficient to encrypt parts of the message or whole thing?
+	
+	/**
+	 * Sets a newly-created XML file up with application-specific fields are inserted.
+	 * Throws exception if file creation failed.
+	 * @return
+	 */
+	private void createDOM() {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		try {
+			DocumentBuilder builder = factory.newDocumentBuilder();
+	
+		//Create XML base class, get doc
+		StringBuilder xmlStringBuilder = new StringBuilder();
+		xmlStringBuilder.append("<?xml version=\"1.0\"?> <class> LMAOOOOO </class>");
+		ByteArrayInputStream input =  new ByteArrayInputStream(
+		   xmlStringBuilder.toString().getBytes("UTF-8"));
+		DOM = builder.parse(input);
+		
+		Element root = DOM.getDocumentElement();
+		System.out.println("BLA: " + root.getAttribute("class"));
+		
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	}
+	
+
+	
+	//METHODS FOR STORAGE
 	//storePassword()
 	
 	//METHODS FOR RETRIEVAL
@@ -188,8 +260,9 @@ public class StoreAndRetrieveUnit {
 	
 	//Testing
 	public static void main(String[] args) {
-		System.out.println("Hello World!");
-		//?
+		System.out.println("TESTING...");
+		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit("localhost", 5999);
+		sru.createXMLFile("fool.xml");
 	}
 
 }
