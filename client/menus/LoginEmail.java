@@ -11,8 +11,9 @@ public class LoginEmail extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-        // TODO: keep track of email
-        
+        Message login = new LoginMessage(input, null);
+		comm.save(login);
+
 		return "Login-Password";
 	}
 

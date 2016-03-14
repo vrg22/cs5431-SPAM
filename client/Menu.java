@@ -9,6 +9,7 @@ public abstract class Menu {
     protected String title;
     protected ArrayList<MenuOption> options;
     protected String prompt;
+    protected CommClient comm;
 
     private static final Map<String, Class<?>> identifierClassMap = createIdentifierClassMap();
     private static Map<String, Class<?>> createIdentifierClassMap() {
@@ -24,6 +25,8 @@ public abstract class Menu {
         map.put("UserVault-AddAccount-Password", UserVaultAddAccountPassword.class);
         map.put("UserVault-AddAccount-Username", UserVaultAddAccountUsername.class);
         map.put("UserVault-Erase", UserVaultErase.class);
+        map.put("UserVault-Erase-Password", UserVaultErasePassword.class);
+        map.put("UserVault-Erase-Confirm", UserVaultEraseConfirm.class);
         map.put("UserVault-ListAccounts", UserVaultListAccounts.class);
         map.put("UserVault-Settings", UserVaultSettings.class);
         return Collections.unmodifiableMap(map);
@@ -31,6 +34,10 @@ public abstract class Menu {
 
     public Menu(String identifier) {
         this.identifier = identifier;
+    }
+
+    public void setComm(CommClient comm) {
+        this.comm = comm;
     }
 
     /**

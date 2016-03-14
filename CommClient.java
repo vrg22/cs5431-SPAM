@@ -6,12 +6,13 @@ import java.io.*;
 import java.net.*;
 
 //class CommClient implements Communications {
-public class CommClient {
+public class CommClient implements Communications {
 	private String hostName;
 	private int portNo;
 	private Socket connection;
 	private ObjectOutputStream commOutputStream;
 	private ObjectInputStream commInputStream;
+	private Message savedMessage;
 
 	private CommClient() {
 		System.out.println("Unused");
@@ -40,9 +41,18 @@ public class CommClient {
 		return status;
 	}
 
+	public void save(Message data) {
+		savedMessage = data;
+	}
+
+	public Message getSaved() {
+		return savedMessage;
+	}
+
 	public void send(Message data) {
 		try {
 			commOutputStream.writeObject(data);
+			savedMessage = null;
 		} catch (Exception e) {
 			System.err.println("Error sending message to server");
 		}

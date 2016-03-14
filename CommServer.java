@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.*;
 
 //class CommServer implements Communications {
-public class CommServer {
+public class CommServer implements Communications {
 	private String hostName;
 	private int portNo;
 	private Socket connection;
