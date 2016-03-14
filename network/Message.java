@@ -118,6 +118,10 @@ class LoginMessage extends Message {
 	public void failedAttempt() {
 		--this.attemptsRemaining;
 	}
+
+	public int getAttemptsRemaining() {
+		return this.attemptsRemaining;
+	}
 }
 
 
