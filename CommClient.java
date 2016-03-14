@@ -41,6 +41,8 @@ public class CommClient implements Communications {
 		return status;
 	}
 
+	// Temporarily cache an unfinished message
+	// to save state between related menus
 	public void save(Message data) {
 		savedMessage = data;
 	}
