@@ -1,3 +1,4 @@
+package communications;
 /*
  * Messages passed between client and server over the network
  */

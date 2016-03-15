@@ -1,3 +1,4 @@
+package communications;
 /**
  * Transfers data between server communication module and storage
  */
@@ -5,8 +6,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
-//class CommServer implements Communications {
-public class CommServer {
+class CommServer implements Communications {
 	private String hostName;
 	private int portNo;
 	private Socket connection;
@@ -60,19 +60,31 @@ public class CommServer {
 						}
 	}
 
-	public void send(Message m) throws IOException {
-		byte[] message = convertToBytes(m);
-		sendOverNetwork(message, message.length);
+	public void send(Message m) {
+		try {
+			byte[] message = convertToBytes(m);
+			sendOverNetwork(message, message.length);
+		} catch (IOException e) {
+			System.err.println("Error sending over network");
+		}
 	}
 
-	public Message receive() throws IOException, ClassNotFoundException {
-		byte[] message = recvOverNetwork();
-		if (message != null) {
-			Message m = convertFromBytes(message);
-			return m;
-		} else {
-			return null;
+	public Message receive() {
+		try {
+			byte[] message = recvOverNetwork();
+			if (message != null) {
+				Message m = convertFromBytes(message);
+				return m;
+			} else {
+				return null;
+			}
+		} catch (IOException e) {
+			System.err.println("IOException receiving messages over network");
+		} catch (ClassNotFoundException e) {
+			System.err.println("ClassNotFoundException receiving messages over network");
 		}
+
+		return null;
 	}
 
 	public void sendOverNetwork(byte[] data, int len) {
