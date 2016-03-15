@@ -2,6 +2,6 @@ package communications;
 
 interface Communications {
     // TODO: decide what type this data should be
-    public void send(Message data);
-	public Message receive();
+    void send(Message data);
+	Message receive();
 }

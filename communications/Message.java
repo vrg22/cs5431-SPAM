@@ -1,8 +1,8 @@
-package communications;
 /*
  * Messages passed between client and server over the network
  */
 
+package communications;
 import java.io.Serializable;
 
 public class Message implements Serializable {
@@ -117,6 +117,10 @@ public class Message implements Serializable {
 
 		public void failedAttempt() {
 			--this.attemptsRemaining;
+		}
+
+		public int getAttemptsRemaining() {
+			return this.attemptsRemaining;
 		}
 	}
 
