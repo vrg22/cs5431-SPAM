@@ -1,19 +1,19 @@
-package communications;
 /**
  * Transfers data between server communication module and storage
  */
+package communications;
+
 import java.util.*;
 import java.io.*;
 import java.net.*;
 
-//class CommServer implements Communications {
 public class CommServer implements Communications {
 	private String hostName;
 	private int portNo;
 	private Socket connection;
 	private ServerSocket server;
-	private ObjectOutputStream commOutputStream;
-	private ObjectInputStream commInputStream;
+	private DataOutputStream commOutputStream;
+	private DataInputStream commInputStream;
 
 	private CommServer() {
 		System.out.println("Unused");
@@ -33,10 +33,10 @@ public class CommServer implements Communications {
 			 * TODO: Move the accept listener to its own thread
 			 */
 			connection = server.accept();
-			commOutputStream = new ObjectOutputStream(connection.
+			commOutputStream = new DataOutputStream(connection.
 					getOutputStream());
 
-			commInputStream = new ObjectInputStream(connection.
+			commInputStream = new DataInputStream(connection.
 					getInputStream());
 			status = true;
 		} catch (Exception e) {
@@ -45,35 +45,75 @@ public class CommServer implements Communications {
 		return status;
 	}
 
-	public void send(Message data) {
+	private byte[] convertToBytes(Message object) throws IOException {
+		try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				ObjectOutputStream out = new ObjectOutputStream(bos)) {
+			out.writeObject(object);
+			return bos.toByteArray();
+				}
+	}
+
+	private Message convertFromBytes(byte[] bytes) throws IOException,
+			ClassNotFoundException {
+				try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+						ObjectInputStream in = new ObjectInputStream(bis)) {
+					return ((Message)in.readObject());
+						}
+	}
+
+	public void send(Message m) {
 		try {
-			commOutputStream.writeObject(data);
+			byte[] message = convertToBytes(m);
+			sendOverNetwork(message, message.length);
+		} catch (IOException e) {
+			System.err.println("Error sending over network");
+		}
+	}
+
+	public Message receive() {
+		try {
+			byte[] message = recvOverNetwork();
+			if (message != null) {
+				Message m = convertFromBytes(message);
+				return m;
+			} else {
+				return null;
+			}
+		} catch (IOException e) {
+			System.err.println("IOException receiving messages over network");
+		} catch (ClassNotFoundException e) {
+			System.err.println("ClassNotFoundException receiving messages over network");
+		}
+
+		return null;
+	}
+
+	public void sendOverNetwork(byte[] data, int len) {
+		try {
+			if (len > 0) {
+				commOutputStream.writeInt(len);
+				commOutputStream.write(data, 0, len);
+			}
 		} catch (Exception e) {
 			System.err.println("Error sending message to server");
 		}
 	}
 
-	public Message receive() {
-		Message msg = null;
+	public byte[] recvOverNetwork() {
 		try {
-			System.out.println("Blocking for read");
-			msg = (Message) commInputStream.readObject();
-			System.out.println("Unblocking after read");
-		} catch (ClassNotFoundException e) {
-			System.err.println("ClassNotFoundException reading object");
-		} catch (InvalidClassException e) {
-			System.err.println("InvalidClassException reading object");
-		} catch (StreamCorruptedException e) {
-			System.err.println("StreamCorruptedException reading object");
-		} catch (OptionalDataException e) {
-			System.err.println("OptionalDataException reading object");
+			int len = commInputStream.readInt();
+			//System.out.println("len :" +len);
+			if (len > 0) {
+				byte[] msg = new byte[len];
+				commInputStream.read(msg, 0, len);
+				return msg;
+			}
 		} catch (IOException e) {
 			System.err.println("IO Error reading object");
 		} catch (Exception e) {
 			System.err.println("Error reading from the socket");
 		}
-
-		return msg;
+		return null;
 	}
 
 	public void destroyConnection() {
@@ -89,36 +129,40 @@ public class CommServer implements Communications {
 
 	/*
 	 * Uncomment for testing
-	public static void main(String args[]) {
-		CommServer cs = new CommServer("localhost", 5998);
+	public static void main(String args[]) throws IOException,
+		   ClassNotFoundException {
+			   CommServer cs = new CommServer("localhost", 5998);
 
-		while (true) {
-			if (cs.makeConnection()) {
-				while (true) {
-					Message m = cs.receive();
+			   while (true) {
+				   if (cs.makeConnection()) {
+					   while (true) {
+						   Message m = cs.receive();
 
-					if (m != null) {
-						if (m.getQuery().equals("REGISTER")) {
-							RegisterMessage rm = (RegisterMessage) m;
-							System.out.println("Received values");
-							System.out.println(rm.getSequence());
-							System.out.println(rm.getVersion());
-							System.out.println(rm.getUsername());
-							System.out.println(rm.getPassword());
-						} else if (m.getQuery().equals("LOGIN")) {
-							LoginMessage lm = (LoginMessage) m;
-							System.out.println("Received values");
-							System.out.println(lm.getSequence());
-							System.out.println(lm.getVersion());
-							System.out.println(lm.getUsername());
-							System.out.println(lm.getPassword());
-						}
-					} else {
-						cs.destroyConnection();
-						break;
-					}
-				}
-			}
-		}
+						   if (m != null) {
+							   if (m.getQuery().equals("REGISTER")) {
+								   Message.RegisterMessage rm =
+									   (Message.RegisterMessage) m;
+								   System.out.println("Received values");
+								   System.out.println(rm.getSequence());
+								   System.out.println(rm.getVersion());
+								   System.out.println(rm.getUsername());
+								   System.out.println(rm.getPassword());
+							   } else if (m.getQuery().equals("LOGIN")) {
+								   Message.LoginMessage lm =
+									   (Message.LoginMessage) m;
+								   System.out.println("Received values");
+								   System.out.println(lm.getSequence());
+								   System.out.println(lm.getVersion());
+								   System.out.println(lm.getUsername());
+								   System.out.println(lm.getPassword());
+								   System.out.println(lm.getAttemptsRemaining());
+							   }
+						   } else {
+							   cs.destroyConnection();
+							   break;
+						   }
+					   }
+				   }
+			   }
 	}*/
 }
