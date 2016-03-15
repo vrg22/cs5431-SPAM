@@ -1,6 +1,7 @@
 package client.menus;
 
 import client.Menu;
+import communications.Message.*;
 
 public class UserVaultEraseConfirm extends Menu {
 
@@ -13,7 +14,7 @@ public class UserVaultEraseConfirm extends Menu {
 	@Override
 	public String handleInput(String input) {
 		if (input.equals("y")) {
-			ObliterateMessage obliterate = comm.getSaved();
+			ObliterateMessage obliterate = (ObliterateMessage)comm.getSaved();
 			comm.send(obliterate);
 
 			return "MainMenu";

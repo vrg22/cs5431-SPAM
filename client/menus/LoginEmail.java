@@ -1,6 +1,8 @@
 package client.menus;
 
-import client.Menu;
+import client.*;
+import communications.Message;
+import communications.Message.*;
 
 public class LoginEmail extends Menu {
 

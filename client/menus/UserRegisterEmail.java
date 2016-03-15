@@ -1,6 +1,8 @@
 package client.menus;
 
 import client.Menu;
+import communications.*;
+import communications.Message.*;
 
 public class UserRegisterEmail extends Menu {
 

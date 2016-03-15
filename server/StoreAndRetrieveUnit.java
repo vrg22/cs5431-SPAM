@@ -1,3 +1,5 @@
+package server;
+
 /* Stores and retrieves all information related to user accounts and data. Writes important information to log.
  * This class is the main point of entry for the server-side communication unit (CommServer.java).
  */
@@ -5,6 +7,8 @@
 import java.util.*;
 import java.io.*;
 import java.net.*;
+
+import communications.*;
 
 public class StoreAndRetrieveUnit {
 	//Communication with CommServer

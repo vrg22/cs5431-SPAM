@@ -1,3 +1,4 @@
+package communications;
 /**
  * Transfers data between server communication module and storage
  */

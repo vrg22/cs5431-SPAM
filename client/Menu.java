@@ -1,8 +1,10 @@
 package client;
 
+
 import java.util.*;
 
 import client.menus.*;
+import communications.*;
 
 public abstract class Menu {
     protected String identifier;
@@ -52,10 +54,6 @@ public abstract class Menu {
             if (i >= 1 && i <= this.options.size()) {
                 MenuOption option = this.options.get(i - 1);
 
-                if (option.hasAction()) {
-                    option.getAction().run();
-                }
-
                 return option.getNextMenuIdentifier();
             } else {
                 return null;
@@ -99,16 +97,14 @@ public abstract class Menu {
         private String title;
 
         private String nextMenuIdentifier;
-        private Action doAction;
 
         public MenuOption(String title, String nextMenuIdentifier) {
             this.title = title;
             this.nextMenuIdentifier = nextMenuIdentifier;
         }
 
-        public MenuOption(String title, Action action) {
+        public MenuOption(String title) {
             this.title = title;
-            this.doAction = action;
         }
 
         public String getTitle() {
@@ -119,16 +115,8 @@ public abstract class Menu {
             return this.nextMenuIdentifier;
         }
 
-        public Action getAction() {
-            return this.doAction;
-        }
-
         public boolean hasNextMenu() {
             return this.nextMenuIdentifier != null;
-        }
-
-        public boolean hasAction() {
-            return this.doAction != null;
         }
     }
 }

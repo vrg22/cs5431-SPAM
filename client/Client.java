@@ -1,8 +1,10 @@
 package client;
 
+
 import java.util.*;
 
 import client.menus.*;
+import communications.*;
 
 /**
  * Client application

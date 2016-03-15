@@ -1,6 +1,7 @@
 package client.menus;
 
 import client.Menu;
+import communications.Message.*;
 
 public class LoginPassword extends Menu {
 
@@ -11,7 +12,7 @@ public class LoginPassword extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		LoginMessage login = comm.getSaved();
+		LoginMessage login = (LoginMessage)comm.getSaved();
 		login.updatePassword(input);
 		comm.send(login);
 
