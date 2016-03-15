@@ -1,8 +1,10 @@
 package client;
 
+
 import java.util.*;
 
 import client.menus.*;
+import communications.*;
 
 /**
  * Client application
@@ -15,8 +17,12 @@ public abstract class Client {
     private Map<String, Menu> cachedMenus;
     protected Menu currentMenu;
 
+	protected CommClient comm;
+
     public Client() {
         cachedMenus = new HashMap<>();
+
+		// TODO: initialize comm
     }
 
 	public void run() {
@@ -52,6 +58,7 @@ public abstract class Client {
 
         try {
 			Menu menu = (Menu) Menu.getClassForIdentifier(identifier).newInstance();
+			menu.setComm(comm);
 	        cachedMenus.put(identifier, menu);
 	        return menu;
         } catch(InstantiationException e) {

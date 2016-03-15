@@ -1,14 +1,17 @@
 package client;
 
+
 import java.util.*;
 
 import client.menus.*;
+import communications.*;
 
 public abstract class Menu {
     protected String identifier;
     protected String title;
     protected ArrayList<MenuOption> options;
     protected String prompt;
+    protected CommClient comm;
 
     private static final Map<String, Class<?>> identifierClassMap = createIdentifierClassMap();
     private static Map<String, Class<?>> createIdentifierClassMap() {
@@ -24,6 +27,8 @@ public abstract class Menu {
         map.put("UserVault-AddAccount-Password", UserVaultAddAccountPassword.class);
         map.put("UserVault-AddAccount-Username", UserVaultAddAccountUsername.class);
         map.put("UserVault-Erase", UserVaultErase.class);
+        map.put("UserVault-Erase-Password", UserVaultErasePassword.class);
+        map.put("UserVault-Erase-Confirm", UserVaultEraseConfirm.class);
         map.put("UserVault-ListAccounts", UserVaultListAccounts.class);
         map.put("UserVault-Settings", UserVaultSettings.class);
         return Collections.unmodifiableMap(map);
@@ -31,6 +36,10 @@ public abstract class Menu {
 
     public Menu(String identifier) {
         this.identifier = identifier;
+    }
+
+    public void setComm(CommClient comm) {
+        this.comm = comm;
     }
 
     /**
@@ -44,10 +53,6 @@ public abstract class Menu {
             int i = Integer.parseInt(input);
             if (i >= 1 && i <= this.options.size()) {
                 MenuOption option = this.options.get(i - 1);
-
-                if (option.hasAction()) {
-                    option.getAction().run();
-                }
 
                 return option.getNextMenuIdentifier();
             } else {
@@ -92,16 +97,14 @@ public abstract class Menu {
         private String title;
 
         private String nextMenuIdentifier;
-        private Action doAction;
 
         public MenuOption(String title, String nextMenuIdentifier) {
             this.title = title;
             this.nextMenuIdentifier = nextMenuIdentifier;
         }
 
-        public MenuOption(String title, Action action) {
+        public MenuOption(String title) {
             this.title = title;
-            this.doAction = action;
         }
 
         public String getTitle() {
@@ -112,16 +115,8 @@ public abstract class Menu {
             return this.nextMenuIdentifier;
         }
 
-        public Action getAction() {
-            return this.doAction;
-        }
-
         public boolean hasNextMenu() {
             return this.nextMenuIdentifier != null;
-        }
-
-        public boolean hasAction() {
-            return this.doAction != null;
         }
     }
 }

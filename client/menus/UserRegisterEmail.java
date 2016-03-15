@@ -1,6 +1,8 @@
 package client.menus;
 
 import client.Menu;
+import communications.*;
+import communications.Message.*;
 
 public class UserRegisterEmail extends Menu {
 
@@ -10,8 +12,9 @@ public class UserRegisterEmail extends Menu {
     }
 
 	@Override
-	public String handleInput(String input) {		
-		// TODO: store email
+	public String handleInput(String input) {
+		Message register = new RegisterMessage(input, null);
+		comm.save(register);
 
 		return "UserRegister-Password";
 	}
