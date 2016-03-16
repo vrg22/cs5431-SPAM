@@ -6,12 +6,27 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
+//Imported for logging by default logging (java.util.logging)
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 //Imported for XML parsing by the DOM method
 //Adapted from http://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+//import javax.xml.transform.Transformer;
+//import javax.xml.transform.TransformerConfigurationException;
+//import javax.xml.transform.TransformerException;
+//import javax.xml.transform.TransformerFactory;
+//import javax.xml.transform.dom.DOMSource;
+//import javax.xml.transform.stream.StreamResult;
 
 
 public class StoreAndRetrieveUnit {
@@ -25,9 +40,11 @@ public class StoreAndRetrieveUnit {
 	//XML
 	private Document DOM;
 	//Storage
-	public static final String PASSWORD_FILE_LOCATION = "password.xml"; //"storage.json";
+	public static final String MAIN_FILE_LOCATION = "password.xml"; //"storage.json";
 	//Logging
-	public static final String LOG_FILE_LOCATION = "log.txt";
+	public static final String LOG_FILE_LOCATION = "log.log";
+	private static final Logger logger = Logger.getLogger(StoreAndRetrieveUnit.class.getName()); //NAME??
+	
 	
 	//Constructors
 	private StoreAndRetrieveUnit() {
@@ -37,6 +54,24 @@ public class StoreAndRetrieveUnit {
 	public StoreAndRetrieveUnit(String host, int port) {
 		this.hostName = host;
 		this.portNo = port;
+		
+		//Set up logging
+		try {
+
+	        // This block configure the logger with handler and formatter  
+	        FileHandler fh = new FileHandler(LOG_FILE_LOCATION);
+	        logger.addHandler(fh);
+	        SimpleFormatter formatter = new SimpleFormatter();  
+	        fh.setFormatter(formatter);  
+
+	        // the following statement is used to log any messages  
+	        logger.info("My first log"); 
+
+	    } catch (SecurityException e) {  
+	        e.printStackTrace();  
+	    } catch (IOException e) {  
+	        e.printStackTrace();  
+	    }
 	}
 	
 	
@@ -77,8 +112,90 @@ public class StoreAndRetrieveUnit {
 	}
 	
 	
-	//Basic file-methods
+	//METHODS FOR STORAGE
+		//storePassword()
+		
+	//METHODS FOR RETRIEVAL
+	//retrieve(Message m)
 	
+	/**
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void register_new_user(RegisterMessage reg_m) {
+		// TODO Auto-generated method stub
+		logger.log(Level.INFO, "Created new user");
+	}
+	
+	/**
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void login_user(LoginMessage log_m) {
+		// Unpack message, find out who logged in
+		logger.log(Level.INFO, "User " + "tried to log in");
+	}
+	
+	/**
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void list_items(ListingMessage list_m) {
+		// TODO Auto-generated method stub
+		logger.log(Level.INFO, "User " + " requesting full record listing");
+	}
+
+	/**
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void retrieve_userID(RetrieveIdMessage retr_m) {
+		// TODO Auto-generated method stub
+		String item = "FIND OUT";
+		logger.log(Level.INFO, "User " + " requesting " + item);
+	}
+
+	/**
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void edit_userID(EditIdMessage edit_m) {
+		// TODO Auto-generated method stub
+		String action = "FILL IN";
+		String item = "FIND OUT";
+		logger.log(Level.INFO, "User " + " requests to " + action + " the record corresponding to " + item);
+	}
+
+	/**
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void delete_userID(DeleteIdMessage del_m) {
+		// TODO Auto-generated method stub
+		String item = "FIND OUT";
+		logger.log(Level.INFO, "User " + " delete record for " + item);
+	}
+
+	/**
+	 * Delete's an entire user's records based on the message.
+	 * Sends/returns a Response message back to the host ...
+	 * Throws exception if ...
+	 * @return
+	 */
+	private void obliterate(ObliterateMessage obl_m) {
+		// TODO Auto-generated method stub
+		logger.log(Level.WARNING, "User " + " requesting deletion of entire record directory"); // Change to INFO?
+	}
+	
+	
+	
+	//Basic file-methods
 	
 	//XML DOM is read in, modify, then write back.
 	//So is XML even a good choice???
@@ -96,12 +213,36 @@ public class StoreAndRetrieveUnit {
 	
 	/**
 	 * Returns a handle to a newly-created file with the specified name.
+	 * Do not save the file here; DOM will be set and ready for modifications.
 	 * Throws exception if file creation failed.
 	 * @return
 	 */
 	public void createXMLFile(String name){
         File newFile = new File(name);
         createDOM();        //Set up the file and let DOM equal the file
+	}
+	
+	
+	/**
+	 * Save the existing DOM (if it is active) to disk.
+	 * Throws exception if file is null.
+	 * @return
+	 */
+	public void saveFile(String name){
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		Transformer transformer;
+		try {
+			transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(DOM);
+			StreamResult streamResult =  new StreamResult(new File(name));
+			transformer.transform(source, streamResult);
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//deleteFile()
@@ -146,50 +287,6 @@ public class StoreAndRetrieveUnit {
 			e.printStackTrace();
 		}
 	
-	}
-	
-
-	
-	//METHODS FOR STORAGE
-	//storePassword()
-	
-	//METHODS FOR RETRIEVAL
-	//retrieve(Message m)
-	
-	
-	private void register_new_user(RegisterMessage reg_m) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void login_user(LoginMessage log_m) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void list_items(ListingMessage list_m) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void retrieve_userID(RetrieveIdMessage retr_m) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void edit_userID(EditIdMessage edit_m) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void delete_userID(DeleteIdMessage del_m) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void obliterate(ObliterateMessage obl_m) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 
@@ -262,7 +359,7 @@ public class StoreAndRetrieveUnit {
 	public static void main(String[] args) {
 		System.out.println("TESTING...");
 		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit("localhost", 5999);
-		sru.createXMLFile("fool.xml");
+		sru.createXMLFile(MAIN_FILE_LOCATION);
 	}
 
 }
