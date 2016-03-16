@@ -5,10 +5,10 @@ package server;
  * This class is the main point of entry for the server-side communication unit (CommServer.java).
  */
 
-import java.util.*;
 import java.io.*;
-import java.net.*;
-
+//import java.util.*;
+//import java.net.*;
+import java.util.ArrayList;
 //Imported for logging by default logging (java.util.logging)
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -36,12 +36,13 @@ import communications.Message.*;
 
 public class StoreAndRetrieveUnit {
 	//Communication with CommServer
-	private String hostName;
-	private int portNo;
-	private Socket connection;
-	private ServerSocket server;
-	private ObjectOutputStream commOutputStream;
-	private ObjectInputStream commInputStream;
+	//private String hostName;
+	//private int portNo;
+	//private ServerSocket server; //The socket at which I sit
+	//private Socket connection;  // Will need one of these for each ClientWorker that tries to connect to me
+	//private ObjectOutputStream commOutputStream;
+	//private ObjectInputStream commInputStream;
+	
 	//XML
 	private Document DOM;
 	//Storage
@@ -50,27 +51,20 @@ public class StoreAndRetrieveUnit {
 	public static final String LOG_FILE_LOCATION = "log.log";
 	private static final Logger logger = Logger.getLogger(StoreAndRetrieveUnit.class.getName()); //NAME??
 	
-	
 	//Constructors
-	private StoreAndRetrieveUnit() {
-		System.out.println("Unused");
-	}
-	
-	public StoreAndRetrieveUnit(String host, int port) {
-		this.hostName = host;
-		this.portNo = port;
+	public StoreAndRetrieveUnit() {
 		
 		//Set up logging
 		try {
 
-	        // This block configure the logger with handler and formatter  
-	        FileHandler fh = new FileHandler(LOG_FILE_LOCATION);
+	        // Configure location and log formatting  			
+	        FileHandler fh = new FileHandler(LOG_FILE_LOCATION, true);
 	        logger.addHandler(fh);
-	        SimpleFormatter formatter = new SimpleFormatter();  
+	        SimpleFormatter formatter = new SimpleFormatter();
 	        fh.setFormatter(formatter);  
 
-	        // the following statement is used to log any messages  
-	        logger.info("My first log"); 
+	        // Initial log message
+	        logger.info("Starting up SPAM...");
 
 	    } catch (SecurityException e) {  
 	        e.printStackTrace();  
@@ -80,40 +74,45 @@ public class StoreAndRetrieveUnit {
 	}
 	
 	
+	
 	//Generic function to interpret a message received from CommServer
-	public void processMessage(Message m) {
-		//TODO is this bad practice here?
+	public Response processMessage(Message m) {
+		//TODO is instanceof bad practice here?
+		
+		Response reply = null;
+		
 		if (m instanceof RegisterMessage){
 			RegisterMessage reg_m = (RegisterMessage) m;
-			register_new_user(reg_m);
+			reply = register_new_user(reg_m);
 		}
 		else if (m instanceof LoginMessage) {
 			LoginMessage log_m = (LoginMessage) m;
-			login_user(log_m);
+			reply = login_user(log_m);
 		}
 		else if (m instanceof ListingMessage) {
 			ListingMessage list_m = (ListingMessage) m;
-			list_items(list_m);
+			reply = list_items(list_m);
 		}
 		else if (m instanceof RetrieveIdMessage) {
 			RetrieveIdMessage retr_m = (RetrieveIdMessage) m;
-			retrieve_userID(retr_m);
+			reply = retrieve_userID(retr_m);
 		}
 		else if (m instanceof EditIdMessage) {
 			EditIdMessage edit_m = (EditIdMessage) m;
-			edit_userID(edit_m);
+			reply = edit_userID(edit_m);
 		}
 		else if (m instanceof DeleteIdMessage) {
 			DeleteIdMessage del_m = (DeleteIdMessage) m;
-			delete_userID(del_m);
+			reply = delete_userID(del_m);
 		}
 		else if (m instanceof ObliterateMessage) {
 			ObliterateMessage obl_m = (ObliterateMessage) m;
-			obliterate(obl_m);
+			reply = obliterate(obl_m);
 		}
-		
-		//Call appropriate helper method
+
 		//Throw exception if something unexpected
+				
+		return reply;
 	}
 	
 	
@@ -128,9 +127,19 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void register_new_user(RegisterMessage reg_m) {
-		// TODO Auto-generated method stub
-		logger.log(Level.INFO, "Created new user");
+	private Response register_new_user(RegisterMessage reg_m) {
+		// Unpack message, find out who is trying to register
+		String uName = null;
+		String pWord = null;
+		
+		// Try to register
+		String respCode = null;
+		logger.log(Level.INFO, "User " + uName + "tried to register");
+		
+		// Determine and construct Response	
+		//logger.log(Level.INFO, "Created new user");
+		RegisterResponse reply = new RegisterResponse(uName, pWord, respCode);
+		return reply;
 	}
 	
 	/**
@@ -138,9 +147,18 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void login_user(LoginMessage log_m) {
-		// Unpack message, find out who logged in
-		logger.log(Level.INFO, "User " + "tried to log in");
+	private Response login_user(LoginMessage log_m) {
+		// Unpack message, find out who is trying to log in
+		String uName = null;
+		String pWord = null;
+		
+		// Try to log them in
+		String respCode = null;
+		logger.log(Level.INFO, "User " + uName + "tried to log in");
+		
+		// Determine and construct Response
+		LoginResponse reply = new LoginResponse(uName, pWord, respCode);
+		return reply;
 	}
 	
 	/**
@@ -148,9 +166,19 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void list_items(ListingMessage list_m) {
-		// TODO Auto-generated method stub
-		logger.log(Level.INFO, "User " + " requesting full record listing");
+	private Response list_items(ListingMessage list_m) {
+		// Unpack message, find out who wants a listing
+		String uName = null;
+		String pWord = null;
+		
+		// Try to obtain listing
+		String respCode = null;
+		ArrayList<Record> listing = null; // = get Listing from XML
+		logger.log(Level.INFO, "User " + uName + " requesting full record listing");
+		
+		// Determine and construct Response
+		ListingResponse reply = new ListingResponse(uName, pWord, respCode, listing);
+		return reply;
 	}
 
 	/**
@@ -158,10 +186,20 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void retrieve_userID(RetrieveIdMessage retr_m) {
-		// TODO Auto-generated method stub
-		String item = "FIND OUT";
-		logger.log(Level.INFO, "User " + " requesting " + item);
+	private Response retrieve_userID(RetrieveIdMessage retr_m) {
+		// Unpack message, find out who wants to retrieve a particular record
+		String uName = null;
+		String pWord = null;
+		int id = 0; //FIGURE OUT
+
+		// Try to obtain record
+		String respCode = null;
+		Record rec = null; // "FIND OUT";
+		logger.log(Level.INFO, "User " + uName + " requesting record " + ""); //record's name
+		
+		// Determine and construct Response
+		RetrieveIdResponse reply = new RetrieveIdResponse(uName, pWord, respCode, id, rec);
+		return reply;
 	}
 
 	/**
@@ -169,11 +207,22 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void edit_userID(EditIdMessage edit_m) {
-		// TODO Auto-generated method stub
+	private Response edit_userID(EditIdMessage edit_m) {
+		// Unpack message, find out who wants to edit a particular record
+		String uName = null;
+		String pWord = null;
+		int id = 0; //FIGURE OUT
 		String action = "FILL IN";
 		String item = "FIND OUT";
-		logger.log(Level.INFO, "User " + " requests to " + action + " the record corresponding to " + item);
+
+		// Try to modify record
+		String respCode = null;
+		//Record rec = null; // "FIND OUT";
+		logger.log(Level.INFO, "User " + uName + " requests to " + action + " the record corresponding to " + item);
+		
+		// Determine and construct Response
+		EditIdResponse reply = new EditIdResponse(uName, pWord, respCode, id);
+		return reply;
 	}
 
 	/**
@@ -181,10 +230,22 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void delete_userID(DeleteIdMessage del_m) {
-		// TODO Auto-generated method stub
+	private Response delete_userID(DeleteIdMessage del_m) {
+		// Unpack message, find out who wants to delete a particular record
+		String uName = null;
+		String pWord = null;
+		int id = 0; //FIGURE OUT
+		String action = "FILL IN";
 		String item = "FIND OUT";
-		logger.log(Level.INFO, "User " + " delete record for " + item);
+
+		// Try to modify record
+		String respCode = null;
+		logger.log(Level.INFO, "User " + uName + " requests to PERMANENTLY DELETE the record corresponding to " + item);
+		
+		// Determine and construct Response
+		DeleteIdResponse reply = new DeleteIdResponse(uName, pWord, respCode, id);
+		//logger.log(Level.INFO, "User " + uName + " deleted record for " + item);
+		return reply;
 	}
 
 	/**
@@ -193,11 +254,20 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if ...
 	 * @return
 	 */
-	private void obliterate(ObliterateMessage obl_m) {
-		// TODO Auto-generated method stub
-		logger.log(Level.WARNING, "User " + " requesting deletion of entire record directory"); // Change to INFO?
+	private Response obliterate(ObliterateMessage obl_m) {
+		// Unpack message, find out who wants to delete their entire vault
+		String uName = null;
+		String pWord = null;
+		
+		// Try to modify record
+		String respCode = null;
+		logger.log(Level.WARNING, "User " + uName + " requesting deletion of entire record directory"); // Change to INFO?
+		
+		// Determine and construct Response
+		ObliterateResponse reply = new ObliterateResponse(uName, pWord, respCode);
+		//logger.log(Level.INFO, "User " + uName + " deleted record for " + item);
+		return reply;
 	}
-	
 	
 	
 	//Basic file-methods
@@ -223,7 +293,7 @@ public class StoreAndRetrieveUnit {
 	 * @return
 	 */
 	public void createXMLFile(String name){
-        File newFile = new File(name);
+        //File newFile = new File(name);       //Uncomment when add code to detect new file or not
         createDOM();        //Set up the file and let DOM equal the file
 	}
 	
@@ -239,7 +309,7 @@ public class StoreAndRetrieveUnit {
 		try {
 			transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(DOM);
-			StreamResult streamResult =  new StreamResult(new File(name));
+			StreamResult streamResult =  new StreamResult(new File(name)); //EDIT this part to make sure it doesn't have to be a new file
 			transformer.transform(source, streamResult);
 		} catch (TransformerConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -270,13 +340,13 @@ public class StoreAndRetrieveUnit {
 	
 		//Create XML base class, get doc
 		StringBuilder xmlStringBuilder = new StringBuilder();
-		xmlStringBuilder.append("<?xml version=\"1.0\"?> <class> LMAOOOOO </class>");
+		xmlStringBuilder.append("<?xml version=\"1.0\"?> <class> CAN YOU READ THIS? </class>");
 		ByteArrayInputStream input =  new ByteArrayInputStream(
 		   xmlStringBuilder.toString().getBytes("UTF-8"));
 		DOM = builder.parse(input);
 		
 		Element root = DOM.getDocumentElement();
-		System.out.println("BLA: " + root.getAttribute("class"));
+		//System.out.println("BLA: " + root.getAttribute("class"));
 		
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
@@ -294,77 +364,14 @@ public class StoreAndRetrieveUnit {
 	
 	}
 	
-
-	//METHODS FOR COMMUNICATION - copied from CommServer.java
-	public boolean makeConnection() {
-		boolean status = false;
-		try {
-			server = new ServerSocket(portNo);
-
-			/*
-			 * TODO: Move the accept listener to its own thread
-			 */
-			connection = server.accept();
-			commOutputStream = new ObjectOutputStream(connection.
-					getOutputStream());
-
-			commInputStream = new ObjectInputStream(connection.
-					getInputStream());
-			status = true;
-		} catch (Exception e) {
-			System.err.println("Error connecting to server");
-		}
-		return status;
-	}
-	
-	public void send(Message data) {
-		try {
-			commOutputStream.writeObject(data);
-		} catch (Exception e) {
-			System.err.println("Error sending message to server");
-		}
-	}
-	
-	public Message receive() {
-		Message msg = null;
-		try {
-			System.out.println("Blocking for read");
-			msg = (Message) commInputStream.readObject();
-			System.out.println("Unblocking after read");
-		} catch (ClassNotFoundException e) {
-			System.err.println("ClassNotFoundException reading object");
-		} catch (InvalidClassException e) {
-			System.err.println("InvalidClassException reading object");
-		} catch (StreamCorruptedException e) {
-			System.err.println("StreamCorruptedException reading object");
-		} catch (OptionalDataException e) {
-			System.err.println("OptionalDataException reading object");
-		} catch (IOException e) {
-			System.err.println("IO Error reading object");
-		} catch (Exception e) {
-			System.err.println("Error reading from the socket");
-		}
-
-		return msg;
-	}
-
-	public void destroyConnection() {
-		try {
-			commOutputStream.close();
-			commInputStream.close();
-			connection.close();
-			server.close();
-		} catch (Exception e) {
-			System.err.println("Error closing the connection");
-		}
-	}
 	
 	
 	//Testing
 	public static void main(String[] args) {
-		System.out.println("TESTING...");
-		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit("localhost", 5999);
+		System.out.println("TESTING...\n");
+		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit();
 		sru.createXMLFile(MAIN_FILE_LOCATION);
+		sru.saveFile(MAIN_FILE_LOCATION);
 	}
 
 }
