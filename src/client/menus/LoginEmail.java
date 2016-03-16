@@ -1,6 +1,8 @@
 package client.menus;
 
-import client.Menu;
+import client.*;
+import communications.Message;
+import communications.Message.*;
 
 public class LoginEmail extends Menu {
 
@@ -11,8 +13,9 @@ public class LoginEmail extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-        // TODO: keep track of email
-        
+        Message login = new LoginMessage(input, null);
+		comm.save(login);
+
 		return "Login-Password";
 	}
 

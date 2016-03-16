@@ -3,4 +3,6 @@
 .DS_Store
 .classpath
 .project
+.settings
 *.patch
+/bin/
