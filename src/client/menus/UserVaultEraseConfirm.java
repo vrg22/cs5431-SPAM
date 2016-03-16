@@ -17,7 +17,11 @@ public class UserVaultEraseConfirm extends Menu {
 			ObliterateMessage obliterate = (ObliterateMessage)comm.getSaved();
 			comm.send(obliterate);
 
-			return "MainMenu";
+			Response response = (Response)comm.receive();
+			String code = response.getResponseCode();
+			if (code.equals("OK")) {
+				return "MainMenu";
+			}
 		}
 
 		return "UserVault";

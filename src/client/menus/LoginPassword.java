@@ -16,7 +16,13 @@ public class LoginPassword extends Menu {
 		login.updatePassword(input);
 		comm.send(login);
 
-		return "UserVault";
+		Response response = (Response)comm.receive();
+		String code = response.getResponseCode();
+		if (code.equals("OK")) {
+			return "UserVault";
+		}
+
+		return "LoginEmail";
 	}
 
 }

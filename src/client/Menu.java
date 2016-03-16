@@ -20,7 +20,6 @@ public abstract class Menu {
         map.put("Login-Password", LoginPassword.class);
         map.put("Home", MainMenu.class);
         map.put("UserRegister-Email", UserRegisterEmail.class);
-        map.put("UserRegister-Name",  UserRegisterName.class);
         map.put("UserRegister-Password", UserRegisterPassword.class);
         map.put("UserVault", UserVault.class);
         map.put("UserVault-AddAccount-Name",  UserVaultAddAccountName.class);

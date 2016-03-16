@@ -16,7 +16,13 @@ public class UserRegisterPassword extends Menu {
 		register.updatePassword(input);
 		comm.send(register);
 
-        return "Home";
+		Response response = (Response)comm.receive();
+		String code = response.getResponseCode();
+		if (code.equals("OK")) {
+			return "Home";
+		}
+
+        return "MainMenu";
 	}
 
 }
