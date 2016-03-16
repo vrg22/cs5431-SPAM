@@ -19,10 +19,10 @@ public abstract class Client {
 
 	protected CommClient comm;
 
-    public Client() {
+    public Client(String host, int port) {
         cachedMenus = new HashMap<>();
 
-		// TODO: initialize comm
+		comm = new CommClient(host, port);
     }
 
 	public void run() {

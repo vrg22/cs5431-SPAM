@@ -1,49 +1,20 @@
-/**
- * Transfers data between server communication module and storage
- */
 package communications;
+
+/**
+ * Transfers data between client UI and server communication module
+ */
 
 import java.util.*;
 import java.io.*;
 import java.net.*;
 
-public class CommServer implements Communications {
+public class CommClient implements Communications {
 	private String hostName;
 	private int portNo;
 	private Socket connection;
-	private ServerSocket server;
-	private DataOutputStream commOutputStream;
 	private DataInputStream commInputStream;
-
-	private CommServer() {
-		System.out.println("Unused");
-	}
-
-	public CommServer(String host, int port) {
-		this.hostName = host;
-		this.portNo = port;
-	}
-
-	public boolean makeConnection() {
-		boolean status = false;
-		try {
-			server = new ServerSocket(portNo);
-
-			/*
-			 * TODO: Move the accept listener to its own thread
-			 */
-			connection = server.accept();
-			commOutputStream = new DataOutputStream(connection.
-					getOutputStream());
-
-			commInputStream = new DataInputStream(connection.
-					getInputStream());
-			status = true;
-		} catch (Exception e) {
-			System.err.println("Error connecting to server");
-		}
-		return status;
-	}
+	private DataOutputStream commOutputStream;
+	private Message savedMessage;
 
 	private byte[] convertToBytes(Message object) throws IOException {
 		try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -61,8 +32,43 @@ public class CommServer implements Communications {
 						}
 	}
 
+	public CommClient(String host, int port) {
+		this.hostName = host;
+		this.portNo = port;
+	}
+
+
+	public boolean makeConnection() {
+		boolean status = false;
+		try {
+			InetAddress address = InetAddress.getByName(hostName);
+			connection = new Socket(address, portNo);
+
+			commOutputStream = new DataOutputStream(connection.
+					getOutputStream());
+
+			commInputStream = new DataInputStream(connection.
+					getInputStream());
+			status = true;
+		} catch (Exception e) {
+			System.err.println("Error connecting to server");
+		}
+		return status;
+	}
+
+	// Temporarily cache an unfinished message
+	// to save state between related menus
+	public void save(Message data) {
+		savedMessage = data;
+	}
+
+	public Message getSaved() {
+		return savedMessage;
+	}
+
 	public void send(Message m) {
 		try {
+			savedMessage = null;
 			byte[] message = convertToBytes(m);
 			sendOverNetwork(message, message.length);
 		} catch (IOException e) {
@@ -121,7 +127,6 @@ public class CommServer implements Communications {
 			commOutputStream.close();
 			commInputStream.close();
 			connection.close();
-			server.close();
 		} catch (Exception e) {
 			System.err.println("Error closing the connection");
 		}
@@ -130,39 +135,21 @@ public class CommServer implements Communications {
 	/*
 	 * Uncomment for testing
 	public static void main(String args[]) throws IOException,
-		   ClassNotFoundException {
-			   CommServer cs = new CommServer("localhost", 5998);
+		   InterruptedException {
+		CommClient client = new CommClient("localhost", 5998);
+		if (client.makeConnection()) {
 
-			   while (true) {
-				   if (cs.makeConnection()) {
-					   while (true) {
-						   Message m = cs.receive();
+			Message.RegisterMessage rm = new Message.RegisterMessage("newuser",
+					"newpassword");
 
-						   if (m != null) {
-							   if (m.getQuery().equals("REGISTER")) {
-								   Message.RegisterMessage rm =
-									   (Message.RegisterMessage) m;
-								   System.out.println("Received values");
-								   System.out.println(rm.getSequence());
-								   System.out.println(rm.getVersion());
-								   System.out.println(rm.getUsername());
-								   System.out.println(rm.getPassword());
-							   } else if (m.getQuery().equals("LOGIN")) {
-								   Message.LoginMessage lm =
-									   (Message.LoginMessage) m;
-								   System.out.println("Received values");
-								   System.out.println(lm.getSequence());
-								   System.out.println(lm.getVersion());
-								   System.out.println(lm.getUsername());
-								   System.out.println(lm.getPassword());
-								   System.out.println(lm.getAttemptsRemaining());
-							   }
-						   } else {
-							   cs.destroyConnection();
-							   break;
-						   }
-					   }
-				   }
-			   }
+			client.send(rm);
+
+			Message.LoginMessage lm = new Message.LoginMessage("tempuser",
+					"temppassword");
+			client.send(lm);
+
+			Thread.sleep(10000);
+			client.destroyConnection();
+		}
 	}*/
 }
