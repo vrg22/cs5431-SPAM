@@ -5,12 +5,14 @@ import java.util.*;
 
 import client.menus.*;
 import communications.*;
+import communications.Message.Record;
 
 public abstract class Menu {
     protected String identifier;
     protected String title;
     protected ArrayList<MenuOption> options;
     protected String prompt;
+    protected Client client;
     protected CommClient comm;
 
     private static final Map<String, Class<?>> identifierClassMap = createIdentifierClassMap();
@@ -20,7 +22,6 @@ public abstract class Menu {
         map.put("Login-Password", LoginPassword.class);
         map.put("Home", MainMenu.class);
         map.put("UserRegister-Email", UserRegisterEmail.class);
-        map.put("UserRegister-Name",  UserRegisterName.class);
         map.put("UserRegister-Password", UserRegisterPassword.class);
         map.put("UserVault", UserVault.class);
         map.put("UserVault-AddAccount-Name",  UserVaultAddAccountName.class);
@@ -40,6 +41,10 @@ public abstract class Menu {
 
     public void setComm(CommClient comm) {
         this.comm = comm;
+    }
+
+    public void setClient(Client client) {
+    	this.client = client;
     }
 
     /**
@@ -89,18 +94,28 @@ public abstract class Menu {
     }
 
     public static Class<?> getClassForIdentifier(String identifier) {
-    	return identifierClassMap.get(identifier);
+    	if (identifierClassMap.containsKey(identifier)) {
+    		return identifierClassMap.get(identifier);
+    	}
+    	
+    	throw new NoSuchElementException("No menu with that identifier exists.");
     }
 
 
     public class MenuOption {
         private String title;
-
         private String nextMenuIdentifier;
+        private Record record;
 
         public MenuOption(String title, String nextMenuIdentifier) {
             this.title = title;
             this.nextMenuIdentifier = nextMenuIdentifier;
+        }
+
+        public MenuOption(String title, String nextMenuIdentifier, Record record) {
+            this.title = title;
+            this.nextMenuIdentifier = nextMenuIdentifier;
+            this.record = record;
         }
 
         public MenuOption(String title) {
@@ -117,6 +132,10 @@ public abstract class Menu {
 
         public boolean hasNextMenu() {
             return this.nextMenuIdentifier != null;
+        }
+
+        public Record getRecord() {
+            return this.record;
         }
     }
 }

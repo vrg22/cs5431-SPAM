@@ -13,8 +13,7 @@ public class LoginEmail extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-        Message login = new LoginMessage(input, null);
-		comm.save(login);
+        client.updateUsername(input);
 
 		return "Login-Password";
 	}

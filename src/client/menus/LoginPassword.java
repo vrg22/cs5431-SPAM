@@ -12,11 +12,18 @@ public class LoginPassword extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		LoginMessage login = (LoginMessage)comm.getSaved();
-		login.updatePassword(input);
+		client.updatePassword(input);
+		
+		LoginMessage login = new LoginMessage(client.getUsername(), client.getPassword());
 		comm.send(login);
 
-		return "UserVault";
+		Response response = (Response)comm.receive();
+		String code = response.getResponseCode();
+		if (code.equals("OK")) {
+			return "UserVault";
+		}
+
+		return "LoginEmail";
 	}
 
 }

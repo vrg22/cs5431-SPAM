@@ -124,6 +124,15 @@ public class Message implements Serializable {
 		public ArrayList<KeyValue> getFields() {
 			return fields;
 		}
+		
+		public String get(String key) {
+			for (KeyValue field : fields) {
+				if (field.key.equals(key)) {
+					return field.value;
+				}
+			}
+			return null;
+		}
 	}
 	
 	public static class Response extends Message {

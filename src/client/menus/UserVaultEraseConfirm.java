@@ -14,10 +14,14 @@ public class UserVaultEraseConfirm extends Menu {
 	@Override
 	public String handleInput(String input) {
 		if (input.equals("y")) {
-			ObliterateMessage obliterate = (ObliterateMessage)comm.getSaved();
+			ObliterateMessage obliterate = new ObliterateMessage(client.getUsername(), client.getPassword());
 			comm.send(obliterate);
 
-			return "MainMenu";
+			Response response = (Response)comm.receive();
+			String code = response.getResponseCode();
+			if (code.equals("OK")) {
+				return "MainMenu";
+			}
 		}
 
 		return "UserVault";

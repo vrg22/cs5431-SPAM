@@ -10,7 +10,7 @@ public class MainMenu extends Menu {
         super("Home");
 
         MenuOption register = new MenuOption("Register for SPAM",
-            "UserRegister-Name");
+            "UserRegister-Email");
         MenuOption login = new MenuOption("Log in",
             "Login-Email");
 

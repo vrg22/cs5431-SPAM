@@ -17,9 +17,9 @@ public class UserVaultErase extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		Message obliterate = new ObliterateMessage(input, null);
-		comm.save(obliterate);
-
+		// Validate email address
+		if (!input.equals(client.getUsername())) return "UserVault";
+		
 		return "UserVault-Erase-Password";
 	}
 }
