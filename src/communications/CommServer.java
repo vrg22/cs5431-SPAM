@@ -126,6 +126,12 @@ public class CommServer {
 		}
 
 		public void send(Message m) {
+			// Don't send null across the network
+			if (m == null) {
+				System.err.println("Tried to send empty message over network");
+				return;
+			}
+			
 			try {
 				byte[] message = convertToBytes(m);
 				sendOverNetwork(message, message.length);

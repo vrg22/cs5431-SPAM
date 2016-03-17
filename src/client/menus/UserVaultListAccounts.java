@@ -13,6 +13,8 @@ public class UserVaultListAccounts extends Menu {
 		ListingMessage listingRequest = new ListingMessage(client.getUsername(), client.getPassword());
 		comm.send(listingRequest);
 		ListingResponse response = (ListingResponse)comm.receive();
+		
+		// List each account as an option
 		ArrayList<MenuOption> options = new ArrayList<>();
 		for (Record rec : response.getResponseRecords()) {
 			MenuOption option = new MenuOption(rec.get("name"),

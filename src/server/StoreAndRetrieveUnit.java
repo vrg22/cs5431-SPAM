@@ -156,7 +156,8 @@ public class StoreAndRetrieveUnit {
 
 		// Try to obtain listing
 		String respCode = "OK"; //TODO: Change this!
-		ArrayList<Record> listing = null; // = get Listing from XML
+		// TODO: Each record in listing should contain "id" and "name"
+		ArrayList<Record> listing = new ArrayList<Record>(); // TODO: = get Listing from XML
 		logger.log(Level.INFO, "User " + uName + " requesting full record listing");
 
 		// Determine and construct Response
@@ -177,7 +178,7 @@ public class StoreAndRetrieveUnit {
 
 		// Try to obtain record
 		String respCode = "OK"; //TODO: Change this!
-		Record rec = null; // "FIND OUT";
+		Record rec = null; // TODO: = get Record from XML. Should contain "id", "name", "username", "password"
 		logger.log(Level.INFO, "User " + uName + " requesting record " + ""); //record's name
 
 		// Determine and construct Response
@@ -201,7 +202,7 @@ public class StoreAndRetrieveUnit {
 
 		// Try to modify record
 		String respCode = "OK"; //TODO: Change this!
-		//Record rec = null; // "FIND OUT";
+		// TODO: replace existing record of "id"=id with updatedRecord in XML
 		logger.log(Level.INFO, "User " + uName + " requests to " + action + " the record corresponding to " + item);
 
 		// Determine and construct Response
@@ -222,6 +223,7 @@ public class StoreAndRetrieveUnit {
 
 		// Try to modify record
 		String respCode = "OK"; //TODO: Change this!
+		// TODO: remove record of "id"=id from XML
 		logger.log(Level.INFO, "User " + uName + " requests to PERMANENTLY DELETE record " + id);
 
 		// Determine and construct Response
@@ -243,6 +245,7 @@ public class StoreAndRetrieveUnit {
 
 		// Try to modify record
 		String respCode = "OK"; //TODO: Change this!
+		// TODO: delete all records for this user
 		logger.log(Level.WARNING, "User " + uName + " requesting deletion of entire record directory"); // Change to INFO?
 
 		// Determine and construct Response
