@@ -43,7 +43,7 @@ public class CommServer {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Error connecting to server");
+			System.err.println("Error connecting to client");
 		}
 	}
 
@@ -163,7 +163,7 @@ public class CommServer {
 					commOutputStream.write(data, 0, len);
 				}
 			} catch (Exception e) {
-				System.err.println("Error sending message to server");
+				System.err.println("Error sending message to client");
 			}
 		}
 
@@ -187,6 +187,7 @@ public class CommServer {
 	}
 	/*
 	 * Uncomment for testing
+	 */
 	 public static void main(String args[]) throws IOException,
 			ClassNotFoundException {
 				CommServer cs = new CommServer("localhost", 5998);
@@ -194,5 +195,5 @@ public class CommServer {
 				while (true) {
 					cs.makeConnection();
 				}
-	 } */
+	 }
 }
