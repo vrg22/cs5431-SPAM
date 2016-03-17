@@ -36,27 +36,30 @@ public abstract class Client {
 	public void run() {
         Scanner in = new Scanner(System.in);
         Console console = System.console();
-        comm.makeConnection(); //TODO: Should this be here or elsewhere?
+		if (comm.makeConnection()) {//TODO: Should this be here or elsewhere?
 
-        while (true) {
-            clientOutput.print(currentMenu);
+			while (true) {
+				clientOutput.print(currentMenu);
 
-            String input = null;
-            if (console != null &&
-            		(currentMenu.identifier.equals("Login-Password") ||
-            		currentMenu.identifier.equals("UserRegister-Password") ||
-            		currentMenu.identifier.equals("UserVault-AddAccount-Password") ||
-            		currentMenu.identifier.equals("UserVault-Erase-Password"))) {
-            	input = new String(console.readPassword());
-            } else {
-            	input = in.nextLine();
-            }
-            clientOutput.println();
+				String input = null;
+				if (console != null &&
+						(currentMenu.identifier.equals("Login-Password") ||
+						 currentMenu.identifier.equals("UserRegister-Password") ||
+						 currentMenu.identifier.equals("UserVault-AddAccount-Password") ||
+						 currentMenu.identifier.equals("UserVault-Erase-Password"))) {
+					input = new String(console.readPassword());
+				} else {
+					input = in.nextLine();
+				}
+				clientOutput.println();
 
-            // Handle user input
-            String newMenu = currentMenu.handleInput(input);
-            if (goToMenu(newMenu) == QUIT_CODE) break;
-        }
+				// Handle user input
+				String newMenu = currentMenu.handleInput(input);
+				if (goToMenu(newMenu) == QUIT_CODE) break;
+			}
+		} else {
+			clientOutput.println("Incorrect Server address");
+		}
 
         in.close();
     }
