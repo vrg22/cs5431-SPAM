@@ -13,15 +13,19 @@ public class LoginPassword extends Menu {
 	@Override
 	public String handleInput(String input) {
 		client.updatePassword(input);
-		
+
 		LoginMessage login = new LoginMessage(client.getUsername(), client.getPassword());
 		comm.send(login);
 
 		Response response = (Response)comm.receive();
 		String code = response.getResponseCode();
 		if (code.equals("OK")) {
+			client.getClientOutput().println("Login successful");
+
 			return "UserVault";
 		}
+
+		client.getClientOutput().println("Login unsuccessful");
 
 		return "LoginEmail";
 	}

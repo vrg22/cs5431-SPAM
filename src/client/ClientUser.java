@@ -7,7 +7,7 @@ public class ClientUser extends Client {
     public ClientUser(String host, int port) {
         super(host, port);
 
-        goToMenu("Home");
+        goToMenu("MainMenu");
     }
 
     public static void main(String[] args) {
@@ -17,10 +17,10 @@ public class ClientUser extends Client {
     		host = args[0];
     		port = Integer.parseInt(args[1]);
     	} catch(Exception e) {
-    		System.out.println("Please specify a host and port.");
+    		clientOutput.println("Please specify a host and port.");
     		return;
     	}
-    	
+
         Client.printWelcome();
 
         ClientUser client = new ClientUser(host, port);

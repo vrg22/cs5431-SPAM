@@ -18,10 +18,6 @@ public class CommServer {
 	private int portNo;
 	private ServerSocket server;
 
-	private CommServer() {
-		System.out.println("Unused");
-	}
-
 	public CommServer(String host, int port) {
 		this.hostName = host;
 		this.portNo = port;
@@ -77,8 +73,8 @@ public class CommServer {
 			while (true) {
 				Message m = receive();
 				
-				//call the storageandretreive unit
-				// Gets a replyMessage from StorageAndRetreive
+				//call the storageandretrieve unit
+				// Gets a replyMessage from StorageAndRetrieve
 				Response r = sru.processMessage(m);
 				send(r);
 				

@@ -18,8 +18,11 @@ public class UserVaultErase extends Menu {
 	@Override
 	public String handleInput(String input) {
 		// Validate email address
-		if (!input.equals(client.getUsername())) return "UserVault";
-		
+		if (!input.equals(client.getUsername())) {
+			client.getClientOutput().println("Invalid email address");
+			return "UserVault";
+		}
+
 		return "UserVault-Erase-Password";
 	}
 }

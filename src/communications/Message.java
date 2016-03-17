@@ -15,8 +15,8 @@ public class Message implements Serializable {
 	 * List of query codes:
 	 * REGISTER
 	 * LOGIN
-	 * GETLIST
-	 * RETREIVE
+	 * LISTING
+	 * RETRIEVE
 	 * EDIT
 	 * DELETE
 	 * OBLITERATE
@@ -79,7 +79,7 @@ public class Message implements Serializable {
 	public String getResponseCode() {
 		return this.responseCode;
 	}
-	
+
 	public ArrayList<Record> getResponseRecords() {
 		return this.responseRecords;
 	}
@@ -95,36 +95,36 @@ public class Message implements Serializable {
 	public void updateResponseCode(String code) {
 		this.responseCode = code;
 	}
-	
+
 	public void updateResponseRecords(ArrayList<Record> records) {
 		this.responseRecords = records;
 	}
-	
+
 	public static class KeyValue {
 		public String key;
 		public String value;
-		
+
 		public KeyValue(String key, String value) {
 			this.key = key;
 			this.value = value;
 		}
 	}
-	
+
 	public static class Record {
 		private ArrayList<KeyValue> fields;
-		
+
 		public Record() {
 			fields = new ArrayList<>();
 		}
-		
+
 		public void addField(KeyValue field) {
 			fields.add(field);
 		}
-		
+
 		public ArrayList<KeyValue> getFields() {
 			return fields;
 		}
-		
+
 		public String get(String key) {
 			for (KeyValue field : fields) {
 				if (field.key.equals(key)) {
@@ -134,27 +134,27 @@ public class Message implements Serializable {
 			return null;
 		}
 	}
-	
+
 	public static class Response extends Message {
 		public Response(String query, String uName, String pWord, String respCode) {
 			super(query, uName, pWord);
 			this.responseCode = respCode;
 		}
-		
+
 		public Response(String query, String uName, String pWord, String respCode, ArrayList<Record> records) {
 			super(query, uName, pWord);
 			this.responseCode = respCode;
 			this.responseRecords = records;
 		}
 	}
-	
-	
+
+
 	public static class RegisterMessage extends Message {
 		public RegisterMessage(String uName, String pWord) {
 			super("REGISTER", uName, pWord);
 		}
 	}
-	
+
 	public static class RegisterResponse extends Response {
 		public RegisterResponse(String uName, String pWord, String respCode) {
 			super("REGISTER", uName, pWord, respCode);
@@ -178,7 +178,7 @@ public class Message implements Serializable {
 			return this.attemptsRemaining;
 		}
 	}
-	
+
 	public static class LoginResponse extends Response {
 		public LoginResponse(String uName, String pWord, String respCode) {
 			super("LOGIN", uName, pWord, respCode);
@@ -191,7 +191,7 @@ public class Message implements Serializable {
 			super("LISTING", uName, pWord);
 		}
 	}
-	
+
 	public static class ListingResponse extends Response {
 		public ListingResponse(String uName, String pWord, String respCode, ArrayList<Record> records) {
 			super("LISTING", uName, pWord, respCode, records);
@@ -203,7 +203,7 @@ public class Message implements Serializable {
 		private int id;
 
 		public RetrieveIdMessage(String uName, String pWord, int id) {
-			super("RETREIVE", uName, pWord);
+			super("RETRIEVE", uName, pWord);
 			this.id = id;
 		}
 
@@ -215,28 +215,28 @@ public class Message implements Serializable {
 			this.id = newId;
 		}
 	}
-	
+
 	public static class RetrieveIdResponse extends Response {
 		private int id;
-		
+
 		public RetrieveIdResponse(String uName, String pWord, String respCode, int id, Record rec) {
 			super("RETRIEVE", uName, pWord, respCode);
-			
+
 			this.id = id;
-			
+
 			ArrayList<Record> record = new ArrayList<Record>();
 			record.add(rec);
 			this.responseRecords = record;
 		}
-		
+
 		public int getId() {
 			return this.id;
 		}
-		
+
 		public void updateId(int newId) {
 			this.id = newId;
 		}
-		
+
 		public Record getRecord() {
 			ArrayList<Record> records = this.responseRecords;
 			if (records == null || records.size() == 0) return null;
@@ -262,24 +262,24 @@ public class Message implements Serializable {
 		public void updateId(int newId) {
 			this.id = newId;
 		}
-		
+
 		public Record getRecord() {
 			return this.record;
 		}
-		
+
 		public void updateRecord(Record newRec) {
 			this.record = newRec;
 		}
 	}
-	
+
 	public static class EditIdResponse extends Response {
 		private int id;
-		
+
 		public EditIdResponse(String uName, String pWord, String respCode, int id) {
 			super("EDIT", uName, pWord, respCode);
 			this.id = id;
 		}
-		
+
 		public int getId() {
 			return this.id;
 		}
@@ -289,7 +289,7 @@ public class Message implements Serializable {
 		}
 	}
 
-	
+
 	public static class DeleteIdMessage extends Message {
 		private int id;
 
@@ -306,15 +306,15 @@ public class Message implements Serializable {
 			this.id = newId;
 		}
 	}
-	
+
 	public static class DeleteIdResponse extends Response {
 		private int id;
-		
+
 		public DeleteIdResponse(String uName, String pWord, String respCode, int id) {
 			super("DELETE", uName, pWord, respCode);
 			this.id = id;
 		}
-		
+
 		public int getId() {
 			return this.id;
 		}
@@ -330,7 +330,7 @@ public class Message implements Serializable {
 			super("OBLITERATE", uName, pWord);
 		}
 	}
-	
+
 	public static class ObliterateResponse extends Response {
 		public ObliterateResponse(String uName, String pWord, String respCode) {
 			super("OBLITERATE", uName, pWord, respCode);

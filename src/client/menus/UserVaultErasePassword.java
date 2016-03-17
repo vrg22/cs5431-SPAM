@@ -13,7 +13,10 @@ public class UserVaultErasePassword extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		if (!input.equals(client.getPassword())) return "UserVault";
+		if (!input.equals(client.getPassword())) {
+			client.getClientOutput().println("Invalid password");
+			return "UserVault";
+		}
 
 		return "UserVault-Erase-Confirm";
 	}

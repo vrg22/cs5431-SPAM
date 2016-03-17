@@ -19,12 +19,16 @@ public class UserRegisterPassword extends Menu {
 		Response response = (Response)comm.receive();
 		String code = response.getResponseCode();
 		if (code.equals("OK")) {
+			client.getClientOutput().println("Register successful");
+
 			// Log in with new credentials
 			client.updateUsername(response.getUsername());
 			client.updatePassword(response.getPassword());
-			
-			return "Home";
+
+			return "UserVault";
 		}
+
+		client.getClientOutput().println("Register unsuccessful");
 
         return "MainMenu";
 	}

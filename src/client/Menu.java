@@ -20,7 +20,7 @@ public abstract class Menu {
         Map<String, Class<?>> map = new HashMap<>();
         map.put("Login-Email", LoginEmail.class);
         map.put("Login-Password", LoginPassword.class);
-        map.put("Home", MainMenu.class);
+        map.put("MainMenu", MainMenu.class);
         map.put("UserRegister-Email", UserRegisterEmail.class);
         map.put("UserRegister-Password", UserRegisterPassword.class);
         map.put("UserVault", UserVault.class);
@@ -97,7 +97,7 @@ public abstract class Menu {
     	if (identifierClassMap.containsKey(identifier)) {
     		return identifierClassMap.get(identifier);
     	}
-    	
+
     	throw new NoSuchElementException("No menu with that identifier exists.");
     }
 

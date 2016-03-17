@@ -2,6 +2,7 @@ package client;
 
 
 import java.io.Console;
+import java.io.PrintStream;
 import java.util.*;
 
 import client.menus.*;
@@ -21,6 +22,8 @@ public abstract class Client {
 
 	protected CommClient comm;
 
+	protected static final PrintStream clientOutput = System.out;
+
 	protected String username;
 	protected String password;
 
@@ -36,7 +39,7 @@ public abstract class Client {
         comm.makeConnection(); //TODO: Should this be here or elsewhere?
 
         while (true) {
-            System.out.print(currentMenu);
+            clientOutput.print(currentMenu);
 
             String input = null;
             if (console != null &&
@@ -48,7 +51,7 @@ public abstract class Client {
             } else {
             	input = in.nextLine();
             }
-            System.out.println();
+            clientOutput.println();
 
             // Handle user input
             String newMenu = currentMenu.handleInput(input);
@@ -103,13 +106,17 @@ public abstract class Client {
     public void setCurrentRecordId(int id) {
     	this.currentRecordId = id;
     }
-    
+
 	public int getCurrentRecordId() {
 		return this.currentRecordId;
 	}
 
+	public PrintStream getClientOutput() {
+		return clientOutput;
+	}
+
     protected static void printWelcome() {
-        System.out.println("\n"
+        clientOutput.println("\n"
             + "                   Welcome to\n"
             + " .oooooo..o\n"
             + "d8P'    `Y8\n"

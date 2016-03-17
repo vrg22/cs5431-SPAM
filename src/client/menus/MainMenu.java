@@ -7,7 +7,7 @@ import client.Menu;
 public class MainMenu extends Menu {
 
     public MainMenu() {
-        super("Home");
+        super("MainMenu");
 
         MenuOption register = new MenuOption("Register for SPAM",
             "UserRegister-Email");
@@ -18,7 +18,7 @@ public class MainMenu extends Menu {
         options.add(register);
         options.add(login);
 
-        this.title = "Home";
+        this.title = "MainMenu";
         this.options = options;
         this.prompt = "Please select an option (1 or 2): ";
     }

@@ -20,9 +20,12 @@ public class UserVaultEraseConfirm extends Menu {
 			Response response = (Response)comm.receive();
 			String code = response.getResponseCode();
 			if (code.equals("OK")) {
+				client.getClientOutput().println("Account deleted");
 				return "MainMenu";
 			}
 		}
+
+		client.getClientOutput().println("Account not deleted");
 
 		return "UserVault";
 	}

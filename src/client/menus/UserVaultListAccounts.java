@@ -41,6 +41,8 @@ public class UserVaultListAccounts extends Menu {
         } catch (Exception e) {
         }
 
+		client.getClientOutput().println("Invalid option");
+
 		return null;
 	}
 }
