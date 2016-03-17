@@ -5,6 +5,10 @@ package communications;
  */
 
 import java.util.*;
+
+import communications.Message.Response;
+import server.StoreAndRetrieveUnit;
+
 import java.io.*;
 import java.net.*;
 import java.lang.Thread;
@@ -39,7 +43,7 @@ public class CommServer {
 				}
 			}
 		} catch (Exception e) {
-			System.err.println("Error connecting to server");
+			System.err.println("Error connecting to client");
 		}
 	}
 
@@ -55,6 +59,7 @@ public class CommServer {
 		private DataOutputStream commOutputStream;
 		private DataInputStream commInputStream;
 		private Socket sock;
+		private StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Final?
 
 		public ClientWorker(Socket sock) {
 			this.sock = sock;
@@ -71,9 +76,12 @@ public class CommServer {
 		public void run() {
 			while (true) {
 				Message m = receive();
+				
 				//call the storageandretreive unit
 				// Gets a replyMessage from StorageAndRetreive
-				// send(replyMessage);
+				Response r = sru.processMessage(m);
+				send(r);
+				
 				if (m != null) {
 					if (m.getQuery().equals("REGISTER")) {
 						Message.RegisterMessage rm =
@@ -155,7 +163,7 @@ public class CommServer {
 					commOutputStream.write(data, 0, len);
 				}
 			} catch (Exception e) {
-				System.err.println("Error sending message to server");
+				System.err.println("Error sending message to client");
 			}
 		}
 
@@ -179,6 +187,7 @@ public class CommServer {
 	}
 	/*
 	 * Uncomment for testing
+	 */
 	 public static void main(String args[]) throws IOException,
 			ClassNotFoundException {
 				CommServer cs = new CommServer("localhost", 5998);
@@ -186,5 +195,5 @@ public class CommServer {
 				while (true) {
 					cs.makeConnection();
 				}
-	 } */
+	 }
 }

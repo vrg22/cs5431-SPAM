@@ -101,6 +101,7 @@ public class CommClient implements Communications {
 				commOutputStream.write(data, 0, len);
 			}
 		} catch (Exception e) {
+			//e.printStackTrace();
 			System.err.println("Error sending message to server");
 		}
 	}
@@ -134,6 +135,7 @@ public class CommClient implements Communications {
 
 	/*
 	 * Uncomment for testing
+	
 	public static void main(String args[]) throws IOException,
 		   InterruptedException {
 		CommClient client = new CommClient("localhost", 5998);
@@ -151,5 +153,5 @@ public class CommClient implements Communications {
 			Thread.sleep(10000);
 			client.destroyConnection();
 		}
-	}*/
+	} */
 }

@@ -33,6 +33,7 @@ public abstract class Client {
 	public void run() {
         Scanner in = new Scanner(System.in);
         Console console = System.console();
+        comm.makeConnection(); //TODO: Should this be here or elsewhere?
 
         while (true) {
             System.out.print(currentMenu);
