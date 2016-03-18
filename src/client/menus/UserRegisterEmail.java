@@ -1,6 +1,7 @@
 package client.menus;
 
 import client.Client;
+import java.util.Scanner;
 import client.Menu;
 import communications.*;
 import communications.Message.*;
@@ -15,12 +16,19 @@ public class UserRegisterEmail extends Menu {
 	}
 
 	public UserRegisterEmail(Client client, CommClient comm) {
-        super("UserRegister-Email", client, comm);
-        this.prompt = "Please enter your email address: ";
-    }
+		super("UserRegister-Email", client, comm);
+		this.prompt = "Please enter your email address (or -1 to quit): ";
+	}
 
 	@Override
 	public String handleInput(String input) {
+		Scanner sc = new Scanner(input.trim());
+		if (sc.hasNextInt()) {
+			int option = Integer.parseInt(input);
+			if (option == -1) return "quit";
+		}
+		sc.close();
+
 		if (isEmailValid(input)) {
 			Message register = new RegisterMessage(input, null);
 			comm.save(register);
@@ -30,6 +38,6 @@ public class UserRegisterEmail extends Menu {
 			client.getClientOutput().println("Invalid email address");
 			return "UserRegister-Email";
 		}
-	}
 
+	}
 }

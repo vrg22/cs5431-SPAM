@@ -22,6 +22,6 @@ public class MainMenu extends Menu {
 
         this.title = "MainMenu";
         this.options = options;
-        this.prompt = "Please select an option (1 or 2): ";
+        this.prompt = "Please select an option (or -1 to quit): ";
     }
 }

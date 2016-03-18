@@ -63,7 +63,9 @@ public abstract class Menu {
                 MenuOption option = this.options.get(i - 1);
 
                 return option.getNextMenuIdentifier();
-            }
+			} else if (i == -1) {
+				return "quit";
+			}
 
         } catch (NumberFormatException e) {
         	client.getClientOutput().println("Invalid selection");
