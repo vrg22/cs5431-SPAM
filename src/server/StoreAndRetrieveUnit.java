@@ -526,6 +526,7 @@ public class StoreAndRetrieveUnit {
 			            + "<usersXML>\n"
 			            + 	"<metadata>\n"
 			            + 		"<nextID>0</nextID>\n"
+			            + 		"<numUsers>0</numUsers>\n"
 			            + 	"</metadata>\n"
 			            + 	"<users>\n" //EMPTY RN!
 			            + 	"</users>\n"
@@ -562,6 +563,15 @@ public class StoreAndRetrieveUnit {
 	private String addUser(String uname, String pword) {
 		String respcode = "OK";
 		
+		//Check for too many users existing
+		//Directly obtain the "numUsers" element (within the "metadata" tag)
+		Element numUElement = getTagElement("numUsers", DOM);
+		int numUsers = Integer.parseInt(numUElement.getTextContent());
+		if (numUsers == User.MAX_USERS) {
+			respcode = "FAILED_MAX_USERS_REACHED";
+			return respcode;
+		}
+		
 		//Check for duplicates already
 		for (User u : getUsers()){
 			if (u.getUsername().equals(uname)) {
@@ -570,7 +580,7 @@ public class StoreAndRetrieveUnit {
 			}
 		}
 		
-		//Directly obtain the "nextID" element (within the "metadata" tag), increment
+		//Directly obtain the "nextID" element (within the "metadata" tag)
 		Element idElement = getTagElement("nextID", DOM);
 		int nextID = Integer.parseInt(idElement.getTextContent());
 		
@@ -599,6 +609,10 @@ public class StoreAndRetrieveUnit {
         //Update nextID in main DOM
         nextID++;
 		idElement.setTextContent(Integer.toString(nextID));
+		
+		//Update numUsers in main DOM
+        numUsers++;
+		numUElement.setTextContent(Integer.toString(numUsers));
 		
 		return respcode;
 	}
@@ -654,7 +668,14 @@ public class StoreAndRetrieveUnit {
             			//TODO: complain
             		}
             		
-            		//TODO: Update num of users in metadata of main DOM
+            		//Update num of users in metadata of main DOM
+            		//Directly obtain the "numUsers" element (within the "metadata" tag), decrement
+            		Element numUElement = getTagElement("numUsers", DOM);
+            		int numUsers = Integer.parseInt(numUElement.getTextContent());
+            		//Update numUsers in main DOM
+                    numUsers--;
+            		numUElement.setTextContent(Integer.toString(numUsers));
+            		
             		respcode = "OK";
             		return respcode;
             	}

@@ -2,6 +2,8 @@ package server;
 
 public class User {
 
+	public static final int MAX_USERS = 300; //TODO: Adjust this
+	
 	// Private fields
 	private String username;
 	private String password;
