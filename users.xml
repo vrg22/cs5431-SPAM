@@ -1,3 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><class>
-CAN YOU READ THIS?
-</class>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><usersXML>
+<metadata>
+<nextID>1</nextID>
+</metadata>
+<users>
+<user ID="0"><username>a@b.c</username><password>holla</password></user></users>
+</usersXML>

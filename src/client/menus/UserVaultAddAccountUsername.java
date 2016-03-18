@@ -3,6 +3,8 @@ package client.menus;
 import client.Client;
 import client.Menu;
 import communications.CommClient;
+import communications.Message;
+import communications.Message.EditIdMessage;
 
 public class UserVaultAddAccountUsername extends Menu {
 
@@ -15,9 +17,9 @@ public class UserVaultAddAccountUsername extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		// TODO: store account
+		Message edit = new EditIdMessage(input, null, 0, null);
+		comm.save(edit);
 
-		client.getClientOutput().println("Not yet implemented");
-		return "UserVault";
+		return "UserVault-AddAccount-Password";
 	}
 }
