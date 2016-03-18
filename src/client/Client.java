@@ -65,6 +65,8 @@ public abstract class Client {
 		}
 
         in.close();
+        
+        clientOutput.println("Goodbye.");
     }
 
     protected int goToMenu(String identifier) {
