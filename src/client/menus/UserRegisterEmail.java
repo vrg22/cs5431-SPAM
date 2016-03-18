@@ -27,6 +27,7 @@ public class UserRegisterEmail extends Menu {
 
 			return "UserRegister-Password";
 		} else {
+			client.getClientOutput().println("Invalid email address");
 			return "UserRegister-Email";
 		}
 	}

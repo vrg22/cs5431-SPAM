@@ -56,13 +56,21 @@ public abstract class Menu {
      * @return name of next menu to display (or null to remain on same menu)
      */
     public String handleInput(String input) {
-        int i = Integer.parseInt(input);
-        if (i >= 1 && i <= this.options.size()) {
-            MenuOption option = this.options.get(i - 1);
+        try {
+        	int i = Integer.parseInt(input);
+        	
+        	if (i >= 1 && i <= this.options.size()) {
+                MenuOption option = this.options.get(i - 1);
 
-            return option.getNextMenuIdentifier();
+                return option.getNextMenuIdentifier();
+            }
+
+        } catch (NumberFormatException e) {
+        	client.getClientOutput().println("Invalid selection");
+        	return null;
         }
         
+        client.getClientOutput().println("Invalid selection");    
         return null;
     }
 
