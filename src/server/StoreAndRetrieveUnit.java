@@ -38,9 +38,11 @@ public class StoreAndRetrieveUnit {
 	//XML
 	private Document DOM;
 	//Storage
-	public static final String MAIN_FILE_LOCATION = "password.xml"; //"storage.json";
+	private static final String USERS_FILE_LOCATION = "users.xml";
+	private static final int SUCCESS = 0;
+	private static final int FAILURE = -1;
 	//Logging
-	public static final String LOG_FILE_LOCATION = "log.log";
+	private static final String LOG_FILE_LOCATION = "log.log";
 	private static final Logger logger = Logger.getLogger(StoreAndRetrieveUnit.class.getName()); //NAME??
 
 	//Constructors
@@ -48,7 +50,6 @@ public class StoreAndRetrieveUnit {
 
 		//Set up logging
 		try {
-
 	        // Configure location and log formatting
 	        FileHandler fh = new FileHandler(LOG_FILE_LOCATION, true);
 	        logger.addHandler(fh);
@@ -63,6 +64,13 @@ public class StoreAndRetrieveUnit {
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	    }
+		
+		//Create users.xml file with the proper setup
+		// TODO: Eventually, rather than always having to modify something and save the DOM back to disk on every message,
+		// allow to load DOM once and only save it back to disk if ProcessMessage hasn't been called in a while
+		if (createXMLFile(USERS_FILE_LOCATION) == SUCCESS) {
+			//DO SOMETHING
+		}
 	}
 
 
@@ -70,6 +78,8 @@ public class StoreAndRetrieveUnit {
 	//Generic function to interpret a message received from CommServer
 	public Response processMessage(Message m) {
 		if (m == null) throw new IllegalArgumentException("No message received.");
+		
+		//TODO: Load DOM from XML file
 		
 		String query = m.getQuery();
 
@@ -95,6 +105,8 @@ public class StoreAndRetrieveUnit {
 			return obliterate((ObliterateMessage)m);
 		}
 
+		//TODO: Save DOM to XML file
+		
 		throw new IllegalArgumentException("Invalid message received.");
 	}
 
@@ -269,50 +281,26 @@ public class StoreAndRetrieveUnit {
 	//Idea of THREADS making diff modifications to the elements....
 
 	/**
-	 * Returns a handle to a newly-created file with the specified name.
+	 * Returns a handle to a newly-setup XML file with the specified name. Assumes the File exists, but is empty when this is called.
 	 * Do not save the file here; DOM will be set and ready for modifications.
 	 * Throws exception if file creation failed.
 	 * @return
 	 */
-	public void createXMLFile(String name){
-        //File newFile = new File(name);       //Uncomment when add code to detect new file or not
-        createDOM();        //Set up the file and let DOM equal the file
-	}
-
-
-	/**
-	 * Save the existing DOM (if it is active) to disk.
-	 * Throws exception if file is null.
-	 * @return
-	 */
-	public void saveFile(String name){
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer;
-		try {
-			transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(DOM);
-			StreamResult streamResult =  new StreamResult(new File(name)); //EDIT this part to make sure it doesn't have to be a new file
-			transformer.transform(source, streamResult);
-		} catch (TransformerConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private int createXMLFile(String name){
+        File newFile = new File(name);
+		if (!newFile.exists()) {
+	        createDOM();        //Instantiates and prepares the DOM to be saved to disk
+			saveFile(newFile);
 		}
+		
+		//CHANGE THIS
+		return SUCCESS;
 	}
 
-	//deleteFile()
-
-
-	//XML File parsing methods
-	//At all times, have entirety of the password file in memory???
-	//Or is the event-based triggering in SAX more secure?
-	//When to do the encryption? Easier/more efficient to encrypt parts of the message or whole thing?
-
 	/**
-	 * Sets a newly-created XML file up with application-specific fields are inserted.
-	 * Throws exception if file creation failed.
+	 * Sets a blank DOM up with fields specific to the USERS_FILE_LOCATION
+	 * Assumes that the private field DOM is not yet set.
+	 * Throws exception if DOM creation failed.
 	 * @return
 	 */
 	private void createDOM() {
@@ -320,16 +308,20 @@ public class StoreAndRetrieveUnit {
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 
-		//Create XML base class, get doc
-		StringBuilder xmlStringBuilder = new StringBuilder();
-		xmlStringBuilder.append("<?xml version=\"1.0\"?> <class> CAN YOU READ THIS? </class>");
-		ByteArrayInputStream input =  new ByteArrayInputStream(
-		   xmlStringBuilder.toString().getBytes("UTF-8"));
-		DOM = builder.parse(input);
-
-		Element root = DOM.getDocumentElement();
-		//System.out.println("BLA: " + root.getAttribute("class"));
-
+			//Create XML base and set DOM
+			StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
+			usersXMLsetup(xmlStringBuilder);
+			
+			ByteArrayInputStream input =  new ByteArrayInputStream(xmlStringBuilder.toString().getBytes("UTF-8"));
+			
+			DOM = builder.parse(input);
+	        DOM.getDocumentElement().normalize();
+			
+	        //Verify root information
+//	        Element root = DOM.getDocumentElement();
+//	        String temp = root.getNodeName();
+//	        System.out.println("ROOT ELEMENT: " + temp); //root.getAttribute("class"));
+	
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -343,17 +335,64 @@ public class StoreAndRetrieveUnit {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
+	/**
+	 * Save the existing DOM (if it is active) to disk at the file location.
+	 * Throws exception if file is null.
+	 * @return //TODO: success code?
+	 */
+	private void saveFile(File file){
+		if (file == null) throw new IllegalArgumentException("No file received.");
+		
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		Transformer transformer;
+		try {
+			transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(DOM);
+			StreamResult streamResult =  new StreamResult(file); //EDIT this part to make sure it doesn't have to be a new file
+			transformer.transform(source, streamResult);
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
+	//deleteFile()
 
+	
+	//XML File parsing methods
+	//At all times, have entirety of the password file in memory???
+	//Or is the event-based triggering in SAX more secure?
+	//When to do the encryption? Easier/more efficient to encrypt parts of the message or whole thing?
+	
+	/**
+	 * Take in a StringBuilder and append to it the bare bones text necessary for the users XML file.
+	 */
+	private void usersXMLsetup(StringBuilder sb){
+		//xmlStringBuilder.append("<?xml version=\"1.0\"?>\n<class>\nCAN YOU READ THIS?\n</class>");
+		
+		String basicText =
+			            "<?xml version=\"1.0\"?>\n"
+			            + "<class>\n"
+			            + 	"CAN YOU READ THIS?\n"
+			            + "</class>"
+			            ;
+		
+		sb.append(basicText);
+	}
+	
+	
+	
+	
+	
 	//Testing
 	public static void main(String[] args) {
-		System.out.println("TESTING...\n");
-		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit();
-		sru.createXMLFile(MAIN_FILE_LOCATION);
-		sru.saveFile(MAIN_FILE_LOCATION);
+		System.out.println("TESTING SRU...\n");
+		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Creates the necessary files at startup IF they don't already exist
 	}
 
 }

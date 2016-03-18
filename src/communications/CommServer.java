@@ -55,7 +55,7 @@ public class CommServer {
 		private DataOutputStream commOutputStream;
 		private DataInputStream commInputStream;
 		private Socket sock;
-		private StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Final?
+		private volatile StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); // CHECK!
 
 		public ClientWorker(Socket sock) {
 			this.sock = sock;
