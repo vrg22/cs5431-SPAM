@@ -13,8 +13,8 @@ public abstract class Menu {
     protected String title;
     protected ArrayList<MenuOption> options;
     protected String prompt;
-    static protected Client client;
-    static protected CommClient comm;
+    protected Client client;
+    protected CommClient comm;
 
     private static final Map<String, Class<?>> identifierClassMap = createIdentifierClassMap();
     private static Map<String, Class<?>> createIdentifierClassMap() {
@@ -36,16 +36,10 @@ public abstract class Menu {
         return Collections.unmodifiableMap(map);
     }
 
-    public Menu(String identifier) {
+    public Menu(String identifier, Client client, CommClient comm) {
         this.identifier = identifier;
-    }
-
-    public static void setComm(CommClient comm) {
-        Menu.comm = comm;
-    }
-
-    public static void setClient(Client client) {
-    	Menu.client = client;
+        this.client = client;
+        this.comm = comm;
     }
     
     /**
@@ -62,43 +56,39 @@ public abstract class Menu {
      * @return name of next menu to display (or null to remain on same menu)
      */
     public String handleInput(String input) {
-        try {
-            int i = Integer.parseInt(input);
-            if (i >= 1 && i <= this.options.size()) {
-                MenuOption option = this.options.get(i - 1);
+        int i = Integer.parseInt(input);
+        if (i >= 1 && i <= this.options.size()) {
+            MenuOption option = this.options.get(i - 1);
 
-                return option.getNextMenuIdentifier();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            return null;
+            return option.getNextMenuIdentifier();
         }
+        
+        return null;
     }
 
     public String toString() {
-        String out = "";
+        StringBuffer buf = new StringBuffer();
 
-        if (this.title != null) out += this.title + ":\n";
+        if (this.title != null) buf.append(this.title + ":\n");
 
         MenuOption option;
         if (options != null) {
             for (int i = 0; i < options.size() - 1; i++) {
                 option = options.get(i);
-                out += (i + 1) + ") " + option.getTitle() + "\n";
+                buf.append((i + 1) + ") " + option.getTitle() + "\n");
             }
             if (options.size() >= 1) {
                 option = options.get(options.size() - 1);
-                out += options.size() + ") " + option.getTitle();
+                buf.append(options.size() + ") " + option.getTitle());
             }
 
-            if (this.prompt != null) out += "\n";
+            if (this.prompt != null) buf.append("\n");
         }
         if (this.prompt != null) {
-            out += this.prompt;
+            buf.append(this.prompt);
         }
 
-        return out;
+        return buf.toString();
     }
 
     public static Class<?> getClassForIdentifier(String identifier) {
@@ -110,7 +100,7 @@ public abstract class Menu {
     }
 
 
-    public class MenuOption {
+    public static class MenuOption {
         private String title;
         private String nextMenuIdentifier;
         private Record record;

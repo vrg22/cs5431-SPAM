@@ -73,25 +73,25 @@ public class StoreAndRetrieveUnit {
 		
 		String query = m.getQuery();
 
-		if (query.equals("REGISTER")){
+		if (query.equals("REGISTER") && m instanceof RegisterMessage){
 			return register_new_user((RegisterMessage)m);
 		}
-		else if (query.equals("LOGIN")) {
+		else if (query.equals("LOGIN") && m instanceof LoginMessage) {
 			return login_user((LoginMessage)m);
 		}
-		else if (query.equals("LISTING")) {
+		else if (query.equals("LISTING") && m instanceof ListingMessage) {
 			return list_items((ListingMessage)m);
 		}
-		else if (query.equals("RETRIEVE")) {
+		else if (query.equals("RETRIEVE") && m instanceof RetrieveIdMessage) {
 			return retrieve_userID((RetrieveIdMessage)m);
 		}
-		else if (query.equals("EDIT")) {
+		else if (query.equals("EDIT") && m instanceof EditIdMessage) {
 			return edit_userID((EditIdMessage)m);
 		}
-		else if (query.equals("DELETE")) {
+		else if (query.equals("DELETE") && m instanceof DeleteIdMessage) {
 			return delete_userID((DeleteIdMessage)m);
 		}
-		else if (query.equals("OBLITERATE")) {
+		else if (query.equals("OBLITERATE") && m instanceof ObliterateMessage) {
 			return obliterate((ObliterateMessage)m);
 		}
 

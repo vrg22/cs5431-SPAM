@@ -1,11 +1,13 @@
 package client.menus;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
 
 public class UserVaultAddAccountPassword extends Menu {
 
-	public UserVaultAddAccountPassword() {
-        super("UserVault-AddAccount-Password");
+	public UserVaultAddAccountPassword(Client client, CommClient comm) {
+        super("UserVault-AddAccount-Password", client, comm);
 
         this.prompt = "Please enter your password for the account: ";
     }

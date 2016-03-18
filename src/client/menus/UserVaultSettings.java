@@ -2,12 +2,14 @@ package client.menus;
 
 import java.util.ArrayList;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
 
 public class UserVaultSettings extends Menu {
 
-	public UserVaultSettings() {
-        super("UserVault-Settings");
+	public UserVaultSettings(Client client, CommClient comm) {
+        super("UserVault-Settings", client, comm);
 
 		ArrayList<MenuOption> options = new ArrayList<>();
 		options.add(new MenuOption("Update my email address",

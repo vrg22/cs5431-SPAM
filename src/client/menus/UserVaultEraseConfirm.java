@@ -1,12 +1,15 @@
 package client.menus;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
+import communications.Message;
 import communications.Message.*;
 
 public class UserVaultEraseConfirm extends Menu {
 
-	public UserVaultEraseConfirm() {
-        super("UserVault-Erase-Confirm");
+	public UserVaultEraseConfirm(Client client, CommClient comm) {
+        super("UserVault-Erase-Confirm", client, comm);
 
 		this.prompt = "Are you sure you want to delete your account? (y/N):";
     }
@@ -17,15 +20,18 @@ public class UserVaultEraseConfirm extends Menu {
 			ObliterateMessage obliterate = new ObliterateMessage(client.getUsername(), client.getPassword());
 			comm.send(obliterate);
 
-			Response response = (Response)comm.receive();
-			if (validateResponse(response)) {
-				String code = response.getResponseCode();
-				if (code.equals("OK")) {
-					client.updateUsername(null);
-					client.updatePassword(null);
-					
-					client.getClientOutput().println("Account deleted");
-					return "MainMenu";
+			Message responseMsg = comm.receive();
+			if (responseMsg instanceof Response) {
+				Response response = (Response)responseMsg;
+				if (validateResponse(response)) {
+					String code = response.getResponseCode();
+					if (code.equals("OK")) {
+						client.updateUsername(null);
+						client.updatePassword(null);
+						
+						client.getClientOutput().println("Account deleted");
+						return "MainMenu";
+					}
 				}
 			}
 		}

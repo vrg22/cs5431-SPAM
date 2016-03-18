@@ -1,13 +1,14 @@
 package client.menus;
 
 import client.*;
+import communications.CommClient;
 import communications.Message;
 import communications.Message.*;
 
 public class LoginEmail extends Menu {
 
-	public LoginEmail() {
-        super("Login-Email");
+	public LoginEmail(Client client, CommClient comm) {
+        super("Login-Email", client, comm);
         this.prompt = "Please enter your email address: ";
     }
 

@@ -42,7 +42,9 @@ public class Message implements Serializable {
 
 	protected Message(String query, String uName, String pWord) {
 		this.version = globalVersion;
-		this.sequence = globalSequence++;
+		synchronized(Message.class) {
+			this.sequence = globalSequence++;
+		}
 		this.query = query;
 		this.username = uName;
 		this.password = pWord;
@@ -100,7 +102,9 @@ public class Message implements Serializable {
 		this.responseRecords = records;
 	}
 
-	public static class KeyValue {
+	public static class KeyValue implements Serializable {
+		private static final long serialVersionUID = 1L;
+		
 		public String key;
 		public String value;
 
@@ -110,7 +114,9 @@ public class Message implements Serializable {
 		}
 	}
 
-	public static class Record {
+	public static class Record implements Serializable {
+		private static final long serialVersionUID = 1L;
+		
 		private ArrayList<KeyValue> fields;
 
 		public Record() {
@@ -145,6 +151,8 @@ public class Message implements Serializable {
 	}
 
 	public static class Response extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		public Response(String query, String uName, String pWord, String respCode) {
 			super(query, uName, pWord);
 			this.responseCode = respCode;
@@ -159,12 +167,16 @@ public class Message implements Serializable {
 
 
 	public static class RegisterMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		public RegisterMessage(String uName, String pWord) {
 			super("REGISTER", uName, pWord);
 		}
 	}
 
 	public static class RegisterResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		public RegisterResponse(String uName, String pWord, String respCode) {
 			super("REGISTER", uName, pWord, respCode);
 		}
@@ -172,6 +184,8 @@ public class Message implements Serializable {
 
 
 	public static class LoginMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		private int attemptsRemaining = 0;
 
 		public LoginMessage(String uName, String pWord) {
@@ -189,6 +203,8 @@ public class Message implements Serializable {
 	}
 
 	public static class LoginResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		public LoginResponse(String uName, String pWord, String respCode) {
 			super("LOGIN", uName, pWord, respCode);
 		}
@@ -196,12 +212,16 @@ public class Message implements Serializable {
 
 
 	public static class ListingMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		public ListingMessage(String uName, String pWord) {
 			super("LISTING", uName, pWord);
 		}
 	}
 
 	public static class ListingResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		public ListingResponse(String uName, String pWord, String respCode, ArrayList<Record> records) {
 			super("LISTING", uName, pWord, respCode, records);
 		}
@@ -209,6 +229,8 @@ public class Message implements Serializable {
 
 
 	public static class RetrieveIdMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		private int id;
 
 		public RetrieveIdMessage(String uName, String pWord, int id) {
@@ -226,6 +248,8 @@ public class Message implements Serializable {
 	}
 
 	public static class RetrieveIdResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		private int id;
 
 		public RetrieveIdResponse(String uName, String pWord, String respCode, int id, Record rec) {
@@ -255,6 +279,8 @@ public class Message implements Serializable {
 
 
 	public static class EditIdMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		private int id;
 		private Record record;
 
@@ -282,6 +308,8 @@ public class Message implements Serializable {
 	}
 
 	public static class EditIdResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		private int id;
 
 		public EditIdResponse(String uName, String pWord, String respCode, int id) {
@@ -300,6 +328,8 @@ public class Message implements Serializable {
 
 
 	public static class DeleteIdMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		private int id;
 
 		public DeleteIdMessage(String uName, String pWord, int id) {
@@ -317,6 +347,8 @@ public class Message implements Serializable {
 	}
 
 	public static class DeleteIdResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		private int id;
 
 		public DeleteIdResponse(String uName, String pWord, String respCode, int id) {
@@ -335,12 +367,16 @@ public class Message implements Serializable {
 
 
 	public static class ObliterateMessage extends Message {
+		private static final long serialVersionUID = 1L;
+		
 		public ObliterateMessage(String uName, String pWord) {
 			super("OBLITERATE", uName, pWord);
 		}
 	}
 
 	public static class ObliterateResponse extends Response {
+		private static final long serialVersionUID = 1L;
+		
 		public ObliterateResponse(String uName, String pWord, String respCode) {
 			super("OBLITERATE", uName, pWord, respCode);
 		}

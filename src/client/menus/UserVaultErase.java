@@ -1,13 +1,14 @@
 package client.menus;
 
+import client.Client;
 import client.Menu;
 import communications.*;
 import communications.Message.*;
 
 public class UserVaultErase extends Menu {
 
-	public UserVaultErase() {
-        super("UserVault-Erase");
+	public UserVaultErase(Client client, CommClient comm) {
+        super("UserVault-Erase", client, comm);
 
 		this.title = "WARNING: Erasing your vault will permanently delete"
 		 	+ " your entire SPAM account, including all the credentials stored"

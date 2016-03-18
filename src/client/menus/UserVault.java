@@ -2,12 +2,14 @@ package client.menus;
 
 import java.util.ArrayList;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
 
 public class UserVault extends Menu {
 
-	public UserVault() {
-        super("UserVault");
+	public UserVault(Client client, CommClient comm) {
+        super("UserVault", client, comm);
 
 		ArrayList<MenuOption> options = new ArrayList<>();
 		options.add(new MenuOption("List my accounts",

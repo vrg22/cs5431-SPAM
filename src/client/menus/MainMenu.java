@@ -2,12 +2,14 @@ package client.menus;
 
 import java.util.*;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
 
 public class MainMenu extends Menu {
 
-    public MainMenu() {
-        super("MainMenu");
+    public MainMenu(Client client, CommClient comm) {
+        super("MainMenu", client, comm);
 
         MenuOption register = new MenuOption("Register for SPAM",
             "UserRegister-Email");

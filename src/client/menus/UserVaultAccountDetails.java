@@ -2,32 +2,43 @@ package client.menus;
 
 import java.util.ArrayList;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
+import communications.Message;
 import communications.Message.*;
 
 public class UserVaultAccountDetails extends Menu {
 
-	public UserVaultAccountDetails() {
-        super("UserVault-AccountDetails");
+	public UserVaultAccountDetails(Client client, CommClient comm) {
+        super("UserVault-AccountDetails", client, comm);
 
 		RetrieveIdMessage retrieve = new RetrieveIdMessage(client.getUsername(),
 			client.getPassword(), client.getCurrentRecordId());
 		comm.send(retrieve);
-		RetrieveIdResponse response = (RetrieveIdResponse)comm.receive();
-		if (validateResponse(response)) {
-			Record record = response.getRecord();
-			this.title = String.format("%s:\nUsername: %s\nPassword: %s",
-				record.get("name"), record.get("username"), record.get("password"));
-		} else {
-			this.title = "Error retrieving data from server";
+		
+		this.prompt = "Press any key to go back: ";
+		
+		Message responseMsg = comm.receive();
+		if (responseMsg instanceof RetrieveIdResponse) {
+			RetrieveIdResponse response = (RetrieveIdResponse)responseMsg;
+			if (validateResponse(response)) {
+				Record record = response.getRecord();
+				this.title = String.format("%s:%nUsername: %s%nPassword: %s",
+					record.get("name"), record.get("username"), record.get("password"));
+				return;
+			}
 		}
-
-        this.prompt = "Press any key to go back: ";
+		
+		this.title = "Error retrieving data from server";
     }
 	
 	@Override
 	protected boolean validateResponse(Response response) {
-		if (!super.validateResponse(response)) return false;
+		if (!super.validateResponse(response)
+				|| !(response instanceof RetrieveIdResponse)) {
+			return false;
+		}
 		
 		Record record = ((RetrieveIdResponse)response).getRecord();
 		return record != null && record.contains("name")

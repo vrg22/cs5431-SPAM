@@ -3,6 +3,9 @@ package client;
 
 import java.io.Console;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import client.menus.*;
@@ -34,7 +37,7 @@ public abstract class Client {
     }
 
 	public void run() {
-        Scanner in = new Scanner(System.in);
+        Scanner in = new Scanner(System.in, StandardCharsets.UTF_8.name());
         Console console = System.console();
 		if (comm.makeConnection()) {//TODO: Should this be here or elsewhere?
 
@@ -78,12 +81,14 @@ public abstract class Client {
 		}
 
         try {
-			Menu menu = (Menu) Menu.getClassForIdentifier(identifier).newInstance();
+        	Menu menu = (Menu) Menu.getClassForIdentifier(identifier)
+        			.getDeclaredConstructor(Client.class, CommClient.class)
+        			.newInstance(this, comm);
 	        cachedMenus.put(identifier, menu);
 	        return menu;
-        } catch(InstantiationException e) {
-        	return null;
-        } catch(IllegalAccessException e) {
+        } catch(InstantiationException | IllegalAccessException
+        		| InvocationTargetException | NoSuchMethodException
+        		| SecurityException e) {
         	return null;
         }
     }

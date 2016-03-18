@@ -1,12 +1,14 @@
 package client.menus;
 
+import client.Client;
 import client.Menu;
+import communications.CommClient;
 import communications.Message.*;
 
 public class UserVaultErasePassword extends Menu {
 
-	public UserVaultErasePassword() {
-        super("UserVault-Erase-Password");
+	public UserVaultErasePassword(Client client, CommClient comm) {
+        super("UserVault-Erase-Password", client, comm);
 
 		this.prompt = "Please re-enter your master password: ";
     }
