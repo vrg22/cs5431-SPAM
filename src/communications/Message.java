@@ -28,6 +28,7 @@ public class Message implements Serializable {
 	 * FAILED_EXISTINGUSERNAME
 	 * FAILED_INCORRECT_CREDENTIALS
 	 * FAILED_MAX_RECORDS_REACHED
+	 * FAILED_MAX_USERS_REACHED
 	 * FAILED_UNEXPECTEDERROR //TODO: Get rid of this? //TODO: Make enums
 	 */
 	protected String responseCode = null;
