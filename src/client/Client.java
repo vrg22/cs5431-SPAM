@@ -76,8 +76,6 @@ public abstract class Client {
 
         try {
 			Menu menu = (Menu) Menu.getClassForIdentifier(identifier).newInstance();
-			menu.setComm(comm);
-			menu.setClient(this);
 	        cachedMenus.put(identifier, menu);
 	        return menu;
         } catch(InstantiationException e) {

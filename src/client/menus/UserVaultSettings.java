@@ -21,4 +21,10 @@ public class UserVaultSettings extends Menu {
 		this.options = options;
         this.prompt = "Please select an option: ";
     }
+	
+	@Override
+	public String handleInput(String input) {
+		client.getClientOutput().println("Not yet implemented.");
+		return "UserVault";
+	}
 }

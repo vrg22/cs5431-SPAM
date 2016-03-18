@@ -133,6 +133,15 @@ public class Message implements Serializable {
 			}
 			return null;
 		}
+		
+		public boolean contains(String key) {
+			for (KeyValue field : fields) {
+				if (field.key.equals(key)) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 	public static class Response extends Message {

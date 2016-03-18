@@ -17,15 +17,17 @@ public class UserRegisterPassword extends Menu {
 		comm.send(register);
 
 		Response response = (Response)comm.receive();
-		String code = response.getResponseCode();
-		if (code.equals("OK")) {
-			client.getClientOutput().println("Register successful");
-
-			// Log in with new credentials
-			client.updateUsername(response.getUsername());
-			client.updatePassword(response.getPassword());
-
-			return "UserVault";
+		if (validateResponse(response)) {
+			String code = response.getResponseCode();
+			if (code.equals("OK")) {
+				client.getClientOutput().println("Register successful");
+	
+				// Log in with new credentials
+				client.updateUsername(response.getUsername());
+				client.updatePassword(response.getPassword());
+	
+				return "UserVault";
+			}
 		}
 
 		client.getClientOutput().println("Register unsuccessful");

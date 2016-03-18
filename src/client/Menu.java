@@ -6,14 +6,15 @@ import java.util.*;
 import client.menus.*;
 import communications.*;
 import communications.Message.Record;
+import communications.Message.Response;
 
 public abstract class Menu {
     protected String identifier;
     protected String title;
     protected ArrayList<MenuOption> options;
     protected String prompt;
-    protected Client client;
-    protected CommClient comm;
+    static protected Client client;
+    static protected CommClient comm;
 
     private static final Map<String, Class<?>> identifierClassMap = createIdentifierClassMap();
     private static Map<String, Class<?>> createIdentifierClassMap() {
@@ -39,13 +40,20 @@ public abstract class Menu {
         this.identifier = identifier;
     }
 
-    public void setComm(CommClient comm) {
-        this.comm = comm;
+    public static void setComm(CommClient comm) {
+        Menu.comm = comm;
     }
 
-    public void setClient(Client client) {
-    	this.client = client;
+    public static void setClient(Client client) {
+    	Menu.client = client;
     }
+    
+    /**
+     * Check that response is a valid response for the menu type
+     */
+	protected boolean validateResponse(Response response) {
+		return response != null && response.getResponseCode() != null;
+	}
 
     /**
      * Process user's input

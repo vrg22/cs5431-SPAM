@@ -12,8 +12,9 @@ public class UserVaultAddAccountName extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		// TODO: store account name
+		// TODO: store account
 
-		return "UserVault-AccountAdded";
+		client.getClientOutput().println("Not yet implemented");
+		return "UserVault";
 	}
 }

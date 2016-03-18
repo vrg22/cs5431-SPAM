@@ -18,13 +18,15 @@ public class LoginPassword extends Menu {
 		comm.send(login);
 
 		Response response = (Response)comm.receive();
-		String code = response.getResponseCode();
-		if (code.equals("OK")) {
-			client.getClientOutput().println("Login successful");
-
-			return "UserVault";
+		if (validateResponse(response)) {
+			String code = response.getResponseCode();
+			if (code.equals("OK")) {
+				client.getClientOutput().println("Login successful");
+	
+				return "UserVault";
+			}
 		}
-
+	
 		client.getClientOutput().println("Login unsuccessful");
 
 		return "LoginEmail";

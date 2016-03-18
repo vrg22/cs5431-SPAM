@@ -6,6 +6,9 @@ public class ClientUser extends Client {
 
     public ClientUser(String host, int port) {
         super(host, port);
+        
+        Menu.setComm(comm);
+        Menu.setClient(this);
 
         goToMenu("MainMenu");
     }
