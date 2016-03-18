@@ -19,7 +19,8 @@ public class UserVault extends Menu {
 		options.add(new MenuOption("Manage account settings",
 			"UserVault-Settings"));
 		options.add(new MenuOption("Erase my entire vault", "UserVault-Erase"));
-
+		options.add(new MenuOption("Logout and return to the main menu", "MainMenu"));
+		
 		this.title = "Welcome to your vault.";
 		this.options = options;
         this.prompt = "Please select an option: ";

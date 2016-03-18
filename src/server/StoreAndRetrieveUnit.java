@@ -560,9 +560,15 @@ public class StoreAndRetrieveUnit {
 	 * @return response code
 	 */
 	private String addUser(String uname, String pword) {
-		String respcode = "OK"; //CHANGE
+		String respcode = "OK";
 		
-		//TODO: Avoid duplicates before adding this guy?
+		//Check for duplicates already
+		for (User u : getUsers()){
+			if (u.getUsername().equals(uname)) {
+				respcode = "FAILED_EXISTINGUSERNAME";
+				return respcode;
+			}
+		}
 		
 		//Directly obtain the "nextID" element (within the "metadata" tag), increment
 		Element idElement = getTagElement("nextID", DOM);
