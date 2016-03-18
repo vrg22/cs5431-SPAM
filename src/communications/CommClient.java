@@ -17,19 +17,18 @@ public class CommClient implements Communications {
 	private Message savedMessage;
 
 	private byte[] convertToBytes(Message object) throws IOException {
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				ObjectOutputStream out = new ObjectOutputStream(bos)) {
-			out.writeObject(object);
-			return bos.toByteArray();
-				}
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutputStream out = new ObjectOutputStream(bos); 
+		
+		out.writeObject(object);
+		return bos.toByteArray();
 	}
 
 	private Message convertFromBytes(byte[] bytes) throws IOException,
 			ClassNotFoundException {
-				try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-						ObjectInputStream in = new ObjectInputStream(bis)) {
-					return ((Message)in.readObject());
-						}
+		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+		ObjectInputStream in = new ObjectInputStream(bis);
+		return ((Message)in.readObject());
 	}
 
 	public CommClient(String host, int port) {
@@ -50,7 +49,7 @@ public class CommClient implements Communications {
 			commInputStream = new DataInputStream(connection.
 					getInputStream());
 			status = true;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			System.err.println("Error connecting to server");
 		}
 		return status;

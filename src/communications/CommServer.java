@@ -17,6 +17,7 @@ public class CommServer {
 	private String hostName;
 	private int portNo;
 	private ServerSocket server;
+	private final StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Final?
 
 	public CommServer(String host, int port) {
 		this.hostName = host;
@@ -38,15 +39,20 @@ public class CommServer {
 					System.err.println("Error accepting incoming connection");
 				}
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			System.err.println("Error connecting to client");
 		}
 	}
 
 	public void destroyConnection() {
+		if (server == null) {
+			System.err.println("Error closing non-existent connection");
+			return;
+		}
+		
 		try {
 			server.close();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			System.err.println("Error closing the connection");
 		}
 	}
@@ -69,17 +75,31 @@ public class CommServer {
 			}
 		}
 
+		private void closeConnection() {
+			try {
+				sock.close();
+			} catch (Exception e) {
+				System.err.println("Error closing the client socket");
+			}
+		}
+
 		public void run() {
 			while (true) {
 				Message m = receive();
 				
 				//call the storageandretrieve unit
 				// Gets a replyMessage from StorageAndRetrieve
-				Response r = sru.processMessage(m);
+				Response r = null;
+				try {
+					r = sru.processMessage(m);
+				} catch (IllegalArgumentException e) {
+					closeConnection();
+					break;
+				}
 				send(r);
 				
 				if (m != null) {
-					if (m.getQuery().equals("REGISTER")) {
+					if (m.getQuery().equals("REGISTER") && m instanceof Message.RegisterMessage) {
 						Message.RegisterMessage rm =
 							(Message.RegisterMessage) m;
 						System.out.println("Received values");
@@ -87,7 +107,7 @@ public class CommServer {
 						System.out.println(rm.getVersion());
 						System.out.println(rm.getUsername());
 						System.out.println(rm.getPassword());
-					} else if (m.getQuery().equals("LOGIN")) {
+					} else if (m.getQuery().equals("LOGIN") && m instanceof Message.LoginMessage) {
 						Message.LoginMessage lm =
 							(Message.LoginMessage) m;
 						System.out.println("Received values");
@@ -98,11 +118,13 @@ public class CommServer {
 						System.out.println(lm.getAttemptsRemaining());
 					}
 				} else {
+					closeConnection();
+					/*
 					try {
 						sock.close();
 					} catch (IOException e) {
 						System.err.println("Error closing the connection");
-					}
+					}*/
 					break;
 				}
 
@@ -110,22 +132,26 @@ public class CommServer {
 		}
 
 		private byte[] convertToBytes(Message object) throws IOException {
-			try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					ObjectOutputStream out = new ObjectOutputStream(bos)) {
-				out.writeObject(object);
-				return bos.toByteArray();
-					}
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream out = new ObjectOutputStream(bos);
+			out.writeObject(object);
+			return bos.toByteArray();
 		}
 
 		private Message convertFromBytes(byte[] bytes) throws IOException,
 				ClassNotFoundException {
-					try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-							ObjectInputStream in = new ObjectInputStream(bis)) {
-						return ((Message)in.readObject());
-							}
+			ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+			ObjectInputStream in = new ObjectInputStream(bis);
+			return ((Message)in.readObject());
 		}
 
 		public void send(Message m) {
+			// Don't send null across the network
+			if (m == null) {
+				System.err.println("Tried to send empty message over network");
+				return;
+			}
+			
 			try {
 				byte[] message = convertToBytes(m);
 				sendOverNetwork(message, message.length);

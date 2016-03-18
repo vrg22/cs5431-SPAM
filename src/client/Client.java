@@ -3,6 +3,9 @@ package client;
 
 import java.io.Console;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import client.menus.*;
@@ -34,31 +37,36 @@ public abstract class Client {
     }
 
 	public void run() {
-        Scanner in = new Scanner(System.in);
+        Scanner in = new Scanner(System.in, StandardCharsets.UTF_8.name());
         Console console = System.console();
-        comm.makeConnection(); //TODO: Should this be here or elsewhere?
+		if (comm.makeConnection()) {//TODO: Should this be here or elsewhere?
 
-        while (true) {
-            clientOutput.print(currentMenu);
+			while (true) {
+				clientOutput.print(currentMenu);
 
-            String input = null;
-            if (console != null &&
-            		(currentMenu.identifier.equals("Login-Password") ||
-            		currentMenu.identifier.equals("UserRegister-Password") ||
-            		currentMenu.identifier.equals("UserVault-AddAccount-Password") ||
-            		currentMenu.identifier.equals("UserVault-Erase-Password"))) {
-            	input = new String(console.readPassword());
-            } else {
-            	input = in.nextLine();
-            }
-            clientOutput.println();
+				String input = null;
+				if (console != null &&
+						(currentMenu.identifier.equals("Login-Password") ||
+						 currentMenu.identifier.equals("UserRegister-Password") ||
+						 currentMenu.identifier.equals("UserVault-AddAccount-Password") ||
+						 currentMenu.identifier.equals("UserVault-Erase-Password"))) {
+					input = new String(console.readPassword());
+				} else {
+					input = in.nextLine();
+				}
+				clientOutput.println();
 
-            // Handle user input
-            String newMenu = currentMenu.handleInput(input);
-            if (goToMenu(newMenu) == QUIT_CODE) break;
-        }
+				// Handle user input
+				String newMenu = currentMenu.handleInput(input);
+				if (goToMenu(newMenu) == QUIT_CODE) break;
+			}
+		} else {
+			clientOutput.println("Incorrect Server address");
+		}
 
         in.close();
+        
+        clientOutput.println("Goodbye.");
     }
 
     protected int goToMenu(String identifier) {
@@ -75,14 +83,14 @@ public abstract class Client {
 		}
 
         try {
-			Menu menu = (Menu) Menu.getClassForIdentifier(identifier).newInstance();
-			menu.setComm(comm);
-			menu.setClient(this);
+        	Menu menu = (Menu) Menu.getClassForIdentifier(identifier)
+        			.getDeclaredConstructor(Client.class, CommClient.class)
+        			.newInstance(this, comm);
 	        cachedMenus.put(identifier, menu);
 	        return menu;
-        } catch(InstantiationException e) {
-        	return null;
-        } catch(IllegalAccessException e) {
+        } catch(InstantiationException | IllegalAccessException
+        		| InvocationTargetException | NoSuchMethodException
+        		| SecurityException e) {
         	return null;
         }
     }

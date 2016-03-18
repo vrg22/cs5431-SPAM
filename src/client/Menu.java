@@ -6,6 +6,7 @@ import java.util.*;
 import client.menus.*;
 import communications.*;
 import communications.Message.Record;
+import communications.Message.Response;
 
 public abstract class Menu {
     protected String identifier;
@@ -35,17 +36,18 @@ public abstract class Menu {
         return Collections.unmodifiableMap(map);
     }
 
-    public Menu(String identifier) {
+    public Menu(String identifier, Client client, CommClient comm) {
         this.identifier = identifier;
-    }
-
-    public void setComm(CommClient comm) {
+        this.client = client;
         this.comm = comm;
     }
-
-    public void setClient(Client client) {
-    	this.client = client;
-    }
+    
+    /**
+     * Check that response is a valid response for the menu type
+     */
+	protected boolean validateResponse(Response response) {
+		return response != null && response.getResponseCode() != null;
+	}
 
     /**
      * Process user's input
@@ -55,42 +57,48 @@ public abstract class Menu {
      */
     public String handleInput(String input) {
         try {
-            int i = Integer.parseInt(input);
-            if (i >= 1 && i <= this.options.size()) {
+        	int i = Integer.parseInt(input);
+        	
+        	if (i >= 1 && i <= this.options.size()) {
                 MenuOption option = this.options.get(i - 1);
 
                 return option.getNextMenuIdentifier();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            return null;
+			} else if (i == -1) {
+				return "quit";
+			}
+
+        } catch (NumberFormatException e) {
+        	client.getClientOutput().println("Invalid selection");
+        	return null;
         }
+        
+        client.getClientOutput().println("Invalid selection");    
+        return null;
     }
 
     public String toString() {
-        String out = "";
+        StringBuffer buf = new StringBuffer();
 
-        if (this.title != null) out += this.title + ":\n";
+        if (this.title != null) buf.append(this.title + ":\n");
 
         MenuOption option;
         if (options != null) {
             for (int i = 0; i < options.size() - 1; i++) {
                 option = options.get(i);
-                out += (i + 1) + ") " + option.getTitle() + "\n";
+                buf.append((i + 1) + ") " + option.getTitle() + "\n");
             }
             if (options.size() >= 1) {
                 option = options.get(options.size() - 1);
-                out += options.size() + ") " + option.getTitle();
+                buf.append(options.size() + ") " + option.getTitle());
             }
 
-            if (this.prompt != null) out += "\n";
+            if (this.prompt != null) buf.append("\n");
         }
         if (this.prompt != null) {
-            out += this.prompt;
+            buf.append(this.prompt);
         }
 
-        return out;
+        return buf.toString();
     }
 
     public static Class<?> getClassForIdentifier(String identifier) {
@@ -102,7 +110,7 @@ public abstract class Menu {
     }
 
 
-    public class MenuOption {
+    public static class MenuOption {
         private String title;
         private String nextMenuIdentifier;
         private Record record;
