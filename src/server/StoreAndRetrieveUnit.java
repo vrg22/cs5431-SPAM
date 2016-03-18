@@ -300,7 +300,7 @@ public class StoreAndRetrieveUnit {
 		String pWord = obl_m.getPassword();
 
 		// Try to modify record
-		String respCode = "OK"; //TODO: Change this!
+		String respCode = deleteVault(uName);
 		// TODO: delete all records for this user
 		logger.log(Level.WARNING, "User " + uName + " requesting deletion of entire record directory"); // Change to INFO?
 		
@@ -604,7 +604,7 @@ public class StoreAndRetrieveUnit {
 	}
 	
 	/**
-	 * Attempt to log a user into the main XML file represented by DOM
+	 * Attempt to log a user in (by checking the main XML file in the DOM)
 	 * TODO: AUTHENTICATION //For now, we will just "log you in" without checking whether your account actually exists, and catch exceptions arising from actions taken that should not yet exist.
 	 * TODO: Exception handling
 	 * @return response code
@@ -614,6 +614,53 @@ public class StoreAndRetrieveUnit {
 
 		//TODO
 		
+		return respcode;
+	}
+	
+	/**
+	 * Attempt to delete a user's entire vault into the main XML file represented by DOM
+	 * TODO: AUTHENTICATION //For now, we will just "log you in" without checking whether your account actually exists, and catch exceptions arising from actions taken that should not yet exist.
+	 * TODO: Exception handling
+	 * @return response code
+	 */
+	private String deleteVault(String uName) {
+		String respcode = "FAILED_UNEXPECTEDERROR"; //CHANGE
+		
+		String matchstring;
+		int id = -1;
+		
+		//TODO
+		//Already has an account
+		//First, delete and get ID
+		Element uElement = getTagElement("users", DOM);
+		
+		//Iterate through all child nodes of "users" Element until find one that matches the same username
+    	for (Node n = uElement.getFirstChild(); n != null; n = n.getNextSibling()) {
+    		
+    		//Check what the username of this is
+    		if (n.getNodeType() == Node.ELEMENT_NODE) {
+            	Element uElt = (Element) n;
+            	matchstring = uElt.getElementsByTagName("username").item(0).getTextContent();
+            	
+            	//Check if this is the one
+            	if (matchstring.equals(uName)) {
+            		//Get ID, delete this Element from the "users" element
+            		id = Integer.parseInt(uElt.getAttribute("ID"));
+            		uElement.removeChild(uElt); //CHECK!
+            	
+            		//Delete the file named ID.xml and return
+            		File f = new File(Integer.toString(id) + ".xml");
+            		if (!f.delete()){
+            			//TODO: complain
+            		}
+            		
+            		//TODO: Update num of users in metadata of main DOM
+            		respcode = "OK";
+            		return respcode;
+            	}
+    		}
+    	}
+    			
 		return respcode;
 	}
 	
