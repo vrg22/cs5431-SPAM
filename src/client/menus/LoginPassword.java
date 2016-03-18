@@ -43,7 +43,7 @@ public class LoginPassword extends Menu {
 	
 		client.getClientOutput().println("Login unsuccessful");
 
-		return "LoginEmail";
+		return "Login-Email";
 	}
 
 }
