@@ -61,6 +61,7 @@ public class CommServer {
 		private DataOutputStream commOutputStream;
 		private DataInputStream commInputStream;
 		private Socket sock;
+		private volatile StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //CHECK!  //Why doesnt static work
 
 		public ClientWorker(Socket sock) {
 			this.sock = sock;
