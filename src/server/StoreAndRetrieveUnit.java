@@ -82,34 +82,38 @@ public class StoreAndRetrieveUnit {
 		//Load main user DOM from XML file
 		DOM = loadDOM(USERS_FILE_LOCATION);
 		
+		Response reply = null;
 		String query = m.getQuery();
 
 		if (query.equals("REGISTER")){
-			return register_new_user((RegisterMessage)m);
+			reply = register_new_user((RegisterMessage)m);
 		}
 		else if (query.equals("LOGIN")) {
-			return login_user((LoginMessage)m);
+			reply = login_user((LoginMessage)m);
 		}
 		else if (query.equals("LISTING")) {
-			return list_items((ListingMessage)m);
+			reply = list_items((ListingMessage)m);
 		}
 		else if (query.equals("RETRIEVE")) {
-			return retrieve_userID((RetrieveIdMessage)m);
+			reply = retrieve_userID((RetrieveIdMessage)m);
 		}
 		else if (query.equals("EDIT")) {
-			return edit_userID((EditIdMessage)m);
+			reply = edit_userID((EditIdMessage)m);
 		}
 		else if (query.equals("DELETE")) {
-			return delete_userID((DeleteIdMessage)m);
+			reply = delete_userID((DeleteIdMessage)m);
 		}
 		else if (query.equals("OBLITERATE")) {
-			return obliterate((ObliterateMessage)m);
+			reply = obliterate((ObliterateMessage)m);
 		}
 
 		//Save DOM to XML file
 		saveDOMtoFile(new File(USERS_FILE_LOCATION), DOM); //change so doesn't need FILE passed
 		
-		throw new IllegalArgumentException("Invalid message received.");
+		//Return response
+		return reply;
+		
+		//throw new IllegalArgumentException("Invalid message received.");
 	}
 
 
@@ -134,10 +138,7 @@ public class StoreAndRetrieveUnit {
 		//otherwise, check if there is anyone
 
 		// Try to register
-		
-		//Check if 
-		
-		String respCode = "OK"; //TODO: Change this!
+		String respCode = addUser(uName, pWord);
 		logger.log(Level.INFO, "User " + uName + " tried to register");
 
 		// Determine and construct Response
@@ -155,15 +156,17 @@ public class StoreAndRetrieveUnit {
 		// Unpack message, find out who is trying to log in
 		String uName = log_m.getUsername();
 		String pWord = log_m.getPassword();
-
+		int attRem = log_m.getAttemptsRemaining();
+		
 		// Try to log them in
-		String respCode = "OK"; //TODO: Change this!
+		String respCode = loginUser(uName, pWord, attRem);
 		logger.log(Level.INFO, "User " + uName + " tried to log in");
 
 		// Determine and construct Response
 		LoginResponse reply = new LoginResponse(uName, pWord, respCode);
 		return reply;
 	}
+
 
 	/**
 	 * Sends/returns a Response message back to the host ...
@@ -176,14 +179,22 @@ public class StoreAndRetrieveUnit {
 		String pWord = list_m.getPassword();
 
 		// Try to obtain listing
-		String respCode = "OK"; //TODO: Change this!
-		ArrayList<Record> listing = null; // = get Listing from XML
+		ArrayList<Record> listing = getListings(uName); //Need pWord here?
+		
+		String respCode = null;
+		if (listing != null) {
+			respCode = "OK";
+		} else {
+			respCode = "OK"; //TODO: CHANGE THIS!
+		}
+		
 		logger.log(Level.INFO, "User " + uName + " requesting full record listing");
 
 		// Determine and construct Response
 		ListingResponse reply = new ListingResponse(uName, pWord, respCode, listing);
 		return reply;
 	}
+
 
 	/**
 	 * Sends/returns a Response message back to the host ...
@@ -313,7 +324,7 @@ public class StoreAndRetrieveUnit {
 	 * @return
 	 */
 	private int createXMLFile(int userID, String username, String password) {
-		String filename = Integer.toString(userID);
+		String filename = Integer.toString(userID) + ".xml";
 		//if (filename.equals(USERS_FILE_LOCATION)) throw new Exception();
         
 		File newFile = new File(filename);
@@ -513,49 +524,31 @@ public class StoreAndRetrieveUnit {
 	
 	
 	/**
-	 * Look at the loaded DOM and print out ...
-	 * TODO: Exception handling
-	 */
-	private void printDOM() {
-		//Verify DOM information
-        Element root = DOM.getDocumentElement();
-        String rootString = root.getNodeName();
-        System.out.println("ROOT ELEMENT: " + rootString); //root.getAttribute("class"));
-        
-        //Add users to the DOM
-        //...
-        
-        //Iterate through Users (check)
-        ArrayList<User> userList = getUsers();
-        for (User u : userList) {
-        	System.out.println("Username: " + u.getUsername());
-        }
-    }
-	
-	/**
 	 * Adds a user to the main XML file represented by DOM
 	 * TODO: Exception handling
-	 * @return TODO: Success code? or Nothing?
+	 * @return response code
 	 */
-	private void addUser(String uname, String pword) {
+	private String addUser(String uname, String pword) {
+		String respcode = "OK"; //CHANGE
+		
 		//TODO: Avoid duplicates before adding this guy?
 		
 		//Directly obtain the "nextID" element (within the "metadata" tag), increment
-		Element idElement = getTagElement("nextID");
+		Element idElement = getTagElement("nextID", DOM);
 		int nextID = Integer.parseInt(idElement.getTextContent());
 		
 		//Add the appropriate tags underneath parent "users" tag
 		// Get the element
 		// Add child, one row with the three attributes in that order
-		Element uElement = getTagElement("users");
+		Element uElement = getTagElement("users", DOM);
 		
 		Element newUser = DOM.createElement("user");
-		newUser.setAttribute("id", Integer.toString(nextID));
-		Node usrnm = DOM.createTextNode("username");
+		newUser.setAttribute("ID", Integer.toString(nextID));
+		Element usrnm = DOM.createElement("username");
 		usrnm.setTextContent(uname);
         newUser.appendChild(usrnm);
         
-        Node pwd = DOM.createTextNode("password");
+        Element pwd = DOM.createElement("password");
 		pwd.setTextContent(pword);
         newUser.appendChild(pwd);
         
@@ -564,15 +557,41 @@ public class StoreAndRetrieveUnit {
 		//Create new user's own XML file. Save to disk.
         createXMLFile(nextID, uname, pword);
         Document doc = createUserDOM(nextID, uname, pword);
-        saveDOMtoFile(new File(Integer.toString(nextID)), doc);
+        saveDOMtoFile(new File(Integer.toString(nextID)+".xml"), doc);
 		
         //Update nextID in main DOM
         nextID++;
 		idElement.setTextContent(Integer.toString(nextID));
+		
+		return respcode;
+	}
+	
+	/**
+	 * Attempt to log a user into the main XML file represented by DOM
+	 * TODO: AUTHENTICATION //For now, we will just "log you in" without checking whether your account actually exists, and catch exceptions arising from actions taken that should not yet exist.
+	 * TODO: Exception handling
+	 * @return response code
+	 */
+	private String loginUser(String uName, String pWord, int attRem) {
+		String respcode = "OK"; //CHANGE
+
+		//TODO
+		
+		return respcode;
 	}
 	
 	/**
 	 * Return ArrayList of current users from loaded DOM. //Or null if no users yet?
+	 * TODO: Exception handling
+	 * @return 
+	 */
+	private ArrayList<Record> getListings(String uName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/**
+	 * Return ArrayList of current users from loaded main DOM. //Or null if no users yet?
 	 * TODO: Exception handling
 	 * @return 
 	 */
@@ -586,7 +605,7 @@ public class StoreAndRetrieveUnit {
 		int id;
 
 		//Get the "users" element
-		Element usersElement = getTagElement("users");
+		Element usersElement = getTagElement("users", DOM);
 
 	    //Iterate through all child nodes of "users" Element
     	for (Node n = usersElement.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -597,8 +616,8 @@ public class StoreAndRetrieveUnit {
             	Element uElt = (Element) n;
             	id = Integer.parseInt(uElt.getAttribute("ID"));
             	
-            	username = uElt.getAttribute("username"); //TODO: Make element
-            	password = uElt.getAttribute("password"); //TODO: Make element
+            	username = uElt.getElementsByTagName("username").item(0).getTextContent();
+            	password = uElt.getElementsByTagName("password").item(0).getTextContent();
             	User u = new User(username, password, id);
             	
             	users.add(u);
@@ -614,22 +633,38 @@ public class StoreAndRetrieveUnit {
 	 * TODO: Exception handling
 	 * @return 
 	 */
-	private Element getTagElement(String tagname) {
-	    NodeList nlist = DOM.getElementsByTagName(tagname); //TODO: Is it better to get what you want directly by 
+	private Element getTagElement(String tagname, Document doc) {
+	    NodeList nlist = doc.getElementsByTagName(tagname); //TODO: Is it better to get what you want directly by 
 	    Node n = nlist.item(0);
 		Element elt = (Element) n;
 		return elt;
 	}
 	
+	/**
+	 * Look at the loaded DOM and print out some info for testing about the main XML file.
+	 * TODO: Exception handling
+	 */
+	private void printDOM() {
+		//Verify DOM information
+        Element root = DOM.getDocumentElement();
+        String rootString = root.getNodeName();
+        System.out.println("ROOT ELEMENT: " + rootString);
+        
+        //Iterate through Users (check)
+        ArrayList<User> userList = getUsers();
+        for (User u : userList) {
+        	System.out.println("Username: " + u.getUsername());
+        }
+    }
+	
 	
 	//Testing
 	public static void main(String[] args) {
 		System.out.println("TESTING SRU...\n");
-		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Creates the necessary files at startup IF they don't already exist
+		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Creates the main XML file at startup IF doesn't already exist
 		
-		//TODO: Abstract so that can have multiple "DOM"s to handle different XML files. However, the main DOM is the usersDOM
+		//Do something
 		sru.DOM = sru.loadDOM(USERS_FILE_LOCATION);
-		//DO SOMETHING WITH LOADED DOM; ex: retrieve ID?
 		sru.printDOM();
 	}
 
