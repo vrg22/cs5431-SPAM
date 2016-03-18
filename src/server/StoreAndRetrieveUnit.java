@@ -118,6 +118,10 @@ public class StoreAndRetrieveUnit {
 		// Try to register
 		String respCode = "OK"; //TODO: Change this!
 		logger.log(Level.INFO, "User " + uName + " tried to register");
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to register");
+		}
 
 		// Determine and construct Response
 		logger.log(Level.INFO, "Created new user");
@@ -138,6 +142,10 @@ public class StoreAndRetrieveUnit {
 		// Try to log them in
 		String respCode = "OK"; //TODO: Change this!
 		logger.log(Level.INFO, "User " + uName + " tried to log in");
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to log in");
+		}
 
 		// Determine and construct Response
 		LoginResponse reply = new LoginResponse(uName, pWord, respCode);
@@ -159,6 +167,10 @@ public class StoreAndRetrieveUnit {
 		// TODO: Each record in listing should contain "id" and "name"
 		ArrayList<Record> listing = new ArrayList<Record>(); // TODO: = get Listing from XML
 		logger.log(Level.INFO, "User " + uName + " requesting full record listing");
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to retrieve full record listing");
+		}
 
 		// Determine and construct Response
 		ListingResponse reply = new ListingResponse(uName, pWord, respCode, listing);
@@ -180,6 +192,10 @@ public class StoreAndRetrieveUnit {
 		String respCode = "OK"; //TODO: Change this!
 		Record rec = null; // TODO: = get Record from XML. Should contain "id", "name", "username", "password"
 		logger.log(Level.INFO, "User " + uName + " requesting record " + ""); //record's name
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to retrieve record " + id);
+		}
 
 		// Determine and construct Response
 		RetrieveIdResponse reply = new RetrieveIdResponse(uName, pWord, respCode, id, rec);
@@ -204,6 +220,10 @@ public class StoreAndRetrieveUnit {
 		String respCode = "OK"; //TODO: Change this!
 		// TODO: replace existing record of "id"=id with updatedRecord in XML
 		logger.log(Level.INFO, "User " + uName + " requests to " + action + " the record corresponding to " + item);
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to edit record " + id);
+		}
 
 		// Determine and construct Response
 		EditIdResponse reply = new EditIdResponse(uName, pWord, respCode, id);
@@ -225,10 +245,14 @@ public class StoreAndRetrieveUnit {
 		String respCode = "OK"; //TODO: Change this!
 		// TODO: remove record of "id"=id from XML
 		logger.log(Level.INFO, "User " + uName + " requests to PERMANENTLY DELETE record " + id);
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to premanently delete record " + id);
+		}
 
 		// Determine and construct Response
 		DeleteIdResponse reply = new DeleteIdResponse(uName, pWord, respCode, id);
-		logger.log(Level.INFO, "User " + uName + " deleted record " + id);
+		logger.log(Level.INFO, "User " + uName + " permanently deleted record " + id);
 		return reply;
 	}
 
@@ -247,6 +271,10 @@ public class StoreAndRetrieveUnit {
 		String respCode = "OK"; //TODO: Change this!
 		// TODO: delete all records for this user
 		logger.log(Level.WARNING, "User " + uName + " requesting deletion of entire record directory"); // Change to INFO?
+		
+		if (!respCode.equals("OK")) {
+			logger.log(Level.WARNING, "User " + uName + " failed to delete entire record directory");
+		}
 
 		// Determine and construct Response
 		ObliterateResponse reply = new ObliterateResponse(uName, pWord, respCode);
