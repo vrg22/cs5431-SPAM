@@ -17,6 +17,7 @@ public class CommServer {
 	private String hostName;
 	private int portNo;
 	private ServerSocket server;
+	private final StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Final?
 
 	public CommServer(String host, int port) {
 		this.hostName = host;
@@ -60,7 +61,6 @@ public class CommServer {
 		private DataOutputStream commOutputStream;
 		private DataInputStream commInputStream;
 		private Socket sock;
-		private StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Final?
 
 		public ClientWorker(Socket sock) {
 			this.sock = sock;
@@ -74,13 +74,27 @@ public class CommServer {
 			}
 		}
 
+		private void closeConnection() {
+			try {
+				sock.close();
+			} catch (Exception e) {
+				System.err.println("Error closing the client socket");
+			}
+		}
+
 		public void run() {
 			while (true) {
 				Message m = receive();
 				
 				//call the storageandretrieve unit
 				// Gets a replyMessage from StorageAndRetrieve
-				Response r = sru.processMessage(m);
+				Response r = null;
+				try {
+					r = sru.processMessage(m);
+				} catch (IllegalArgumentException e) {
+					closeConnection();
+					break;
+				}
 				send(r);
 				
 				if (m != null) {
@@ -103,11 +117,13 @@ public class CommServer {
 						System.out.println(lm.getAttemptsRemaining());
 					}
 				} else {
+					closeConnection();
+					/*
 					try {
 						sock.close();
 					} catch (IOException e) {
 						System.err.println("Error closing the connection");
-					}
+					}*/
 					break;
 				}
 
