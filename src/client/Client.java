@@ -42,8 +42,10 @@ public abstract class Client {
 		if (comm.makeConnection()) {//TODO: Should this be here or elsewhere?
 
 			while (true) {
+				// Display menu to user
 				clientOutput.print(currentMenu);
 
+				// Get user input
 				String input = null;
 				if (console != null &&
 						(currentMenu.identifier.equals("Login-Password") ||
@@ -58,6 +60,8 @@ public abstract class Client {
 
 				// Handle user input
 				String newMenu = currentMenu.handleInput(input);
+				
+				// Go to next menu (or quit)
 				if (goToMenu(newMenu) == QUIT_CODE) break;
 			}
 		} else {
@@ -69,6 +73,9 @@ public abstract class Client {
         clientOutput.println("Goodbye.");
     }
 
+	/**
+	 * Go to menu named `identifier`
+	 */
     protected int goToMenu(String identifier) {
         if (identifier == null) return SUCCESS_CODE;
         else if (identifier.equals("quit")) return QUIT_CODE;
@@ -77,6 +84,9 @@ public abstract class Client {
         return SUCCESS_CODE;
     }
 
+    /**
+     * @return Menu named `identifier` (or null if invalid identifier)
+     */
     protected Menu getMenuWithIdentifier(String identifier) {
         if (cachedMenus.containsKey(identifier)) {
             return cachedMenus.get(identifier);

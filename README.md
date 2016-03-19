@@ -6,8 +6,6 @@ To compile the system, enter SPAM's root directory and run:
     ant
 This will create a /bin/ directory with the .class files for the
 project.
-(Alternatively, open SPAM's root directory as a project in Eclipse,
- and allow Eclipse to build the project).
 
 ## Run
 To run the server application, enter the /bin/ directory and run:

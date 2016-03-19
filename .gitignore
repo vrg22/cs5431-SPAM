@@ -6,3 +6,5 @@
 .settings
 *.patch
 /bin/
+*.log
+users.xml
