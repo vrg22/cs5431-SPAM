@@ -43,7 +43,7 @@ public class StoreAndRetrieveUnit {
 	private static final int FAILURE = -1;
 	//Logging
 	private static final String LOG_FILE_LOCATION = "log.log";
-	private static final Logger logger = Logger.getLogger(StoreAndRetrieveUnit.class.getName()); //NAME??
+	private static final Logger logger = Logger.getLogger(StoreAndRetrieveUnit.class.getName()); //TODO: Configure
 
 	//Constructors
 	public StoreAndRetrieveUnit() {
@@ -68,14 +68,17 @@ public class StoreAndRetrieveUnit {
 		//Create the main users.xml file with the proper setup
 		// TODO: Eventually, rather than always having to modify something and save the DOM back to disk on every message,
 		// allow to load DOM once and only save it back to disk if ProcessMessage hasn't been called in a while
-		if (createMainXMLFile() == SUCCESS) {
-			//DO SOMETHING
+		if (createMainXMLFile() != SUCCESS) {
+			//TODO: complain
 		}
 	}
 
 
-
-	//Generic function to interpret a message received from CommServer
+	/**
+	 * Interprets a Message and returns a Response.
+	 * Throws exception if something unexpected happens.
+	 * @return
+	 */
 	public Response processMessage(Message m) {
 		if (m == null) throw new IllegalArgumentException("No message received.");
 		
@@ -117,15 +120,9 @@ public class StoreAndRetrieveUnit {
 	}
 
 
-	//METHODS FOR STORAGE
-		//storePassword()
-
-	//METHODS FOR RETRIEVAL
-	//retrieve(Message m)
-
 	/**
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Tries to register a new user and returns an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response register_new_user(RegisterMessage reg_m) {
@@ -152,8 +149,8 @@ public class StoreAndRetrieveUnit {
 	}
 
 	/**
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Tries to login a user and returns an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response login_user(LoginMessage log_m) {
@@ -177,8 +174,8 @@ public class StoreAndRetrieveUnit {
 
 
 	/**
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Tries to obtain a full credential listing and returns an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response list_items(ListingMessage list_m) {
@@ -208,10 +205,9 @@ public class StoreAndRetrieveUnit {
 		return reply;
 	}
 
-
 	/**
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Tries to fetch the desired record and returns an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response retrieve_userID(RetrieveIdMessage retr_m) {
@@ -235,8 +231,8 @@ public class StoreAndRetrieveUnit {
 	}
 
 	/**
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Tries to modify an existing record and returns an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response edit_userID(EditIdMessage edit_m) {
@@ -263,8 +259,8 @@ public class StoreAndRetrieveUnit {
 	}
 
 	/**
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Tries to delete an existing record and returns an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response delete_userID(DeleteIdMessage del_m) {
@@ -289,9 +285,8 @@ public class StoreAndRetrieveUnit {
 	}
 
 	/**
-	 * Delete's an entire user's records based on the message.
-	 * Sends/returns a Response message back to the host ...
-	 * Throws exception if ...
+	 * Delete's an entire user's records and account and returs an appropriate response.
+	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
 	private Response obliterate(ObliterateMessage obl_m) {
@@ -343,7 +338,7 @@ public class StoreAndRetrieveUnit {
 			saveDOMtoFile(mainFile, DOM); //TODO: Make sure this makes DOM null again
 		}
 		
-		//CHANGE THIS
+		//TODO: CHANGE THIS!
 		return SUCCESS;
 	}
 
@@ -763,14 +758,15 @@ public class StoreAndRetrieveUnit {
     }
 	
 	
-	//Testing
-	public static void main(String[] args) {
+	//Uncomment for testing
+	/*
+	 * public static void main(String[] args) {
 		System.out.println("TESTING SRU...\n");
 		StoreAndRetrieveUnit sru = new StoreAndRetrieveUnit(); //Creates the main XML file at startup IF doesn't already exist
 		
 		//Do something
 		sru.DOM = sru.loadDOM(USERS_FILE_LOCATION);
 		sru.printDOM();
-	}
+	} */
 
 }
