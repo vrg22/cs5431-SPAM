@@ -194,7 +194,7 @@ public class StoreAndRetrieveUnit {
 		if (listing != null) {
 			respCode = "OK";
 		} else {
-			respCode = "OK"; //TODO: CHANGE THIS!
+			respCode = "FAILED_UNEXPECTEDERROR";
 		}
 		
 		logger.log(Level.INFO, "User " + uName + " requesting full record listing");

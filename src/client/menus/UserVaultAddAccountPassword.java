@@ -3,6 +3,7 @@ package client.menus;
 import client.Client;
 import client.Menu;
 import communications.CommClient;
+import communications.Message;
 import communications.Message.EditIdMessage;
 
 public class UserVaultAddAccountPassword extends Menu {
@@ -15,9 +16,16 @@ public class UserVaultAddAccountPassword extends Menu {
 
 	@Override
 	public String handleInput(String input) {
-		EditIdMessage edit = (EditIdMessage)comm.getSaved();
-		edit.updatePassword(input);
+		Message saved = comm.getSaved();
+		if (saved instanceof EditIdMessage) {
+			EditIdMessage edit = (EditIdMessage)saved;
+			edit.updatePassword(input);
 
-		return "UserVault-AddAccount-Name";
+			return "UserVault-AddAccount-Name";
+		}
+		
+		client.getClientOutput().println("Something went wrong, sorry.");
+		
+		return "UserVault";
 	}
 }

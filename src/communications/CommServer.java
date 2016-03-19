@@ -57,7 +57,7 @@ public class CommServer {
 		}
 	}
 
-	private class ClientWorker implements Runnable, Communications {
+	private static class ClientWorker implements Runnable, Communications {
 		private DataOutputStream commOutputStream;
 		private DataInputStream commInputStream;
 		private Socket sock;
