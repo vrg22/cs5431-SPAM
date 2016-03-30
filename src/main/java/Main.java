@@ -7,7 +7,7 @@ import spark.ModelAndView;
 public class Main {
 
     public static void main(String[] args) {
-        new ClientController(new ClientService());
+        new ClientController(new StoreAndRetrieveUnit());
     }
 
 }
