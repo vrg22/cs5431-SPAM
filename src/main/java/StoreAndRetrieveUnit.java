@@ -1,12 +1,8 @@
-package server;
-
 /* Stores and retrieves all information related to user accounts and data. Writes important information to log.
  * This class is the main point of entry for the server-side communication unit (CommServer.java).
  */
 
 import java.io.*;
-//import java.util.*;
-//import java.net.*;
 import java.util.ArrayList;
 //Imported for logging by default logging (java.util.logging)
 import java.util.logging.FileHandler;
@@ -23,15 +19,6 @@ import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
-//import javax.xml.transform.Transformer;
-//import javax.xml.transform.TransformerConfigurationException;
-//import javax.xml.transform.TransformerException;
-//import javax.xml.transform.TransformerFactory;
-//import javax.xml.transform.dom.DOMSource;
-//import javax.xml.transform.stream.StreamResult;
-
-import communications.*;
-import communications.Message.*;
 
 public class StoreAndRetrieveUnit {
 	//XML
@@ -78,35 +65,35 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	public Response processMessage(Message m) {
+	public Message.Response processMessage(Message m) {
 		if (m == null) throw new IllegalArgumentException("No message received.");
 
 		//Load main user DOM from XML file
 		DOM = loadDOM(USERS_FILE_LOCATION);
 
-		Response reply = null;
+		Message.Response reply = null;
 		String query = m.getQuery();
 
-		if (query.equals("REGISTER") && m instanceof RegisterMessage){
-			reply = register_new_user((RegisterMessage)m);
+		if (query.equals("REGISTER") && m instanceof Message.RegisterMessage){
+			reply = register_new_user((Message.RegisterMessage)m);
 		}
-		else if (query.equals("LOGIN") && m instanceof LoginMessage) {
-			reply = login_user((LoginMessage)m);
+		else if (query.equals("LOGIN") && m instanceof Message.LoginMessage) {
+			reply = login_user((Message.LoginMessage)m);
 		}
-		else if (query.equals("LISTING") && m instanceof ListingMessage) {
-			reply = list_items((ListingMessage)m);
+		else if (query.equals("LISTING") && m instanceof Message.ListingMessage) {
+			reply = list_items((Message.ListingMessage)m);
 		}
-		else if (query.equals("RETRIEVE") && m instanceof RetrieveIdMessage) {
-			reply = retrieve_userID((RetrieveIdMessage)m);
+		else if (query.equals("RETRIEVE") && m instanceof Message.RetrieveIdMessage) {
+			reply = retrieve_userID((Message.RetrieveIdMessage)m);
 		}
-		else if (query.equals("EDIT") && m instanceof EditIdMessage) {
-			reply = edit_userID((EditIdMessage)m);
+		else if (query.equals("EDIT") && m instanceof Message.EditIdMessage) {
+			reply = edit_userID((Message.EditIdMessage)m);
 		}
-		else if (query.equals("DELETE") && m instanceof DeleteIdMessage) {
-			reply = delete_userID((DeleteIdMessage)m);
+		else if (query.equals("DELETE") && m instanceof Message.DeleteIdMessage) {
+			reply = delete_userID((Message.DeleteIdMessage)m);
 		}
-		else if (query.equals("OBLITERATE") && m instanceof ObliterateMessage) {
-			reply = obliterate((ObliterateMessage)m);
+		else if (query.equals("OBLITERATE") && m instanceof Message.ObliterateMessage) {
+			reply = obliterate((Message.ObliterateMessage)m);
 		}
 
 		//Save DOM to XML file
@@ -124,7 +111,7 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response register_new_user(RegisterMessage reg_m) {
+	private Message.Response register_new_user(Message.RegisterMessage reg_m) {
 		// Unpack message, find out who is trying to register
 		String uName = reg_m.getUsername();
 		String pWord = reg_m.getPassword();
@@ -143,7 +130,7 @@ public class StoreAndRetrieveUnit {
 
 		// Determine and construct Response
 		logger.log(Level.INFO, "Created new user");
-		RegisterResponse reply = new RegisterResponse(uName, pWord, respCode);
+		Message.RegisterResponse reply = new Message.RegisterResponse(uName, pWord, respCode);
 		return reply;
 	}
 
@@ -152,7 +139,7 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response login_user(LoginMessage log_m) {
+	private Message.Response login_user(Message.LoginMessage log_m) {
 		// Unpack message, find out who is trying to log in
 		String uName = log_m.getUsername();
 		String pWord = log_m.getPassword();
@@ -167,7 +154,7 @@ public class StoreAndRetrieveUnit {
 		}
 
 		// Determine and construct Response
-		LoginResponse reply = new LoginResponse(uName, pWord, respCode);
+		Message.LoginResponse reply = new Message.LoginResponse(uName, pWord, respCode);
 		return reply;
 	}
 
@@ -177,14 +164,14 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response list_items(ListingMessage list_m) {
+	private Message.Response list_items(Message.ListingMessage list_m) {
 		// Unpack message, find out who wants a listing
 		String uName = list_m.getUsername();
 		String pWord = list_m.getPassword();
 
 		// Try to obtain listing
 		// TODO: Each record in listing should contain "id" and "name"
-		ArrayList<Record> listing = getListings(uName); //Need pWord here?
+		ArrayList<Message.Record> listing = getListings(uName); //Need pWord here?
 
 		String respCode = null;
 		if (listing != null) {
@@ -200,7 +187,7 @@ public class StoreAndRetrieveUnit {
 		}
 
 		// Determine and construct Response
-		ListingResponse reply = new ListingResponse(uName, pWord, respCode, listing);
+		Message.ListingResponse reply = new Message.ListingResponse(uName, pWord, respCode, listing);
 		return reply;
 	}
 
@@ -209,7 +196,7 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response retrieve_userID(RetrieveIdMessage retr_m) {
+	private Message.Response retrieve_userID(Message.RetrieveIdMessage retr_m) {
 		// Unpack message, find out who wants to retrieve a particular record
 		String uName = retr_m.getUsername();
 		String pWord = retr_m.getPassword();
@@ -217,7 +204,7 @@ public class StoreAndRetrieveUnit {
 
 		// Try to obtain record
 		String respCode = "OK"; //TODO: Change this!
-		Record rec = null; // TODO: = get Record from XML. Should contain "id", "name", "username", "password"
+		Message.Record rec = null; // TODO: = get Record from XML. Should contain "id", "name", "username", "password"
 		logger.log(Level.INFO, "User " + uName + " requesting record " + ""); //record's name
 
 		if (!respCode.equals("OK")) {
@@ -225,7 +212,7 @@ public class StoreAndRetrieveUnit {
 		}
 
 		// Determine and construct Response
-		RetrieveIdResponse reply = new RetrieveIdResponse(uName, pWord, respCode, id, rec);
+		Message.RetrieveIdResponse reply = new Message.RetrieveIdResponse(uName, pWord, respCode, id, rec);
 		return reply;
 	}
 
@@ -234,12 +221,12 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response edit_userID(EditIdMessage edit_m) {
+	private Message.Response edit_userID(Message.EditIdMessage edit_m) {
 		// Unpack message, find out who wants to edit a particular record
 		String uName = edit_m.getUsername();
 		String pWord = edit_m.getPassword();
 		int id = edit_m.getId();
-		Record updatedRecord = edit_m.getRecord();
+		Message.Record updatedRecord = edit_m.getRecord();
 		String action = "FILL IN";
 		String item = "FIND OUT";
 
@@ -253,7 +240,7 @@ public class StoreAndRetrieveUnit {
 		}
 
 		// Determine and construct Response
-		EditIdResponse reply = new EditIdResponse(uName, pWord, respCode, id);
+		Message.EditIdResponse reply = new Message.EditIdResponse(uName, pWord, respCode, id);
 		return reply;
 	}
 
@@ -262,7 +249,7 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response delete_userID(DeleteIdMessage del_m) {
+	private Message.Response delete_userID(Message.DeleteIdMessage del_m) {
 		// Unpack message, find out who wants to delete a particular record
 		String uName = del_m.getUsername();
 		String pWord = del_m.getPassword();
@@ -278,7 +265,7 @@ public class StoreAndRetrieveUnit {
 		}
 
 		// Determine and construct Response
-		DeleteIdResponse reply = new DeleteIdResponse(uName, pWord, respCode, id);
+		Message.DeleteIdResponse reply = new Message.DeleteIdResponse(uName, pWord, respCode, id);
 		logger.log(Level.INFO, "User " + uName + " permanently deleted record " + id);
 		return reply;
 	}
@@ -288,7 +275,7 @@ public class StoreAndRetrieveUnit {
 	 * Throws exception if something unexpected happens.
 	 * @return
 	 */
-	private Response obliterate(ObliterateMessage obl_m) {
+	private Message.Response obliterate(Message.ObliterateMessage obl_m) {
 		// Unpack message, find out who wants to delete their entire vault
 		String uName = obl_m.getUsername();
 		String pWord = obl_m.getPassword();
@@ -303,7 +290,7 @@ public class StoreAndRetrieveUnit {
 		}
 
 		// Determine and construct Response
-		ObliterateResponse reply = new ObliterateResponse(uName, pWord, respCode);
+		Message.ObliterateResponse reply = new Message.ObliterateResponse(uName, pWord, respCode);
 		logger.log(Level.INFO, "User " + uName + " deleted entire record directory");
 		return reply;
 	}
@@ -684,7 +671,7 @@ public class StoreAndRetrieveUnit {
 	 * TODO: Exception handling
 	 * @return
 	 */
-	private ArrayList<Record> getListings(String uName) {
+	private ArrayList<Message.Record> getListings(String uName) {
 		// TODO Auto-generated method stub
 		return null;
 	}

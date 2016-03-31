@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.regex.*;
 
 import com.google.gson.Gson;
 
@@ -9,13 +10,15 @@ import spark.ModelAndView;
 public class ClientController {
 
     private Map<String, String> loginErrorMessages;
+    private Map<String, String> registerErrorMessages;
 
     public ClientController(StoreAndRetrieveUnit sru) {
         port(Integer.valueOf(System.getenv("PORT")));
+        staticFileLocation("/public");
 
         Gson gson = new Gson();
 
-        populateLoginErrorMessages();
+        populateErrorMessages();
 
         // Redirect to "Login" page if not logged in
         before("/", (request, response) -> {
@@ -63,7 +66,7 @@ public class ClientController {
                 response.redirect("/");
             } else {
                 // Incorrect email and/or password
-                response.redirect("/login/403");
+                response.redirect("/login/1");
             }
 
             return "";
@@ -73,25 +76,35 @@ public class ClientController {
         get("/register", (request, response) -> {
             return new ModelAndView(null, "register.hbs");
         }, new HandlebarsTemplateEngine());
+        get("/register/:error", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<>();
+
+            String errorCode = request.params("error");
+            if (registerErrorMessages.containsKey(errorCode)) {
+                attributes.put("error", registerErrorMessages.get(errorCode));
+            }
+
+            return new ModelAndView(attributes, "register.hbs");
+        }, new HandlebarsTemplateEngine());
 
         // Register new user
         post("/register", (request, response) -> {
             String email = request.queryParams("email");
             String password = request.queryParams("password");
 
-            // TODO: replace with check for valid email address
-            //      (and in the future, that the password fits some recipe)
-            boolean isValid = email != null && email.length() > 0
-                    && password != null && password.length() > 0;
+            boolean isEmailValid = isEmailValid(email),
+                    isPasswordValid = isPasswordValid(password);
 
-            if (isValid) {
+            if (isEmailValid && isPasswordValid) {
                 // TODO: create new user and log in the new user
 
                 response.redirect("/");
+            } else if (isPasswordValid) {
+                // Invalid email
+                response.redirect("/register/1");
             } else {
-                // Invalid email or password
-                // TODO: display appropriate error message
-                response.redirect("/register");
+                // Invalid password
+                response.redirect("/register/2");
             }
 
             return "";
@@ -153,11 +166,27 @@ public class ClientController {
             response.status(501);
             return "Not yet implemented";
         });
+
+
     }
 
-    private void populateLoginErrorMessages() {
+    private void populateErrorMessages() {
         loginErrorMessages = new HashMap<>();
-        loginErrorMessages.put("403", "Incorrect email and/or password.");
+        loginErrorMessages.put("1", "Incorrect email and/or password.");
+
+        registerErrorMessages = new HashMap<>();
+        registerErrorMessages.put("1", "Invalid email address.");
+        registerErrorMessages.put("2", "Invalid master password.");
+    }
+
+    private boolean isEmailValid(String email) {
+        Pattern emailPattern = Pattern.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+        return email != null && emailPattern.matcher(email).matches();
+    }
+
+    // TODO: check to make sure password fits certain requirements (TBD)
+    private boolean isPasswordValid(String password) {
+        return password != null && password.length() > 0;
     }
 
 }
