@@ -92,7 +92,8 @@ public class ClientController {
                     isPasswordValid = isPasswordValid(password);
 
             if (isEmailValid && isPasswordValid) {
-                // TODO: register new user and log in the new user
+                // TODO: register new user (sru.register_new_user(...))
+                // TODO: log in the new user (sru.login_user(...))
                 isLoggedIn = true;
                 userId = "sdlfkjl";
                 response.redirect("/");
@@ -126,7 +127,7 @@ public class ClientController {
 
         // Obliterate entire user account
         delete("/users/:userid", (request, response) -> {
-            // TODO: implement
+            // TODO: implement (sru.obliterate(...))
             return "Not yet implemented";
         });
 
@@ -153,14 +154,14 @@ public class ClientController {
                 return render("showaccounts.hbs", attributes);
             } else {
                 // Default content type: JSON
-                // TODO: implement
+                // TODO: implement (sru.list_items(...))
                 return gson.toJson("Not yet implemented");
             }
         });
 
         // Store a new account for a user
         post("/users/:userid/accounts", (request, response) -> {
-            // TODO: implement
+            // TODO: implement (sru.???)
             return "Not yet implemented";
         });
 
@@ -185,24 +186,24 @@ public class ClientController {
                 return render("showaccount.hbs", attributes);
             } else {
                 // Default content type: JSON
-                // TODO: implement
+                // TODO: implement (sru.retrieve_userID(...))
                 return gson.toJson("Not yet implemented");
             }
         });
 
         // Update a stored account
         put("/users/:userid/accounts/:accountid", (request, response) -> {
-            // TODO: implement
+            // TODO: implement (sru.edit_userID(...))
             return "Not yet implemented";
         });
 
         // Delete a stored account
         delete("/users/:userid/accounts/:accountid", (request, response) -> {
-            // TODO: implement
+            // TODO: implement (sru.delete_userID(...))
             return "Not yet implemented";
         });
 
-        // Show "Confirm delete SPAM account" page
+        // Show "Confirm obliterate SPAM account" page
         get("/users/:userid/delete", (request, response) -> {
             Map<String, Object> attributes = new HashMap<>();
             attributes.put("userid", request.params("userid"));
