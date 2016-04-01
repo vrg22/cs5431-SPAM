@@ -18,7 +18,10 @@ public class ClientController {
     private String userId; // TODO: this is just a placeholder for testing
 
     public ClientController(StoreAndRetrieveUnit sru) {
-        port(Integer.valueOf(System.getenv("PORT")));
+        if (System.getenv("PORT") != null) {
+            port(Integer.valueOf(System.getenv("PORT")));
+        }
+
         staticFileLocation("/public");
 
         Gson gson = new Gson();
@@ -203,7 +206,7 @@ public class ClientController {
             return "Not yet implemented";
         });
 
-        // Show "Confirm obliterate SPAM account" page
+        // HTML: Show "Confirm obliterate SPAM account" page
         get("/users/:userid/delete", (request, response) -> {
             Map<String, Object> attributes = new HashMap<>();
             attributes.put("userid", request.params("userid"));
@@ -256,13 +259,13 @@ public class ClientController {
     }
 
     // Verify that `email` is a valid email address
-    private boolean isEmailValid(String email) {
+    private static boolean isEmailValid(String email) {
         Pattern emailPattern = Pattern.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
         return email != null && emailPattern.matcher(email).matches();
     }
 
     // TODO: check to make sure password fits certain requirements (TBD)
-    private boolean isPasswordValid(String password) {
+    private static boolean isPasswordValid(String password) {
         return password != null && password.length() > 0;
     }
 
