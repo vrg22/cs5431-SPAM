@@ -1,5 +1,7 @@
 import java.util.*;
 import java.util.regex.*;
+import java.net.*;
+import java.io.*;
 
 import com.google.gson.Gson;
 
@@ -125,7 +127,6 @@ public class ClientController {
         // Obliterate entire user account
         delete("/users/:userid", (request, response) -> {
             // TODO: implement
-            response.status(501);
             return "Not yet implemented";
         });
 
@@ -145,6 +146,10 @@ public class ClientController {
             if (request.headers("Accept").contains("text/html")) {
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put("userid", request.params("userid"));
+
+                String accounts = sendGet(request.url(), "text/json");
+                attributes.put("accounts", accounts);
+
                 return render("showaccounts.hbs", attributes);
             } else {
                 // Default content type: JSON
@@ -156,7 +161,6 @@ public class ClientController {
         // Store a new account for a user
         post("/users/:userid/accounts", (request, response) -> {
             // TODO: implement
-            response.status(501);
             return "Not yet implemented";
         });
 
@@ -174,11 +178,14 @@ public class ClientController {
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put("userid", request.params("userid"));
                 attributes.put("accountid", request.params("accountid"));
+
+                String details = sendGet(request.url(), "text/json");
+                attributes.put("account", details);
+
                 return render("showaccount.hbs", attributes);
             } else {
                 // Default content type: JSON
                 // TODO: implement
-                response.status(501);
                 return gson.toJson("Not yet implemented");
             }
         });
@@ -186,14 +193,12 @@ public class ClientController {
         // Update a stored account
         put("/users/:userid/accounts/:accountid", (request, response) -> {
             // TODO: implement
-            response.status(501);
             return "Not yet implemented";
         });
 
         // Delete a stored account
         delete("/users/:userid/accounts/:accountid", (request, response) -> {
             // TODO: implement
-            response.status(501);
             return "Not yet implemented";
         });
 
@@ -209,6 +214,34 @@ public class ClientController {
     private String render(String template, Map<String, Object> attributes) {
         return new HandlebarsTemplateEngine()
             .render(new ModelAndView(attributes, template));
+    }
+
+    // Send GET request
+    private String sendGet(String url, String accept) {
+        try {
+    		URL obj = new URL(url);
+    		HttpURLConnection con = (HttpURLConnection)obj.openConnection();
+
+    		con.setRequestMethod("GET");
+            if (accept != null) con.setRequestProperty("Accept", accept);
+
+    		int responseCode = con.getResponseCode();
+
+    		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+    		String inputLine;
+    		StringBuffer response = new StringBuffer();
+
+    		while ((inputLine = in.readLine()) != null) {
+    			response.append(inputLine);
+    		}
+    		in.close();
+
+            // return response
+    		return response.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     // Initialize error message maps
