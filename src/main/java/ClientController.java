@@ -12,6 +12,9 @@ public class ClientController {
     private Map<String, String> loginErrorMessages;
     private Map<String, String> registerErrorMessages;
 
+    private boolean isLoggedIn = false; // TODO: this is just a placeholder for testing
+    private String userId; // TODO: this is just a placeholder for testing
+
     public ClientController(StoreAndRetrieveUnit sru) {
         port(Integer.valueOf(System.getenv("PORT")));
         staticFileLocation("/public");
@@ -20,38 +23,32 @@ public class ClientController {
 
         populateErrorMessages();
 
-        // Redirect to "Login" page if not logged in
+        // If already logged in, redirect to /users/:userid
         before("/", (request, response) -> {
-            boolean isLoggedIn = false; // TODO: set this
-            if (!isLoggedIn) {
-                response.redirect("/login");
-            }
+            if (isLoggedIn) response.redirect("/users/" + userId);
         });
 
-        // Show "User Vault - Home" page
+        // Show "Home (Logged out)" page
         get("/", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            attributes.put("message", "You're logged in!");
+            return render("home.hbs", null);
+        });
 
-            return new ModelAndView(attributes, "hello.hbs");
-        }, new HandlebarsTemplateEngine());
+        // If already logged in, redirect to /users/:userid
+        before("/login", (request, response) -> {
+            if (isLoggedIn) response.redirect("/users/" + userId);
+        });
 
-        // Show "Login" page
+        // Show "Login" page (HTML)
         get("/login", (request, response) -> {
-            return new ModelAndView(null, "login.hbs");
-        }, new HandlebarsTemplateEngine());
-        get("/login/:error", (request, response) -> {
             Map<String, Object> attributes = new HashMap<>();
-
-            String errorCode = request.params("error");
+            String errorCode = request.queryParams("error");
             if (loginErrorMessages.containsKey(errorCode)) {
                 attributes.put("error", loginErrorMessages.get(errorCode));
             }
+            return render("login.hbs", attributes);
+        });
 
-            return new ModelAndView(attributes, "login.hbs");
-        }, new HandlebarsTemplateEngine());
-
-        // Attempt to log in
+        // Log in user
         post("/login", (request, response) -> {
             String email = request.queryParams("email");
             String password = request.queryParams("password");
@@ -63,29 +60,26 @@ public class ClientController {
             if (isCorrect) {
                 // Correct email-password combination
                 // TODO: login user here
+                isLoggedIn = true;
+                userId = "sldfkjslk";
                 response.redirect("/");
             } else {
                 // Incorrect email and/or password
-                response.redirect("/login/1");
+                response.redirect("/login?error=1");
             }
 
             return "";
         });
 
-        // Show "Register new user" page
+        // HTML: Show "Register new user" page
         get("/register", (request, response) -> {
-            return new ModelAndView(null, "register.hbs");
-        }, new HandlebarsTemplateEngine());
-        get("/register/:error", (request, response) -> {
             Map<String, Object> attributes = new HashMap<>();
-
-            String errorCode = request.params("error");
+            String errorCode = request.queryParams("error");
             if (registerErrorMessages.containsKey(errorCode)) {
                 attributes.put("error", registerErrorMessages.get(errorCode));
             }
-
-            return new ModelAndView(attributes, "register.hbs");
-        }, new HandlebarsTemplateEngine());
+            return render("register.hbs", attributes);
+        });
 
         // Register new user
         post("/register", (request, response) -> {
@@ -96,80 +90,128 @@ public class ClientController {
                     isPasswordValid = isPasswordValid(password);
 
             if (isEmailValid && isPasswordValid) {
-                // TODO: create new user and log in the new user
-
+                // TODO: register new user and log in the new user
+                isLoggedIn = true;
+                userId = "sdlfkjl";
                 response.redirect("/");
             } else if (isPasswordValid) {
                 // Invalid email
-                response.redirect("/register/1");
+                response.redirect("/register?error=1");
             } else {
                 // Invalid password
-                response.redirect("/register/2");
+                response.redirect("/register?error=2");
             }
 
             return "";
         });
 
-        // Get list of stored accounts for a user
-        // TODO: implement
-        get("/accounts/:userid", (request, response) -> {
-            String userid = request.params("userid");
+        // If not logged in, redirect to /
+        // If logged in as different user, redirect to /users/<logged-in user id>
+        before("/users/:userid", (request, response) -> {
+            if (!isLoggedIn) {
+                response.redirect("/");
+            } else if (!userId.equals(request.params("userid"))) {
+                response.redirect("/users/" + userId);
+            }
+        });
 
-            response.status(501);
-            return "Not yet implemented";
-        }, gson::toJson);
+        // HTML: Show "User Vault" page
+        get("/users/:userid", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("userid", request.params("userid"));
+            return render("vault.hbs", attributes);
+        });
 
-        // Get details for a single stored account
-        // TODO: implement
-        get("/accounts/:userid/:accountid", (request, response) -> {
-            String userid = request.params("userid");
-            String accountid = request.params("accountid");
-
-            response.status(501);
-            return "Not yet implemented";
-        }, gson::toJson);
-
-        // Store a new account
-        // TODO: implement
-        post("/accounts/:userid", (request, response) -> {
-            String userid = request.params("userid");
-
+        // Obliterate entire user account
+        delete("/users/:userid", (request, response) -> {
+            // TODO: implement
             response.status(501);
             return "Not yet implemented";
         });
 
-        // Update a stored account
-        // TODO: implement
-        put("/accounts/:userid/:accountid", (request, response) -> {
-            String userid = request.params("userid");
-            String accountid = request.params("accountid");
+        // If not logged in, redirect to /
+        // If logged in as different user, redirect to /users/<logged-in user id>
+        before("/users/:userid/*", (request, response) -> {
+            if (!isLoggedIn) {
+                response.redirect("/");
+            } else if (!userId.equals(request.params("userid"))) {
+                response.redirect("/users/" + userId);
+            }
+        });
 
+        // HTML: Show "View/edit my stored accounts" page
+        // JSON: Get list of stored accounts for user
+        get("/users/:userid/accounts", (request, response) -> {
+            if (request.headers("Accept").contains("text/html")) {
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("userid", request.params("userid"));
+                return render("showaccounts.hbs", attributes);
+            } else {
+                // Default content type: JSON
+                // TODO: implement
+                return gson.toJson("Not yet implemented");
+            }
+        });
+
+        // Store a new account for a user
+        post("/users/:userid/accounts", (request, response) -> {
+            // TODO: implement
+            response.status(501);
+            return "Not yet implemented";
+        });
+
+        // HTML: Show "Store new account" page
+        get("/users/:userid/accounts/create", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("userid", request.params("userid"));
+            return render("addnew.hbs", attributes);
+        });
+
+        // HTML: Show "View/edit an account" page
+        // JSON: Get details for an account
+        get("/users/:userid/accounts/:accountid", (request, response) -> {
+            if (request.headers("Accept").contains("text/html")) {
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("userid", request.params("userid"));
+                attributes.put("accountid", request.params("accountid"));
+                return render("showaccount.hbs", attributes);
+            } else {
+                // Default content type: JSON
+                // TODO: implement
+                response.status(501);
+                return gson.toJson("Not yet implemented");
+            }
+        });
+
+        // Update a stored account
+        put("/users/:userid/accounts/:accountid", (request, response) -> {
+            // TODO: implement
             response.status(501);
             return "Not yet implemented";
         });
 
         // Delete a stored account
-        // TODO: implement
-        delete("/accounts/:userid/:accountid", (request, response) -> {
-            String userid = request.params("userid");
-            String accountid = request.params("accountid");
-
+        delete("/users/:userid/accounts/:accountid", (request, response) -> {
+            // TODO: implement
             response.status(501);
             return "Not yet implemented";
         });
 
-        // Obliterate entire user account
-        // TODO: implement
-        delete("/accounts/:userid", (request, response) -> {
-            String userid = request.params("userid");
-
-            response.status(501);
-            return "Not yet implemented";
+        // Show "Confirm delete SPAM account" page
+        get("/users/:userid/delete", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("userid", request.params("userid"));
+            return render("confirmdeletespam.hbs", attributes);
         });
-
-
     }
 
+    // Return HTML for a Handlebars template
+    private String render(String template, Map<String, Object> attributes) {
+        return new HandlebarsTemplateEngine()
+            .render(new ModelAndView(attributes, template));
+    }
+
+    // Initialize error message maps
     private void populateErrorMessages() {
         loginErrorMessages = new HashMap<>();
         loginErrorMessages.put("1", "Incorrect email and/or password.");
@@ -179,6 +221,7 @@ public class ClientController {
         registerErrorMessages.put("2", "Invalid master password.");
     }
 
+    // Verify that `email` is a valid email address
     private boolean isEmailValid(String email) {
         Pattern emailPattern = Pattern.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
         return email != null && emailPattern.matcher(email).matches();
