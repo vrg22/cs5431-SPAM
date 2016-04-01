@@ -12,11 +12,11 @@
     {{/if}}
 
     {{#if userid}} {{! TODO: replace if-else with just the content inside the if (if-else just for testing)}}
-        <a href="/users/{{userid}}">
+        <a href="/users/{{userid}}/accounts">
             <input type="button" value="View/edit my stored accounts">
         </a>
 
-        <a href="/users/{{userid}}/new">
+        <a href="/users/{{userid}}/accounts/new">
             <input type="button" value="Store new account">
         </a>
     {{else}}
