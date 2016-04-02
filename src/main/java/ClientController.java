@@ -14,6 +14,9 @@ public class ClientController {
     private Map<String, String> loginErrorMessages;
     private Map<String, String> registerErrorMessages;
 
+    private PasswordGenerator passwordGenerator;
+    private static final int PASSWORD_LENGTH = 12;
+
     private boolean isLoggedIn = false; // TODO: this is just a placeholder for testing
     private String userId; // TODO: this is just a placeholder for testing
 
@@ -25,8 +28,8 @@ public class ClientController {
         staticFileLocation("/public");
 
         Gson gson = new Gson();
-
         populateErrorMessages();
+        passwordGenerator = new ComplexPasswordGenerator();
 
         // If already logged in, redirect to /users/:userid
         before("/", (request, response) -> {
@@ -212,6 +215,12 @@ public class ClientController {
             attributes.put("userid", request.params("userid"));
             return render("confirmdeletespam.hbs", attributes);
         });
+
+        // Get random password
+        get("/password", (request, response) -> {
+            response.type("text/plain");
+            return passwordGenerator.next(PASSWORD_LENGTH);
+        });
     }
 
     // Return HTML for a Handlebars template
@@ -223,25 +232,25 @@ public class ClientController {
     // Send GET request
     private String sendGet(String url, String accept) {
         try {
-    		URL obj = new URL(url);
-    		HttpURLConnection con = (HttpURLConnection)obj.openConnection();
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection)obj.openConnection();
 
-    		con.setRequestMethod("GET");
+            con.setRequestMethod("GET");
             if (accept != null) con.setRequestProperty("Accept", accept);
 
-    		int responseCode = con.getResponseCode();
+            int responseCode = con.getResponseCode();
 
-    		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-    		String inputLine;
-    		StringBuffer response = new StringBuffer();
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
 
-    		while ((inputLine = in.readLine()) != null) {
-    			response.append(inputLine);
-    		}
-    		in.close();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
 
             // return response
-    		return response.toString();
+            return response.toString();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
