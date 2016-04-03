@@ -11,6 +11,7 @@ import spark.ModelAndView;
 
 public class ClientController {
 
+    // Set to false to fail (relatively) gracefully when features are not implemented
     private static final boolean DEV_MODE = true;
 
     private Map<String, String> loginErrorMessages;
@@ -29,8 +30,11 @@ public class ClientController {
 
         staticFileLocation("/public");
 
+        // Initialize instance variables
         Gson gson = new Gson();
         populateErrorMessages();
+
+        // Select algorithm for password generator
         passwordGenerator = new ComplexPasswordGenerator();
 
         // If already logged in, redirect to /users/:userid
@@ -332,7 +336,8 @@ public class ClientController {
             .render(new ModelAndView(attributes, template));
     }
 
-    // Send GET request
+    // Send GET request to specified URL
+    // with Accept header set to specified content type.
     private String sendGet(String url, String accept) {
         try {
             URL obj = new URL(url);
@@ -370,13 +375,14 @@ public class ClientController {
         registerErrorMessages.put("2", "Invalid master password.");
     }
 
-    // Verify that `email` is a valid email address
+    // Check that `email` is a valid email address (e.g., some@email.com)
     private static boolean isEmailValid(String email) {
         Pattern emailPattern = Pattern.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
         return email != null && emailPattern.matcher(email).matches();
     }
 
-    // TODO: check to make sure password fits certain requirements (TBD)
+    // Check that `password` fits requirements for master passwords
+    // TODO: Decide/implement requirements
     private static boolean isPasswordValid(String password) {
         return password != null && password.length() > 0;
     }
