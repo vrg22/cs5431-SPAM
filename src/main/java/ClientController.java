@@ -11,6 +11,8 @@ import spark.ModelAndView;
 
 public class ClientController {
 
+    private static final boolean DEV_MODE = true;
+
     private Map<String, String> loginErrorMessages;
     private Map<String, String> registerErrorMessages;
 
@@ -18,9 +20,9 @@ public class ClientController {
     private static final int PASSWORD_LENGTH = 12;
 
     private boolean isLoggedIn = false; // TODO: this is just a placeholder for testing
-    private String userId; // TODO: this is just a placeholder for testing
+    private int userId; // TODO: this is just a placeholder for testing
 
-    public ClientController(StoreAndRetrieveUnit sru) {
+    public ClientController(ServerController server) {
         if (System.getenv("PORT") != null) {
             port(Integer.valueOf(System.getenv("PORT")));
         }
@@ -41,12 +43,27 @@ public class ClientController {
             return render("home.hbs", null);
         });
 
+        // Check for valid server controller
+        if (!DEV_MODE) {
+            before("/*", (request, response) -> {
+                String[] splat = request.splat();
+                boolean isRoot = splat.length == 0;
+                boolean isNoserver = splat.length == 1 && splat[0].equals("noserver");
+                if (server == null && !isNoserver && !isRoot) {
+                    response.redirect("/noserver");
+                }
+            });
+        }
+
+        // HTML: Show "Server not yet implemented" page
+        get("/noserver", (request, response) -> render("noserver.hbs", null));
+
         // If already logged in, redirect to /users/:userid
         before("/login", (request, response) -> {
             if (isLoggedIn) response.redirect("/users/" + userId);
         });
 
-        // Show "Login" page (HTML)
+        // HTML: Show "Login" page
         get("/login", (request, response) -> {
             Map<String, Object> attributes = new HashMap<>();
             String errorCode = request.queryParams("error");
@@ -61,15 +78,13 @@ public class ClientController {
             String email = request.queryParams("email");
             String password = request.queryParams("password");
 
-            // TODO: replace with actual check for correct username/password
-            boolean isCorrect = email != null && email.length() > 0
-                    && password != null && password.length() > 0;
+            int loginResult = server.login(email, password); // user ID or -1
 
-            if (isCorrect) {
-                // Correct email-password combination
-                // TODO: login user here
+            if (loginResult != -1) {
+                // Log in user
                 isLoggedIn = true;
-                userId = "sldfkjslk";
+                userId = loginResult;
+
                 response.redirect("/");
             } else {
                 // Incorrect email and/or password
@@ -98,10 +113,13 @@ public class ClientController {
                     isPasswordValid = isPasswordValid(password);
 
             if (isEmailValid && isPasswordValid) {
-                // TODO: register new user (sru.register_new_user(...))
-                // TODO: log in the new user (sru.login_user(...))
+                User newUser = server.registerNewUser(email, password);
+                if (newUser == null) response.redirect("/"); // Unknown server error
+
+                // TODO: Log in new user
                 isLoggedIn = true;
-                userId = "sdlfkjl";
+                userId = newUser.getID();
+
                 response.redirect("/");
             } else if (isPasswordValid) {
                 // Invalid email
@@ -119,7 +137,7 @@ public class ClientController {
         before("/users/:userid", (request, response) -> {
             if (!isLoggedIn) {
                 response.redirect("/");
-            } else if (!userId.equals(request.params("userid"))) {
+            } else if (!("" + userId).equals(request.params("userid"))) {
                 response.redirect("/users/" + userId);
             }
         });
@@ -133,8 +151,16 @@ public class ClientController {
 
         // Obliterate entire user account
         delete("/users/:userid", (request, response) -> {
-            // TODO: implement (sru.obliterate(...))
-            return "Not yet implemented";
+            try {
+                int userId = Integer.parseInt(request.params("userid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                return false;
+            }
+
+            boolean result = server.obliterateUser(userId);
+            return result;
         });
 
         // If not logged in, redirect to /
@@ -142,7 +168,7 @@ public class ClientController {
         before("/users/:userid/*", (request, response) -> {
             if (!isLoggedIn) {
                 response.redirect("/");
-            } else if (!userId.equals(request.params("userid"))) {
+            } else if (!("" + userId).equals(request.params("userid"))) {
                 response.redirect("/users/" + userId);
             }
         });
@@ -150,9 +176,18 @@ public class ClientController {
         // HTML: Show "View/edit my stored accounts" page
         // JSON: Get list of stored accounts for user
         get("/users/:userid/accounts", (request, response) -> {
+            int userId;
+            try {
+                userId = Integer.parseInt(request.params("userid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                return false;
+            }
+
             if (request.headers("Accept").contains("text/html")) {
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put("userid", request.params("userid"));
+                attributes.put("userid", userId);
 
                 String accounts = sendGet(request.url(), "text/json");
                 attributes.put("accounts", accounts);
@@ -160,14 +195,22 @@ public class ClientController {
                 return render("showaccounts.hbs", attributes);
             } else {
                 // Default content type: JSON
-                // TODO: implement (sru.list_items(...))
-                return gson.toJson("Not yet implemented");
+
+                Account.Header[] accounts = server.getAccountsForUser(userId);
+                return gson.toJson(accounts);
             }
         });
 
         // Store a new account for a user
         post("/users/:userid/accounts", (request, response) -> {
-            // TODO: implement (sru.???)
+            // TODO: implement
+            // int userId = request.params("userid");
+            // String name = ...;
+            // String username = ...;
+            // String password = ...;
+            // Account account = server.storeNewAccountForUser(userId, name,
+            //     username, password);
+
             return "Not yet implemented";
         });
 
@@ -181,10 +224,26 @@ public class ClientController {
         // HTML: Show "View/edit an account" page
         // JSON: Get details for an account
         get("/users/:userid/accounts/:accountid", (request, response) -> {
+            int userId, accountId;
+            try {
+                userId = Integer.parseInt(request.params("userid"));
+                accountId = Integer.parseInt(request.params("accountid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                return "";
+            }
+
             if (request.headers("Accept").contains("text/html")) {
+                if (!server.isAccountForUser(accountId, userId)) {
+                    // Bad request
+                    response.status(400);
+                    return "";
+                }
+
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put("userid", request.params("userid"));
-                attributes.put("accountid", request.params("accountid"));
+                attributes.put("userid", userId);
+                attributes.put("accountid", accountId);
 
                 String details = sendGet(request.url(), "text/json");
                 attributes.put("account", details);
@@ -192,21 +251,65 @@ public class ClientController {
                 return render("showaccount.hbs", attributes);
             } else {
                 // Default content type: JSON
-                // TODO: implement (sru.retrieve_userID(...))
-                return gson.toJson("Not yet implemented");
+
+                if (!server.isAccountForUser(accountId, userId)) {
+                    // Bad request
+                    response.status(400);
+                    return gson.toJson("");
+                }
+
+                Account account = server.getDetailsForAccount(accountId);
+                if (account == null) return gson.toJson("");
+
+                return gson.toJson(account);
             }
         });
 
         // Update a stored account
         put("/users/:userid/accounts/:accountid", (request, response) -> {
-            // TODO: implement (sru.edit_userID(...))
+            int userId, accountId;
+            try {
+                userId = Integer.parseInt(request.params("userid"));
+                accountId = Integer.parseInt(request.params("accountid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                return false;
+            }
+
+            if (!server.isAccountForUser(accountId, userId)) {
+                // Bad request
+                response.status(400);
+                return false;
+            }
+
+            // TODO: implement
+            // Account account = ...;
+            // return server.updateAccount(account);
+
             return "Not yet implemented";
         });
 
         // Delete a stored account
         delete("/users/:userid/accounts/:accountid", (request, response) -> {
-            // TODO: implement (sru.delete_userID(...))
-            return "Not yet implemented";
+            int userId, accountId;
+            try {
+                userId = Integer.parseInt(request.params("userid"));
+                accountId = Integer.parseInt(request.params("accountid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                return false;
+            }
+
+            if (!server.isAccountForUser(accountId, userId)) {
+                // Bad request
+                response.status(400);
+                return false;
+            }
+
+            boolean result = server.deleteAccount(accountId);
+            return result;
         });
 
         // HTML: Show "Confirm obliterate SPAM account" page

@@ -6,12 +6,12 @@ import static spark.Spark.*;
 public class ClientControllerTest {
     @BeforeClass
     public static void beforeClass() {
-        Main.main(null);
+        Main.main(null); // Start server
     }
 
     @AfterClass
     public static void afterClass() {
-        stop();
+        stop(); // Stop server
     }
 
     // TODO: add test methods

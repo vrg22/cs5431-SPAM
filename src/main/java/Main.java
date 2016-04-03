@@ -7,7 +7,9 @@ import spark.ModelAndView;
 public class Main {
 
     public static void main(String[] args) {
-        new ClientController(new StoreAndRetrieveUnit());
+        // TODO: initialize server to instance of a class which implements ServerController interface
+        ServerController server = null;
+        new ClientController(server);
     }
 
 }
