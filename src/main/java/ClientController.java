@@ -37,6 +37,14 @@ public class ClientController {
         // Select algorithm for password generator
         passwordGenerator = new ComplexPasswordGenerator();
 
+		/*
+		 * Command used to generate keystore file:
+		 *	keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360
+		 *
+		 *	Reference: https://www.javacodegeeks.com/2014/07/java-keystore-tutorial.html
+		 */
+		secure("cs5431spamkeystore.jks", "cs5431spamisthebest", null, null);
+
         // If already logged in, redirect to /users/:userid
         before("/", (request, response) -> {
             if (isLoggedIn) response.redirect("/users/" + userId);
