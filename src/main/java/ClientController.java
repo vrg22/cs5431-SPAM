@@ -262,7 +262,7 @@ public class ClientController {
                     return gson.toJson("");
                 }
 
-                Account account = server.getDetailsForAccount(accountId);
+                Account account = server.getDetailsForAccount(userId, accountId);
                 if (account == null) return gson.toJson("");
 
                 return gson.toJson(account);

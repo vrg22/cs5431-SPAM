@@ -42,7 +42,7 @@ public interface ServerController {
      * @param accountId ID of account to fetch
      * @return full description of specified accountId (null if does not exist)
      */
-    public Account getDetailsForAccount(int accountId);
+    public Account getDetailsForAccount(int userId, int accountId);
 
     /**
      * Attempts to store a new account for a user.
