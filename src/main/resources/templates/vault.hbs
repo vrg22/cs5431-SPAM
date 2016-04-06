@@ -11,22 +11,12 @@
         <p class="error">{{error}}</p>
     {{/if}}
 
-    {{#if userid}} {{! TODO: replace if-else with just the content inside the if (if-else just for testing)}}
-        <a href="/users/{{userid}}/accounts">
-            <input type="button" value="View/edit my stored accounts">
-        </a>
+    <a href="/users/{{userid}}/accounts">
+        <input type="button" value="View/edit my stored accounts">
+    </a>
 
-        <a href="/users/{{userid}}/accounts/create">
-            <input type="button" value="Store new account">
-        </a>
-    {{else}}
-        <a href="/users/sdlkjfsl/accounts">
-            <input type="button" value="View/edit my stored accounts">
-        </a>
-
-        <a href="/users/sdlkjfsl/accounts/create">
-            <input type="button" value="Store new account">
-        </a>
-    {{/if}}
+    <a href="/users/{{userid}}/accounts/create">
+        <input type="button" value="Store new account">
+    </a>
 </body>
 </html>
