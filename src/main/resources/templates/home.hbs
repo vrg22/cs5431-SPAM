@@ -1,0 +1,22 @@
+<html>
+<head>
+    <title>SPAM</title>
+
+    <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+</head>
+<body>
+    <h1>Welcome!</h1>
+
+    {{#if error}}
+        <p class="error">{{error}}</p>
+    {{/if}}
+
+    <a href="/login">
+        <input type="button" value="Login">
+    </a>
+
+    <a href="/register">
+        <input type="button" value="Register">
+    </a>
+</body>
+</html>

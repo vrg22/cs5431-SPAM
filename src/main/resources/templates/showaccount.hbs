@@ -1,0 +1,24 @@
+<html>
+<head>
+    <title>SPAM - Show Account</title>
+
+    <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+</head>
+<body>
+    <h1>Show Account</h1>
+
+    {{#if error}}
+        <p class="error">{{error}}</p>
+    {{/if}}
+
+    <form name="addnew" action="/users/{{userid}}" method="post" accept-charset="utf-8">
+        <label for="name">Name</label>
+        <input type="text" name="name" required><br/>
+        <label for="username">Username (optional)</label>
+        <input type="text" name="username"><br/>
+        <label for="password">Password</label>
+        <input type="password" name="password" required><br/>
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>

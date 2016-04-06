@@ -1,0 +1,44 @@
+<html>
+<head>
+    <title>SPAM - Store New Account</title>
+
+    <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+</head>
+<body>
+    <h1>Store New Account</h1>
+
+    {{#if error}}
+        <p class="error">{{error}}</p>
+    {{/if}}
+
+    <form id="addnew" name="addnew" action="/users/{{userid}}" method="post" accept-charset="utf-8">
+        <label for="name">Name</label>
+        <input type="text" name="name" required><br/>
+        <label for="username">Username (optional)</label>
+        <input type="text" name="username"><br/>
+        <label for="password">Password</label>
+        <input type="password" name="password" required><br/>
+        <input type="button" name="passwordgen" value="Generate Password" onclick="generatePassword()"><br/>
+        <input type="submit" value="Save">
+    </form>
+
+    <script type="text/javascript">
+        function generatePassword() {
+            httpGetAsync("/password", function(response) {
+                document.getElementById("addnew").password.value = response;
+            });
+        }
+
+        // Source: http://stackoverflow.com/questions/247483/http-get-request-in-javascript
+        function httpGetAsync(theUrl, callback) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(xmlHttp.responseText);
+            }
+            xmlHttp.open("GET", theUrl, true); // true for asynchronous
+            xmlHttp.send(null);
+        }
+    </script>
+</body>
+</html>
