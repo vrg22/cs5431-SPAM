@@ -1,5 +1,5 @@
 // Handles parsing storage files
-public class XMLStorageController implements ServerStorageController {
+public class XMLStorageController implements StorageController {
 
     private static final String USERS_FILE_LOCATION = "users.xml";
 
