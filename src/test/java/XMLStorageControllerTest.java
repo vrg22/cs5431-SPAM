@@ -2,7 +2,6 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-
 import static spark.Spark.*;
 
 public class XMLStorageControllerTest {
