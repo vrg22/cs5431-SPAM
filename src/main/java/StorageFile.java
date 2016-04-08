@@ -1,5 +1,7 @@
+import java.util.*;
+
 public abstract class StorageFile {
-    private List<StorageEntry> entries;
+    protected List<StorageEntry> entries;
 
     public StorageFile() {
         entries = new ArrayList<StorageEntry>();
@@ -39,79 +41,5 @@ public abstract class StorageFile {
 
     protected boolean contains(String key, String value) {
         return get(key, value) == null;
-    }
-
-    public static class PasswordStorageFile extends StorageFile {
-        public PasswordStorageEntry getWithUserId(String userId) {
-            return (PasswordStorageFile)get("userid");
-        }
-
-        public PasswordStorageEntry getWithUsername(String username) {
-            return (PasswordStorageFile)get("username");
-        }
-
-        public PasswordStorageEntry getWithMaster(String master) {
-            return (PasswordStorageFile)get("master");
-        }
-
-        public void putUser(User user) {
-            put(new PasswordStorageEntry(user));
-        }
-
-        public boolean removeWithUserId(String userId) {
-            return remove("userid", userId);
-        }
-
-        public boolean removeWithUsername(String username) {
-            return remove("username", username);
-        }
-
-        public boolean containsUserId(String userId) {
-            return contains("userid");
-        }
-
-        public boolean containsUsername(String username) {
-            return contains("username");
-        }
-    }
-
-    public static class UserStorageFile extends StorageFile {
-        public Account.Header[] getAccountHeaders() {
-            Account.Header[] headers = new Account.Header[entries.size()];
-
-            for (int i = 0; i < headers.length; i++) {
-                UserStorageEntry entry = entries.get(i);
-                headers[i] = entry.getHeader();
-            }
-
-            return headers;
-        }
-
-        public Account getAccountWithId(int accountId) {
-            for (UserStorageEntry entry : entries) {
-                if (entry.getAccountId() == accountId) {
-                    return entry.getAccount();
-                }
-            }
-
-            // No such account existed
-            return null;
-        }
-
-        public void putAccount(Account account) {
-            UserStorageEntry newEntry = new UserStorageEntry(account.getID(),
-                account.getUserID(), account.getName(), account.getUsername(),
-                account.getPassword());
-
-            put(newEntry);
-        }
-
-        public boolean deleteAccountWithId(int accountId) {
-            return remove("accountid", accountId);
-        }
-
-        public boolean containsAccountWithId(int accountId) {
-            return contains("accountid", accountId);
-        }
     }
 }

@@ -1,10 +1,11 @@
 import java.util.logging.*;
+import java.io.*;
 
 // Get instance with SimpleLogger.getLogger(...)
 public class SimpleLogger extends Logger {
     private static final String LOG_FILE_LOCATION = "log.log";
 
-    protected SimpleLogger(String name, String resourceBundleName) {
+    protected SimpleLogger(String name, String resourceBundleName) throws IOException {
         super(name, resourceBundleName);
 
         FileHandler fh = new FileHandler(LOG_FILE_LOCATION, true);

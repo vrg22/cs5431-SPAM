@@ -1,3 +1,5 @@
+import java.io.*;
+
 // Handles parsing storage files
 public interface StorageController {
     /**
@@ -31,4 +33,9 @@ public interface StorageController {
      * and write to output stream
      */
     public void writeFileToStream(UserStorageFile file, FileOutputStream out);
+
+    /**
+     * Return file extension that this controller uses to store files (e.g., ".xml")
+     */
+    public String getExtension();
 }

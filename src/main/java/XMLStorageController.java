@@ -1,3 +1,21 @@
+import java.io.*;
+import java.util.ArrayList;
+//Imported for logging by default logging (java.util.logging)
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
+//Imported for XML parsing by the DOM method
+//Adapted from http://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+
 // Handles parsing storage files
 public class XMLStorageController implements StorageController {
 
@@ -18,11 +36,11 @@ public class XMLStorageController implements StorageController {
     }
 
     public PasswordStorageFile readPasswordsFile(FileInputStream in) {
-        DOMtoPasswordsFile(streamToDOM(in));
+        return DOMtoPasswordsFile(streamToDOM(in));
     }
 
     public UserStorageFile readFileForUser(FileInputStream in) {
-        DOMtoUserFile(streamToDOM(in));
+        return DOMtoUserFile(streamToDOM(in));
     }
 
     public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
@@ -31,6 +49,10 @@ public class XMLStorageController implements StorageController {
 
     public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
+    }
+
+    public String getExtension() {
+        return ".xml";
     }
 
 
@@ -56,8 +78,7 @@ public class XMLStorageController implements StorageController {
 			DOM = builder.parse(input);
 	        DOM.getDocumentElement().normalize();
 
-		} catch (ParserConfigurationException | UnsupportedEncodingException
-                | SAXException | IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -85,8 +106,7 @@ public class XMLStorageController implements StorageController {
 			newDOM = builder.parse(input);
 	        newDOM.getDocumentElement().normalize();
 
-		} catch (ParserConfigurationException | UnsupportedEncodingException
-                | SAXException | IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		}
 
@@ -96,26 +116,31 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a PasswordStorageFile
     private Document fileToDOM(PasswordStorageFile file) {
         // TODO: figure out how to implement this
+        return null;
     }
 
     // Populate a Document with the contents of a UserStorageFile
     private Document fileToDOM(UserStorageFile file) {
         // TODO: figure out how to implement this
+        return null;
     }
 
     // Populate a PasswordStorageFile with the contents of a Document
     private PasswordStorageFile DOMtoPasswordsFile(Document theDOM) {
         // TODO: figure out how to implement this
+        return null;
     }
 
     // Populate a UserStorageFile with the contents of a Document
     private UserStorageFile DOMtoUserFile(Document theDOM) {
         // TODO: figure out how to implement this
+        return null;
     }
 
     // Read file from `in` and store it in a Document object
     private Document streamToDOM(FileInputStream in) {
         // TODO: figure out how to implement this
+        return null;
     }
 
     // Convert a Document into file-writable format, write to output stream

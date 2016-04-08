@@ -67,7 +67,7 @@ public interface ServerController {
      * @param accountId ID of account to be deleted
      * @return "Was account successfully deleted?"
      */
-    public boolean deleteAccount(int accountId);
+    public boolean deleteAccount(int accountId, int userId);
 
     /**
      * Checks whether the specified account exists and

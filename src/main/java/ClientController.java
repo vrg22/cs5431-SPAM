@@ -312,7 +312,7 @@ public class ClientController {
                 return false;
             }
 
-            boolean result = server.deleteAccount(accountId);
+            boolean result = server.deleteAccount(accountId, userId);
             return result;
         });
 

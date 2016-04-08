@@ -1,3 +1,5 @@
+import java.util.logging.*;
+import java.io.*;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
@@ -7,10 +9,10 @@ public class CentralServerController implements ServerController {
     public CentralServerController() {
         //Set up logging
         try {
-            String loggerName = CentralServerController.class.name();
+            String loggerName = CentralServerController.class.getName();
             logger = SimpleLogger.getLogger(loggerName);
             logger.info("Starting up SPAM...");
-        } catch (SecurityException | IOException e) {
+        } catch (SecurityException e) {
             System.out.println("Could not start logger.");
             throw e;
         }
@@ -34,7 +36,7 @@ public class CentralServerController implements ServerController {
             return -1;
         }
 
-        String hashedMaster = hash(master); // TODO: implement hash
+        String hashedMaster = null;//hash(master); // TODO: implement hash
         if (!hashedMaster.equals(entry.getMaster())) {
             // Incorrect password
             return -1;
@@ -57,10 +59,9 @@ public class CentralServerController implements ServerController {
 
         int newUserId = 239857; // TODO: pick random, unique user ID
         User newUser = new User(username, master, newUserId); // TODO: should password be hashed or in plaintext here?
-        PasswordStorageEntry newUser = new PasswordStorageEntry(newUserId, username, master); // TODO: password should be hashed here
-        passwordFile.put(newUser);
-
-        saveFile(getPasswordsFilename(), store.getStream(passwordFile));
+        PasswordStorageEntry newUserEntry =
+            new PasswordStorageEntry(newUser); // TODO: password should be hashed here
+        passwordFile.put(newUserEntry);
 
         store.writeFileToStream(passwordFile, getPasswordsOutput());
 
@@ -75,7 +76,7 @@ public class CentralServerController implements ServerController {
     public boolean obliterateUser(int userId) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
 
-        if (!passwordFile.removeWithUserId(userId)) {
+        if (!passwordFile.removeWithUserId(""+userId)) {
             // No such user
             return false;
         }
@@ -97,7 +98,7 @@ public class CentralServerController implements ServerController {
     public boolean updateUser(User user) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
 
-        if (!passwordFile.removeWithUserId(userId)) {
+        if (!passwordFile.removeWithUserId(""+user.getID())) {
             // No such user
             return false;
         }
@@ -170,20 +171,20 @@ public class CentralServerController implements ServerController {
      * @return "Was account successfully updated?"
      */
     public boolean updateAccount(Account account) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+        UserStorageFile userFile = store.readFileForUser(getInputForUser(account.getUserID()));
         if (userFile == null) {
             // No such user existed
             return false;
         }
 
-        if (!deleteAccountWithId(account.getID())) {
+        if (!userFile.deleteAccountWithId(account.getID())) {
             // No such account existed
             return false;
         }
 
         userFile.putAccount(account);
 
-        store.writeFileToStream(userFile, getOutputForUser(userId));
+        store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
 
         return true;
     }
@@ -193,7 +194,7 @@ public class CentralServerController implements ServerController {
      * @param accountId ID of account to be deleted
      * @return "Was account successfully deleted?"
      */
-    public boolean deleteAccount(int accountId) {
+    public boolean deleteAccount(int accountId, int userId) {
         UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
@@ -234,18 +235,34 @@ public class CentralServerController implements ServerController {
     }
 
     private FileInputStream getPasswordsInput() {
-        return new FileInputStream(new File(getPasswordsFilename()));
+        try {
+            return new FileInputStream(new File(getPasswordsFilename()));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
     }
 
     private FileInputStream getInputForUser(int userId) {
-        return new FileInputStream(new File(getFilenameForUser(userId)));
+        try {
+            return new FileInputStream(new File(getFilenameForUser(userId)));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
     }
 
     private FileOutputStream getPasswordsOutput() {
-        return new FileOutputStream(new File(getPasswordsFilename()));
+        try {
+            return new FileOutputStream(new File(getPasswordsFilename()));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
     }
 
     private FileOutputStream getOutputForUser(int userId) {
-        return new FileOutputStream(new File(getFilenameForUser(userId)));
+        try {
+            return new FileOutputStream(new File(getFilenameForUser(userId)));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
     }
 }
