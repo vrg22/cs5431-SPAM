@@ -1,3 +1,8 @@
+package main.java;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 // Handles parsing storage files
 public interface StorageController {
     /**

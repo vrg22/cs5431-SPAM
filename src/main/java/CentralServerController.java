@@ -1,3 +1,8 @@
+package main.java;
+
+import java.util.logging.Logger;
+import java.io.*;
+
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
@@ -12,7 +17,7 @@ public class CentralServerController implements ServerController {
             logger.info("Starting up SPAM...");
         } catch (SecurityException | IOException e) {
             System.out.println("Could not start logger.");
-            throw e;
+            throw new Exception(); //fix
         }
 
         // Set up storage
@@ -34,7 +39,7 @@ public class CentralServerController implements ServerController {
             return -1;
         }
 
-        String hashedMaster = hash(master); // TODO: implement hash
+        String hashedMaster = master; //hash(master); // TODO: implement hash
         if (!hashedMaster.equals(entry.getMaster())) {
             // Incorrect password
             return -1;
@@ -97,7 +102,7 @@ public class CentralServerController implements ServerController {
     public boolean updateUser(User user) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
 
-        if (!passwordFile.removeWithUserId(userId)) {
+        if (!passwordFile.removeWithUserId(user.getID())) {  //CHECK that this is userID!
             // No such user
             return false;
         }
@@ -162,6 +167,9 @@ public class CentralServerController implements ServerController {
         return newAccount;
     }
 
+    
+    //TODO: Standardize inputs to various methods (in terms of whether to pass accounts themselves, their IDs, etc)
+    
     /**
      * Attempts to update an existing account.
      * Specified account must have an ID which matches an
@@ -170,13 +178,16 @@ public class CentralServerController implements ServerController {
      * @return "Was account successfully updated?"
      */
     public boolean updateAccount(Account account) {
+    	int accountId = account.getID();
+    	int userId = account.getUserID();
+    	
         UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return false;
         }
 
-        if (!deleteAccountWithId(account.getID())) {
+        if (!deleteAccountWithId(accountId)) {
             // No such account existed
             return false;
         }
@@ -193,8 +204,8 @@ public class CentralServerController implements ServerController {
      * @param accountId ID of account to be deleted
      * @return "Was account successfully deleted?"
      */
-    public boolean deleteAccount(int accountId) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+    public boolean deleteAccount(int accountId, int userId) {
+        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId)); //TODO: Check which IDs should be used where
         if (userFile == null) {
             // No such user existed
             return false;

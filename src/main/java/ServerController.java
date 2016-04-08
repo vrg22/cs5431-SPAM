@@ -1,3 +1,5 @@
+package main.java;
+
 // Provides public methods to complete user-level actions
 public interface ServerController {
 

@@ -1,3 +1,23 @@
+package main.java;
+
+import java.io.*;
+import java.util.ArrayList;
+//Imported for logging by default logging (java.util.logging)
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
+//Imported for XML parsing by the DOM method
+//Adapted from http://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+
 // Handles parsing storage files
 public class XMLStorageController implements StorageController {
 

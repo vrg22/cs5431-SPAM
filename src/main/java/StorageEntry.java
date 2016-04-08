@@ -1,5 +1,10 @@
+package main.java;
+
+import java.util.*;
+
 public abstract class StorageEntry {
-    private Map<String, String> values;
+//public interface StorageEntry {
+	private Map<String, String> values;
 
     public StorageEntry() {
         values = new HashMap<String, String>();
@@ -14,18 +19,18 @@ public abstract class StorageEntry {
     }
 
     // Keys: user ID, username, hashed-salted master password
-    public static class PasswordStorageEntry implements StorageEntry {
+    public static class PasswordStorageEntry extends StorageEntry {
         // Note: master password here should already be hashed
         public PasswordStorageEntry(User user) {
             super();
 
-            put("userid", user.getID());
+            put("userid", Integer.toString(user.getID()));
             put("username", user.getUsername());
             put("master", user.getPassword());
         }
 
         public int getUserId() {
-            return get("userid");
+            return Integer.parseInt(get("userid"));
         }
 
         public String getUsername() {
@@ -38,13 +43,13 @@ public abstract class StorageEntry {
     }
 
     // Keys: account ID, user ID, name, username, plaintext password
-    public static class UserStorageEntry implements StorageEntry {
+    public static class UserStorageEntry extends StorageEntry {
         public UserStorageEntry(int accountId, int userId, String name, String username,
                 String password) {
             super();
 
-            put("accountid", accountId);
-            put("userid", userId);
+            put("accountid", Integer.toString(accountId));
+            put("userid", Integer.toString(userId));
             put("name", name);
             put("username", username);
             put("password", password);

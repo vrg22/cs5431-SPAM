@@ -1,4 +1,4 @@
-
+package main.java;
 
 /**
  * Transfers data between client UI and server communication module

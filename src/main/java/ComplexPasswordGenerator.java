@@ -1,3 +1,5 @@
+package main.java;
+
 import java.security.SecureRandom;
 
 public class ComplexPasswordGenerator implements PasswordGenerator {

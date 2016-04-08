@@ -1,3 +1,5 @@
+package main.java;
+
 /* Stores and retrieves all information related to user accounts and data. Writes important information to log.
  * This class is the main point of entry for the server-side communication unit (CommServer.java).
  */

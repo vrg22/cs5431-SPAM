@@ -1,3 +1,5 @@
+package main.java;
+
 public class User {
 
 	public static final int MAX_USERS = 300; //TODO: Adjust this

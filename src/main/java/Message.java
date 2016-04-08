@@ -1,4 +1,4 @@
-
+package main.java;
 
 /*
  * Messages passed between client and server over the network

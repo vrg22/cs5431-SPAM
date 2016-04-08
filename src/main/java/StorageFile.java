@@ -1,3 +1,7 @@
+package main.java;
+
+import java.util.*;
+
 public abstract class StorageFile {
     private List<StorageEntry> entries;
 
@@ -38,20 +42,20 @@ public abstract class StorageFile {
     }
 
     protected boolean contains(String key, String value) {
-        return get(key, value) == null;
+        return get(key, value) == null; //Shouldn't this be != ?
     }
 
     public static class PasswordStorageFile extends StorageFile {
         public PasswordStorageEntry getWithUserId(String userId) {
-            return (PasswordStorageFile)get("userid");
+            return (PasswordStorageEntry)get("userid", userId); //What are we trying to return here?
         }
 
         public PasswordStorageEntry getWithUsername(String username) {
-            return (PasswordStorageFile)get("username");
+            return (PasswordStorageEntry)get("username", username);
         }
 
         public PasswordStorageEntry getWithMaster(String master) {
-            return (PasswordStorageFile)get("master");
+            return (PasswordStorageEntry)get("master", master);
         }
 
         public void putUser(User user) {
@@ -67,11 +71,11 @@ public abstract class StorageFile {
         }
 
         public boolean containsUserId(String userId) {
-            return contains("userid");
+            return contains("userid", userId);
         }
 
         public boolean containsUsername(String username) {
-            return contains("username");
+            return contains("username", username);
         }
     }
 
@@ -107,11 +111,11 @@ public abstract class StorageFile {
         }
 
         public boolean deleteAccountWithId(int accountId) {
-            return remove("accountid", accountId);
+            return remove("accountid", Integer.toString(accountId));
         }
 
         public boolean containsAccountWithId(int accountId) {
-            return contains("accountid", accountId);
+            return contains("accountid", Integer.toString(accountId));
         }
     }
 }
