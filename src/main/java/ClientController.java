@@ -207,7 +207,7 @@ public class ClientController {
 
         // Store a new account for a user
         post("/users/:userid/accounts", (request, response) -> {
-            // TODO: implement
+            // TODO: implement- figure out where the name/username/password parameters are
             // int userId = request.params("userid");
             // String name = ...;
             // String username = ...;
@@ -262,7 +262,7 @@ public class ClientController {
                     return gson.toJson("");
                 }
 
-                Account account = server.getDetailsForAccount(accountId);
+                Account account = server.getDetailsForAccount(userId, accountId);
                 if (account == null) return gson.toJson("");
 
                 return gson.toJson(account);
@@ -287,7 +287,7 @@ public class ClientController {
                 return false;
             }
 
-            // TODO: implement
+            // TODO: implement- figure out where the account params are in the request
             // Account account = ...;
             // return server.updateAccount(account);
 
