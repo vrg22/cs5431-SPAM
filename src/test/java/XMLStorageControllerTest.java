@@ -7,6 +7,7 @@ import static spark.Spark.*;
 
 public class XMLStorageControllerTest {
     @Test
+    public void testCreatePasswordsFileOnStream() {
         // TODO: implement
     }
 
