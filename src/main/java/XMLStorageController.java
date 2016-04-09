@@ -22,31 +22,31 @@ public class XMLStorageController implements StorageController {
     //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
 
-    public void createPasswordsFileOnStream(FileOutputStream out) {
+    public void createPasswordsFileOnStream(OutputStream out) {
         //Instantiates and prepares the DOM to be saved to disk
         createMainDOM();
 
         writeDOMtoStream(DOM, out);
     }
 
-    public void createFileForUserOnStream(int userId, FileOutputStream out) {
+    public void createFileForUserOnStream(int userId, OutputStream out) {
         Document userDOM = createUserDOM(userId);
         writeDOMtoStream(userDOM, out);
     }
 
-    public PasswordStorageFile readPasswordsFile(FileInputStream in) {
+    public PasswordStorageFile readPasswordsFile(InputStream in) {
         return DOMtoPasswordsFile(streamToDOM(in));
     }
 
-    public UserStorageFile readFileForUser(FileInputStream in) {
+    public UserStorageFile readFileForUser(InputStream in) {
         return DOMtoUserFile(streamToDOM(in));
     }
 
-    public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
+    public void writeFileToStream(PasswordStorageFile file, OutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
     }
 
-    public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
+    public void writeFileToStream(UserStorageFile file, OutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
     }
 
@@ -115,25 +115,25 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a PasswordStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(PasswordStorageFile file) {
-    	    	
+
     	Document initialDOM, DOM = null;
-    	
+
 	    FileInputStream fis = getPasswordsInput();
 	    initialDOM = streamToDOM(fis);
-    	
+
     	// Put all entries, etc in the right place
     	DOM = initialDOM;
-    	
+
     	// Set metadata to match
 		Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
 		Element nextIDElement = getTagElement("nextID", DOM);
 		nextIDElement.setTextContent(file.readNextID());
-		
+
 		// Make user data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
 		uElement.setTextContent(""); //CHECK!
-		
+
 		PasswordStorageEntry pEntry;
 		for (StorageEntry entry : file.entries) {
 			pEntry = (PasswordStorageEntry) entry;
@@ -149,7 +149,7 @@ public class XMLStorageController implements StorageController {
 
 	        uElement.appendChild(newUser);
 		}
-		
+
     	return DOM;
     }
 
@@ -162,13 +162,13 @@ public class XMLStorageController implements StorageController {
 
     // Populate a PasswordStorageFile with the contents of a Document
     private PasswordStorageFile DOMtoPasswordsFile(Document theDOM) {
-    	
+
     	PasswordStorageFile file = new PasswordStorageFile();
-    	
+
     	// Set Users and metadata to match file. This will make numUsers correct.
     	// TODO: Need to make nextID variable correct? Or can we just build this into getNextID()?
     	file.setUsers(getUsers(theDOM));
-    	
+
         return file;
     }
 
@@ -180,7 +180,7 @@ public class XMLStorageController implements StorageController {
 
     // Read file from `in` and store it in a Document object
     private Document streamToDOM(FileInputStream in) {
-    	
+
 		Document doc = null;
 
 		try {
@@ -207,9 +207,9 @@ public class XMLStorageController implements StorageController {
 		}
 
 		System.out.println("Got here!!");
-		
+
 		return doc;
-        
+
     }
 
     // Convert a Document into file-writable format, write to output stream
@@ -230,7 +230,7 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
+
     }
 
 
@@ -250,7 +250,7 @@ public class XMLStorageController implements StorageController {
 		Element elt = (Element) n;
 		return elt;
 	}
-    
+
 	/**
 	 * Return ArrayList of current users from loaded main DOM. //Or null if no users yet?
 	 * TODO: Exception handling
@@ -286,7 +286,7 @@ public class XMLStorageController implements StorageController {
 
         return users;
 	}
-	
+
 	/**
 	 * Take in a StringBuilder and append to it the bare bones text necessary for the users XML file.
 	 */
@@ -323,9 +323,9 @@ public class XMLStorageController implements StorageController {
 
 		sb.append(basicText);
 	}
-	
-	
-	
+
+
+
 	// Filename access methods
     public String getPasswordsFilename() {
         return PasswordStorageFile.getPasswordsFilename() + getExtension();
