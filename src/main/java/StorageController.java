@@ -51,13 +51,13 @@ public interface StorageController {
      * Convert a PasswordStorageFile into file-writable form,
      * and write to output stream
      */
-    public void writeFileToStream(PasswordStorageFile file, FileOutputStream out);
+    public void writeFileToStream(PasswordStorageFile file, OutputStream out);
 
     /**
      * Convert a UserStorageFile into file-writable form,
      * and write to output stream
      */
-    public void writeFileToStream(UserStorageFile file, FileOutputStream out);
+    public void writeFileToStream(UserStorageFile file, OutputStream out);
 
     /**
      * Return file extension that this controller uses to store files (e.g., ".xml")
