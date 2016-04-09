@@ -4,13 +4,13 @@ public class User {
 
 	// Private fields
 	private String username;
-	private String password;
+	private String master; //salted hash of master pwd
 	private int id;
 	// ETC.
 
 	public User(String uname, String pword, int ID) {
 		this.username = uname;
-		this.password = pword;
+		this.master = pword; //TODO: take salted hash - WHERE?
 		this.id = ID;
 	}
 
@@ -26,11 +26,18 @@ public class User {
 		this.username = username;
 	}
 
-	public String getPassword() {
-		return password;
+	
+	//TODO: Add methods for updating a user's master password representation on record!
+	
+	public String getMaster() {
+		return master;
 	}
+	
+//	public String getPassword() {
+//		return password;
+//	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+//	public void setPassword(String password) {
+//		this.password = password;
+//	}
 }

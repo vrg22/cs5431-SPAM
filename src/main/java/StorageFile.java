@@ -40,6 +40,7 @@ public abstract class StorageFile {
     }
 
     protected boolean contains(String key, String value) {
-        return get(key, value) == null;
+        return get(key, value) != null; //Contains a value if you get something non-null
+    	//return get(key, value) == null;
     }
 }

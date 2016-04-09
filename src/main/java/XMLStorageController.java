@@ -19,8 +19,7 @@ import javax.xml.transform.stream.*;
 // Handles parsing storage files
 public class XMLStorageController implements StorageController {
 
-    private static final String USERS_FILE_LOCATION = "users.xml";
-
+    //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
 
     public void createPasswordsFileOnStream(FileOutputStream out) {
@@ -114,12 +113,48 @@ public class XMLStorageController implements StorageController {
 	}
 
     // Populate a Document with the contents of a PasswordStorageFile
+    // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(PasswordStorageFile file) {
-        // TODO: figure out how to implement this
-        return null;
+    	    	
+    	Document initialDOM, DOM = null;
+    	
+	    FileInputStream fis = getPasswordsInput();
+	    initialDOM = streamToDOM(fis);
+    	
+    	// Put all entries, etc in the right place
+    	DOM = initialDOM;
+    	
+    	// Set metadata to match
+		Element numUElement = getTagElement("numUsers", DOM);
+		numUElement.setTextContent(file.getNumUsers());
+		Element nextIDElement = getTagElement("nextID", DOM);
+		nextIDElement.setTextContent(file.readNextID());
+		
+		// Make user data match by simply overwriting content
+		Element uElement = getTagElement("users", DOM);
+		uElement.setTextContent(""); //CHECK!
+		
+		PasswordStorageEntry pEntry;
+		for (StorageEntry entry : file.entries) {
+			pEntry = (PasswordStorageEntry) entry;
+			Element newUser = DOM.createElement("user");
+			newUser.setAttribute("ID", Integer.toString(pEntry.getUserId()));
+			Element usrnm = DOM.createElement("username");
+			usrnm.setTextContent(pEntry.getUsername());
+			newUser.appendChild(usrnm);
+
+	        Element master = DOM.createElement("password");
+			master.setTextContent(pEntry.getMaster());
+	        newUser.appendChild(master);
+
+	        uElement.appendChild(newUser);
+		}
+		
+    	return DOM;
     }
 
     // Populate a Document with the contents of a UserStorageFile
+    // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(UserStorageFile file) {
         // TODO: figure out how to implement this
         return null;
@@ -127,8 +162,14 @@ public class XMLStorageController implements StorageController {
 
     // Populate a PasswordStorageFile with the contents of a Document
     private PasswordStorageFile DOMtoPasswordsFile(Document theDOM) {
-        // TODO: figure out how to implement this
-        return null;
+    	
+    	PasswordStorageFile file = new PasswordStorageFile();
+    	
+    	// Set Users and metadata to match file. This will make numUsers correct.
+    	// TODO: Need to make nextID variable correct? Or can we just build this into getNextID()?
+    	file.setUsers(getUsers(theDOM));
+    	
+        return file;
     }
 
     // Populate a UserStorageFile with the contents of a Document
@@ -139,13 +180,57 @@ public class XMLStorageController implements StorageController {
 
     // Read file from `in` and store it in a Document object
     private Document streamToDOM(FileInputStream in) {
-        // TODO: figure out how to implement this
-        return null;
+    	
+		Document doc = null;
+
+		try {
+			//Load XML from disk and set DOM
+			//File inputFile = new File(fileLoc);
+	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	        doc = dBuilder.parse(in); //TODO: IF FILE DNE, what exception needs to be caught?
+
+			//StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
+
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		System.out.println("Got here!!");
+		
+		return doc;
+        
     }
 
     // Convert a Document into file-writable format, write to output stream
     private void writeDOMtoStream(Document theDOM, FileOutputStream out){
-        // TODO: figure out how to implement this
+		if (out == null) throw new IllegalArgumentException("No output filestream received.");
+
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		Transformer transformer;
+		try {
+			transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(theDOM);
+			StreamResult streamResult =  new StreamResult(out);
+			transformer.transform(source, streamResult);
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     }
 
 
@@ -154,6 +239,54 @@ public class XMLStorageController implements StorageController {
 	//Or is the event-based triggering in SAX more secure?
 	//When to do the encryption? Easier/more efficient to encrypt parts of the message or whole thing?
 
+	/**
+	 * Return Element corresponding to the specified tag. Expects tagname corresponding to exactly one Node in DOM.
+	 * TODO: Exception handling
+	 * @return
+	 */
+	private Element getTagElement(String tagname, Document doc) {
+	    NodeList nlist = doc.getElementsByTagName(tagname); //TODO: Is it better to get what you want directly by
+	    Node n = nlist.item(0);
+		Element elt = (Element) n;
+		return elt;
+	}
+    
+	/**
+	 * Return ArrayList of current users from loaded main DOM. //Or null if no users yet?
+	 * TODO: Exception handling
+	 * @return
+	 */
+	private ArrayList<User> getUsers(Document DOM) {
+		//ArrayList of users to be returned
+		ArrayList<User> users = new ArrayList<User>();
+
+		//Attributes of each user
+		String username;
+		String password;
+		int id;
+
+		//Get the "users" element
+		Element usersElement = getTagElement("users", DOM);
+
+	    //Iterate through all child nodes of "users" Element
+    	for (Node n = usersElement.getFirstChild(); n != null; n = n.getNextSibling()) {
+
+    		//Add this user to our list
+    		if (n.getNodeType() == Node.ELEMENT_NODE) {
+            	Element uElt = (Element) n;
+            	id = Integer.parseInt(uElt.getAttribute("ID"));
+
+            	username = uElt.getElementsByTagName("username").item(0).getTextContent();
+            	password = uElt.getElementsByTagName("password").item(0).getTextContent();
+            	User u = new User(username, password, id);
+
+            	users.add(u);
+            }
+    	}
+
+        return users;
+	}
+	
 	/**
 	 * Take in a StringBuilder and append to it the bare bones text necessary for the users XML file.
 	 */
@@ -190,4 +323,47 @@ public class XMLStorageController implements StorageController {
 
 		sb.append(basicText);
 	}
+	
+	
+	
+	// Filename access methods
+    public String getPasswordsFilename() {
+        return PasswordStorageFile.getPasswordsFilename() + getExtension();
+    }
+
+    public String getFilenameForUser(int userId) {
+        return userId + getExtension();
+    }
+
+    public FileInputStream getPasswordsInput() {
+        try {
+            return new FileInputStream(new File(getPasswordsFilename()));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public FileInputStream getInputForUser(int userId) {
+        try {
+            return new FileInputStream(new File(getFilenameForUser(userId)));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public FileOutputStream getPasswordsOutput() {
+        try {
+            return new FileOutputStream(new File(getPasswordsFilename()));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public FileOutputStream getOutputForUser(int userId) {
+        try {
+            return new FileOutputStream(new File(getFilenameForUser(userId)));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
 }

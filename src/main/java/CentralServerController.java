@@ -19,7 +19,7 @@ public class CentralServerController implements ServerController {
 
         // Set up storage
         store = new XMLStorageController(); // TODO: make sure this is the proper initialization
-        store.createPasswordsFileOnStream(getPasswordsOutput());
+        store.createPasswordsFileOnStream(store.getPasswordsOutput());
     }
 
     /**
@@ -28,7 +28,7 @@ public class CentralServerController implements ServerController {
      * @return user ID of matching user (-1 if invalid combination)
      */
     public int login(String username, String master) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
+        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
         PasswordStorageEntry entry = passwordFile.getWithUsername(username);
 
         if (entry == null) {
@@ -50,21 +50,24 @@ public class CentralServerController implements ServerController {
      * @return the user created (null if unsuccessful)
      */
     public User registerNewUser(String username, String master) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
-
+        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
+        
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
             return null;
         }
-
-        int newUserId = 239857; // TODO: pick random, unique user ID
+        
+        int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
         User newUser = new User(username, master, newUserId); // TODO: should password be hashed or in plaintext here?
         PasswordStorageEntry newUserEntry =
             new PasswordStorageEntry(newUser); // TODO: password should be hashed here
         passwordFile.put(newUserEntry);
 
-        store.writeFileToStream(passwordFile, getPasswordsOutput());
-
+        UserStorageFile userFile = new UserStorageFile(newUserId);
+        
+        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+        store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
+        
         return newUser;
     }
 
@@ -74,7 +77,7 @@ public class CentralServerController implements ServerController {
      * @return "Was user's account successfully obliterated?"
      */
     public boolean obliterateUser(int userId) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
+        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
 
         if (!passwordFile.removeWithUserId(""+userId)) {
             // No such user
@@ -83,7 +86,7 @@ public class CentralServerController implements ServerController {
 
         // TODO: delete user's file too
 
-        store.writeFileToStream(passwordFile, getPasswordsOutput());
+        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         return true;
     }
@@ -96,7 +99,7 @@ public class CentralServerController implements ServerController {
      * @return "Was user successfully updated?"
      */
     public boolean updateUser(User user) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(getPasswordsInput());
+        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
 
         if (!passwordFile.removeWithUserId(""+user.getID())) {
             // No such user
@@ -105,7 +108,7 @@ public class CentralServerController implements ServerController {
 
         passwordFile.putUser(user);
 
-        store.writeFileToStream(passwordFile, getPasswordsOutput());
+        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         return true;
     }
@@ -117,7 +120,7 @@ public class CentralServerController implements ServerController {
      *      user's stored accounts (null if no stored accounts)
      */
     public Account.Header[] getAccountsForUser(int userId) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+        UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return null;
@@ -132,7 +135,7 @@ public class CentralServerController implements ServerController {
      * @return full description of specified accountId (null if does not exist)
      */
     public Account getDetailsForAccount(int userId, int accountId) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+        UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return null;
@@ -148,17 +151,17 @@ public class CentralServerController implements ServerController {
      */
     public Account storeNewAccountForUser(int userId, String name,
             String username, String password) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+        UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return null;
         }
 
-        int newAccountId = 982734; // TODO: get random, unique account ID
-        Account newAccount = new Account(newAccountId, userId, name, username,
+        int newAccountId = Integer.parseInt(userFile.getNextAccountID()); // TODO: get unique account ID (Q: Need to be random?)
+        Account newAccount = new Account(newAccountId, /*userId,*/ name, username,
             password);
 
-        store.writeFileToStream(userFile, getOutputForUser(userId));
+        store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
         return newAccount;
     }
@@ -170,8 +173,9 @@ public class CentralServerController implements ServerController {
      * @param account updated version of the account
      * @return "Was account successfully updated?"
      */
-    public boolean updateAccount(Account account) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(account.getUserID()));
+    public boolean updateAccount(int userId, Account account) {
+        //UserStorageFile userFile = store.readFileForUser(getInputForUser(account.getUserID()));
+        UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return false;
@@ -184,7 +188,8 @@ public class CentralServerController implements ServerController {
 
         userFile.putAccount(account);
 
-        store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
+        store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        //store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
 
         return true;
     }
@@ -195,7 +200,7 @@ public class CentralServerController implements ServerController {
      * @return "Was account successfully deleted?"
      */
     public boolean deleteAccount(int accountId, int userId) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+        UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return false;
@@ -206,7 +211,7 @@ public class CentralServerController implements ServerController {
             return false;
         }
 
-        store.writeFileToStream(userFile, getOutputForUser(userId));
+        store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
         return true;
     }
@@ -217,7 +222,7 @@ public class CentralServerController implements ServerController {
      * @return "Is specified account tied to specified user?"
      */
     public boolean isAccountForUser(int accountId, int userId) {
-        UserStorageFile userFile = store.readFileForUser(getInputForUser(userId));
+        UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
             return false;
@@ -226,43 +231,4 @@ public class CentralServerController implements ServerController {
         return userFile.containsAccountWithId(accountId);
     }
 
-    private String getPasswordsFilename() {
-        return "users" + store.getExtension();
-    }
-
-    private String getFilenameForUser(int userId) {
-        return userId + store.getExtension();
-    }
-
-    private FileInputStream getPasswordsInput() {
-        try {
-            return new FileInputStream(new File(getPasswordsFilename()));
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-    }
-
-    private FileInputStream getInputForUser(int userId) {
-        try {
-            return new FileInputStream(new File(getFilenameForUser(userId)));
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-    }
-
-    private FileOutputStream getPasswordsOutput() {
-        try {
-            return new FileOutputStream(new File(getPasswordsFilename()));
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-    }
-
-    private FileOutputStream getOutputForUser(int userId) {
-        try {
-            return new FileOutputStream(new File(getFilenameForUser(userId)));
-        } catch (FileNotFoundException e) {
-            return null;
-        }
-    }
 }

@@ -54,13 +54,11 @@ public interface ServerController {
         String username, String password);
 
     /**
-     * Attempts to update an existing account.
-     * Specified account must have an ID which matches an
-     * existing user.
+     * Attempts to update an existing account for the user with the provided ID.
      * @param account updated version of the account
      * @return "Was account successfully updated?"
      */
-    public boolean updateAccount(Account account);
+    public boolean updateAccount(int userId, Account account);
 
     /**
      * Attempts to delete an account from a user's vault.
