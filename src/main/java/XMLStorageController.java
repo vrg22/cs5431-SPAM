@@ -23,31 +23,31 @@ public class XMLStorageController implements StorageController {
 
     private Document DOM;
 
-    public void createPasswordsFileOnStream(FileOutputStream out) {
+    public void createPasswordsFileOnStream(OutputStream out) {
         //Instantiates and prepares the DOM to be saved to disk
         createMainDOM();
 
         writeDOMtoStream(DOM, out);
     }
 
-    public void createFileForUserOnStream(int userId, FileOutputStream out) {
+    public void createFileForUserOnStream(int userId, OutputStream out) {
         Document userDOM = createUserDOM(userId);
         writeDOMtoStream(userDOM, out);
     }
 
-    public PasswordStorageFile readPasswordsFile(FileInputStream in) {
+    public PasswordStorageFile readPasswordsFile(InputStream in) {
         return DOMtoPasswordsFile(streamToDOM(in));
     }
 
-    public UserStorageFile readFileForUser(FileInputStream in) {
+    public UserStorageFile readFileForUser(InputStream in) {
         return DOMtoUserFile(streamToDOM(in));
     }
 
-    public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
+    public void writeFileToStream(PasswordStorageFile file, OutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
     }
 
-    public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
+    public void writeFileToStream(UserStorageFile file, OutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
     }
 
@@ -138,13 +138,13 @@ public class XMLStorageController implements StorageController {
     }
 
     // Read file from `in` and store it in a Document object
-    private Document streamToDOM(FileInputStream in) {
+    private Document streamToDOM(InputStream in) {
         // TODO: figure out how to implement this
         return null;
     }
 
     // Convert a Document into file-writable format, write to output stream
-    private void writeDOMtoStream(Document theDOM, FileOutputStream out){
+    private void writeDOMtoStream(Document theDOM, OutputStream out){
         // TODO: figure out how to implement this
     }
 
