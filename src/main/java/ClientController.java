@@ -225,6 +225,30 @@ public class ClientController {
             return render("addnew.hbs", attributes);
         });
 
+        // Store new account
+        post("/users/:userid/accounts/create", (request, response) -> {
+            String name = request.queryParams("name");
+            String username = request.queryParams("username");
+            String password = request.queryParams("password");
+
+            //TODO: DO any conditions need to be checked here? <3rd-party account>
+
+            if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
+                Account newAcct = server.storeNewAccountForUser(userId, name, username, password);
+                if (newAcct == null) response.redirect("/"); // Unknown server error
+
+                response.redirect("/users/:userid/accounts");
+            } else if (name == null) {
+                // Invalid name
+                response.redirect("/addnew?error=1");
+            } else if (password == null) {
+                // Invalid password
+                response.redirect("/addnew?error=2");
+            }
+
+            return "";
+        });
+        
         // HTML: Show "View/edit an account" page
         // JSON: Get details for an account
         get("/users/:userid/accounts/:accountid", (request, response) -> {

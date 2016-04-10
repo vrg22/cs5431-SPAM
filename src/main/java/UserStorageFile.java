@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class UserStorageFile extends StorageFile {
 	
 	//Metadata for a particular user's vault file
@@ -40,7 +42,7 @@ public class UserStorageFile extends StorageFile {
     public void putAccount(Account account) {
         UserStorageEntry newEntry = new UserStorageEntry(account.getID(),
             /*account.getUserID(),*/ account.getName(), account.getUsername(),
-            account.getMaster());
+            account.getPassword());
         
         nextAccountID++; //TODO: Update to next AVAILABLE ID
         numRecords++;
@@ -69,4 +71,11 @@ public class UserStorageFile extends StorageFile {
     	return Integer.toString(nextAccountID);
     }
     
+    // Setting metadata (for use ONLY when converting DOM to UserStorageFile)
+    public void setRecords(ArrayList<Account> accts) {
+    	//Assumption: file on disk is valid, so we can simply set these variables
+    	for (Account a : accts) {
+    		putAccount(a);
+    	}
+    }
 }

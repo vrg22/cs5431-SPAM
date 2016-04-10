@@ -1,4 +1,7 @@
 import java.util.logging.*;
+
+import org.w3c.dom.Document;
+
 import java.io.*;
 
 // Provides public methods to complete user-level actions
@@ -50,29 +53,6 @@ public class CentralServerController implements ServerController {
      * @return the user created (null if unsuccessful)
      */
     public User registerNewUser(String username, String master) {
-//    	//TESTING
-//    	FileInputStream fis = store.getPasswordsInput();
-//    	FileInputStream fis2 = store.getPasswordsInput();
-//    	PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
-//
-//    	FileOutputStream fos = store.getPasswordsOutput();
-//	    try {
-//	    	fos.close();
-//
-//			System.out.println("AVAILABLE: " + fis.available());
-//			System.out.println("AVAILABLE2: " + fis2.available());
-//			
-//			store.readPasswordsFile(fis);
-//			store.readPasswordsFile(fis2);
-//			
-//			store.writeFileToStream(passwordFile, fos);
-//			
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//    	System.exit(1);
-    	
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
         
         if (passwordFile.contains("username", username)) {
@@ -80,18 +60,19 @@ public class CentralServerController implements ServerController {
             return null;
         }
         
+        // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
         User newUser = new User(username, master, newUserId); // TODO: should password be hashed or in plaintext here?
         PasswordStorageEntry newUserEntry =
             new PasswordStorageEntry(newUser); // TODO: password should be hashed here
         passwordFile.put(newUserEntry);
-
-        UserStorageFile userFile = new UserStorageFile(newUserId);
-        
-        //System.out.println("NextID: " + newUserId);
         
         store.writeFileToDisk(passwordFile);
-        store.writeFileToDisk(userFile, newUserId);
+        
+        // Create new user vault file
+        store.createFileForUserOnStream(newUserId);
+        //UserStorageFile userFile = new UserStorageFile(newUserId);
+        //store.writeFileToDisk(userFile, newUserId);
         
         //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
         //store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
@@ -114,7 +95,8 @@ public class CentralServerController implements ServerController {
 
         // TODO: delete user's file too
 
-        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+        store.writeFileToDisk(passwordFile);
+        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         return true;
     }
@@ -136,7 +118,8 @@ public class CentralServerController implements ServerController {
 
         passwordFile.putUser(user);
 
-        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+        store.writeFileToDisk(passwordFile);
+        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         return true;
     }
@@ -189,7 +172,8 @@ public class CentralServerController implements ServerController {
         Account newAccount = new Account(newAccountId, /*userId,*/ name, username,
             password);
 
-        store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        store.writeFileToDisk(userFile, userId);
+        //store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
         return newAccount;
     }
@@ -216,8 +200,9 @@ public class CentralServerController implements ServerController {
 
         userFile.putAccount(account);
 
-        store.writeFileToStream(userFile, store.getOutputForUser(userId));
-        //store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
+        store.writeFileToDisk(userFile, userId);
+        //store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        ////store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
 
         return true;
     }
@@ -239,7 +224,8 @@ public class CentralServerController implements ServerController {
             return false;
         }
 
-        store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        store.writeFileToDisk(userFile, userId);
+        //store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
         return true;
     }

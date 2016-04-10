@@ -43,6 +43,17 @@ public class XMLStorageController implements StorageController {
         writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
     }
     
+    //TODO: Where used??
+    public void createPasswordsFileOnStream() {
+        //Instantiates and prepares the DOM to be saved to disk
+        createMainDOM();
+        writeDOMtoStream(DOM, getPasswordsOutput());
+    }
+
+    public void createFileForUserOnStream(int userId) {
+        Document userDOM = createUserDOM(userId);
+        writeDOMtoStream(userDOM, getOutputForUser(userId));
+    }
     
     //THESE ARE UNUSED
     public void createPasswordsFileOnStream(FileOutputStream out) {
@@ -107,7 +118,7 @@ public class XMLStorageController implements StorageController {
 			//Create XML base and set DOM
 			StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
 
-			//Specific setup for the main XML users file
+			//Specific setup for a particular user's file
 			setupUserXML(xmlStringBuilder, ID);
 
 			ByteArrayInputStream input =  new ByteArrayInputStream(xmlStringBuilder.toString().getBytes("UTF-8"));
@@ -166,8 +177,48 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a UserStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(UserStorageFile file) {
-        // TODO: figure out how to implement this
-        return null;
+    	
+    	Document initialDOM, userDOM = null;
+    	
+	    FileInputStream fis = getInputForUser(Integer.parseInt(file.getUserID()));
+	    initialDOM = streamToDOM(fis);
+    	
+    	// Put all entries, etc in the right place
+    	userDOM = initialDOM;
+    	
+    	// Set metadata to match
+		Element thisUser = getTagElement("user", userDOM);
+		thisUser.setAttribute("ID", file.getUserID());
+		
+		// Make vault data match by simply overwriting content
+		Element vElement = getTagElement("vault", userDOM);
+		vElement.setTextContent(""); //CHECK!
+		
+		UserStorageEntry uEntry;
+		for (StorageEntry entry : file.entries) {
+			uEntry = (UserStorageEntry) entry;
+			Element account = userDOM.createElement("account");
+			account.setAttribute("ID", Integer.toString(uEntry.getAccountId()));
+			
+			Account acc = uEntry.getAccount();
+			
+			//TODO: See about making this field optional
+			Element name = userDOM.createElement("name");
+			name.setTextContent(acc.getName());
+			thisUser.appendChild(name);
+			
+			Element usrnm = userDOM.createElement("username");
+			usrnm.setTextContent(acc.getUsername());
+			thisUser.appendChild(usrnm);
+			
+			Element pwd = userDOM.createElement("password");
+			pwd.setTextContent(acc.getPassword());
+			thisUser.appendChild(pwd);
+
+	        vElement.appendChild(thisUser);
+		}
+		
+    	return userDOM;
     }
 
     // Populate a PasswordStorageFile with the contents of a Document
@@ -304,6 +355,44 @@ public class XMLStorageController implements StorageController {
     	}
 
         return users;
+	}
+	
+	/**
+	 * Return ArrayList of accounts from a specified user's DOM. //Or null if no accounts yet?
+	 * TODO: Exception handling
+	 * @return
+	 */
+	private ArrayList<Account> getRecords(Document uDOM) {
+		//ArrayList of records to be returned
+		ArrayList<Account> accts = new ArrayList<Account>();
+
+		//Attributes of each record
+		int accId;
+		String accName;
+		String username;
+		String password;
+
+		//Get the "vault" element
+		Element vaultElement = getTagElement("vault", DOM);
+
+	    //Iterate through all child nodes of "vault" Element
+    	for (Node n = vaultElement.getFirstChild(); n != null; n = n.getNextSibling()) {
+
+    		//Add this account to our list
+    		if (n.getNodeType() == Node.ELEMENT_NODE) {
+            	Element accElt = (Element) n;
+            	accId = Integer.parseInt(accElt.getAttribute("ID"));
+
+            	accName = accElt.getElementsByTagName("name").item(0).getTextContent();
+            	username = accElt.getElementsByTagName("username").item(0).getTextContent();
+            	password = accElt.getElementsByTagName("password").item(0).getTextContent();
+            	Account a = new Account(accId, accName, username, password);
+
+            	accts.add(a);
+            }
+    	}
+
+        return accts;
 	}
 	
 	/**

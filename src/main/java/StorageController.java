@@ -17,15 +17,23 @@ public interface StorageController {
     
     
     /**
-     * Create a new passwords file, write to output stream
+     * Create a new passwords file, write to designated output stream
      */
     public void writeFileToDisk(PasswordStorageFile file);
 
     /**
-     * Create a new passwords file, write to output stream
+     * Create a new passwords file, write to designated output stream
      */
     public void writeFileToDisk(UserStorageFile file, int userId);
-    
+    /**
+     * Create a new passwords file, write to designated output stream
+     */
+    public void createPasswordsFileOnStream();
+
+    /**
+     * Create a new user file, write to designated output stream
+     */
+    public void createFileForUserOnStream(int userId);
     
     
     

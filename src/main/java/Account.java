@@ -3,12 +3,12 @@ public class Account {
 	// Private fields
     private Header header;
     private String username;
-    private String master;
+    private String password;
 
 	public Account(int id, /*int userId,*/ String name, String username, String password) {
 		this.header = new Header(id, /*userId,*/ name);
         this.username = username;
-        this.master = password;
+        this.password = password;
 	}
 
 	public int getID() {
@@ -35,13 +35,12 @@ public class Account {
         this.username = username;
     }
 
-	public String getMaster() {
-		return master;
+	public String getPassword() {
+		return password;
 	}
 
-	//TODO: Determine whether to take password or master here itself!
-	public void setMaster(String password) {
-		this.master = password;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
     public static class Header {
