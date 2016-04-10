@@ -118,7 +118,10 @@ public class ClientController {
 
             if (isEmailValid && isPasswordValid) {
                 User newUser = server.registerNewUser(email, password);
-                if (newUser == null) response.redirect("/"); // Unknown server error
+                if (newUser == null) {
+                    response.redirect("/"); // Unknown server error
+                    return "";
+                }
 
                 // TODO: Log in new user
                 isLoggedIn = true;
@@ -205,19 +208,6 @@ public class ClientController {
             }
         });
 
-        // Store a new account for a user
-        post("/users/:userid/accounts", (request, response) -> {
-            // TODO: implement- figure out where the name/username/password parameters are
-            // int userId = request.params("userid");
-            // String name = ...;
-            // String username = ...;
-            // String password = ...;
-            // Account account = server.storeNewAccountForUser(userId, name,
-            //     username, password);
-
-            return "Not yet implemented";
-        });
-
         // HTML: Show "Store new account" page
         get("/users/:userid/accounts/create", (request, response) -> {
             Map<String, Object> attributes = new HashMap<>();
@@ -235,9 +225,12 @@ public class ClientController {
 
             if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
                 Account newAcct = server.storeNewAccountForUser(userId, name, username, password);
-                if (newAcct == null) response.redirect("/"); // Unknown server error
+                if (newAcct == null) {
+                    response.redirect("/"); // Unknown server error
+                    return "";
+                }
 
-                response.redirect("/users/:userid/accounts");
+                response.redirect("/users/" + request.params("userid") + "/accounts");
             } else if (name == null) {
                 // Invalid name
                 response.redirect("/addnew?error=1");
@@ -248,7 +241,7 @@ public class ClientController {
 
             return "";
         });
-        
+
         // HTML: Show "View/edit an account" page
         // JSON: Get details for an account
         get("/users/:userid/accounts/:accountid", (request, response) -> {
