@@ -196,7 +196,8 @@ public class ClientController {
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put("userid", userId);
 
-                String accounts = sendGet(request.url(), "text/json");
+                String accountsJson = sendGet(request.url(), "text/json");
+                Account.Header[] accounts = gson.fromJson(accountsJson, Account.Header[].class);
                 attributes.put("accounts", accounts);
 
                 return render("showaccounts.hbs", attributes);
@@ -266,7 +267,8 @@ public class ClientController {
                 attributes.put("userid", userId);
                 attributes.put("accountid", accountId);
 
-                String details = sendGet(request.url(), "text/json");
+                String detailsStr = sendGet(request.url(), "text/json");
+                Account details = gson.fromJson(detailsStr, Account.class);
                 attributes.put("account", details);
 
                 return render("showaccount.hbs", attributes);

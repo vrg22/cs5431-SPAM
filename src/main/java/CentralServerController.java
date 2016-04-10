@@ -54,29 +54,29 @@ public class CentralServerController implements ServerController {
      */
     public User registerNewUser(String username, String master) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
-        
+
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
             return null;
         }
-        
+
         // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
         User newUser = new User(username, master, newUserId); // TODO: should password be hashed or in plaintext here?
         PasswordStorageEntry newUserEntry =
             new PasswordStorageEntry(newUser); // TODO: password should be hashed here
         passwordFile.put(newUserEntry);
-        
+
         store.writeFileToDisk(passwordFile);
-        
+
         // Create new user vault file
         store.createFileForUserOnStream(newUserId);
         //UserStorageFile userFile = new UserStorageFile(newUserId);
         //store.writeFileToDisk(userFile, newUserId);
-        
+
         //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
         //store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
-        
+
         return newUser;
     }
 
@@ -193,7 +193,7 @@ public class CentralServerController implements ServerController {
             return false;
         }
 
-        if (!userFile.deleteAccountWithId(account.getID())) {
+        if (!userFile.deleteAccountWithId(account.getId())) {
             // No such account existed
             return false;
         }

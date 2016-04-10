@@ -11,8 +11,8 @@ public class Account {
         this.password = password;
 	}
 
-	public int getID() {
-		return header.getID();
+	public int getId() {
+		return header.getId();
 	}
 
 //    public int getUserID() {
@@ -54,7 +54,7 @@ public class Account {
             this.name = name;
         }
 
-        public int getID() {
+        public int getId() {
     		return id;
     	}
 

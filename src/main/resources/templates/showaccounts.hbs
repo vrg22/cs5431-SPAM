@@ -1,18 +1,23 @@
 <html>
 <head>
-    <title>SPAM - Show Account</title>
+    <title>SPAM - My Accounts</title>
 
     <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
 </head>
 <body>
-    <h1>Show Account</h1>
+    <h1>My Accounts</h1>
 
     {{#if error}}
         <p class="error">{{error}}</p>
     {{/if}}
 
 
-    <p>Accounts: {{accounts}}</p>
+    {{#each accounts}}
+        <a href="/users/{{userid}}/accounts/{{this.id}}">{{this.name}}</a>
+    {{/each}}
+    {{#unless accounts}}
+        You haven't stored any accounts yet.
+    {{/unless}}
 
 </body>
 </html>
