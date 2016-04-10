@@ -6,13 +6,20 @@ public class CentralServerController implements ServerController {
 	private Logger logger;
     private StorageController store;
 
-    public CentralServerController() {
+    public CentralServerController(String logLocation) throws SecurityException, IOException {
         //Set up logging
         try {
             String loggerName = CentralServerController.class.getName();
             logger = SimpleLogger.getLogger(loggerName);
+
+            FileHandler fh = new FileHandler(logLocation, true);
+            logger.addHandler(fh);
+
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+
             logger.info("Starting up SPAM...");
-        } catch (SecurityException e) {
+        } catch (SecurityException | IOException e) {
             System.out.println("Could not start logger.");
             throw e;
         }
@@ -27,24 +34,27 @@ public class CentralServerController implements ServerController {
      * matches an existing user.
      * @return user ID of matching user (-1 if invalid combination)
      */
-    public int login(String username, String master) {
+    public int login(String username, String master, String clientIp) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
         PasswordStorageEntry entry = passwordFile.getWithUsername(username);
 
         if (entry == null) {
             // No user with that username exists
-            logger.warning("Attempt was made to log into nonexistent username " + username);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to log "
+                + "into nonexistent username " + username + ".");
             return -1;
         }
 
         String hashedMaster = null;//hash(master); // TODO: implement hash
         if (!hashedMaster.equals(entry.getMaster())) {
             // Incorrect password
-            logger.warning("Attempt was made to log into username " + username + " with incorrect password " + master);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to log into "
+                + "username " + username + " with incorrect password.");
             return -1;
         }
 
-        logger.info("User " + entry.getUserId() + " successfully logged in.");
+        logger.info("[IP=" + clientIp + "] User " + entry.getUserId()
+            + " successfully logged in.");
 
         return entry.getUserId();
     }
@@ -53,12 +63,13 @@ public class CentralServerController implements ServerController {
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
      */
-    public User registerNewUser(String username, String master) {
+    public User registerNewUser(String username, String master, String clientIp) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
 
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
-            logger.warning("Attempt was made to register a new user with existing username " + username);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to "
+                + "register a new user with existing username " + username + ".");
             return null;
         }
 
@@ -73,7 +84,8 @@ public class CentralServerController implements ServerController {
         store.writeFileToStream(passwordFile, store.getPasswordsOutput());
         store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
 
-        logger.info("New user " + newUserId + " successfully registered.");
+        logger.info("[IP=" + clientIp + "] New user " + newUserId
+            + " successfully registered.");
 
         return newUser;
     }
@@ -83,12 +95,13 @@ public class CentralServerController implements ServerController {
      * @param userId ID of user to obliterate
      * @return "Was user's account successfully obliterated?"
      */
-    public boolean obliterateUser(int userId) {
+    public boolean obliterateUser(int userId, String clientIp) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
 
         if (!passwordFile.removeWithUserId(""+userId)) {
             // No such user
-            logger.warning("Attempt was made to obliterate nonexistent user " + userId);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to "
+                + "obliterate nonexistent user " + userId + ".");
             return false;
         }
 
@@ -96,7 +109,8 @@ public class CentralServerController implements ServerController {
 
         store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
-        logger.info("User " + userId + " successfully obliterated.");
+        logger.info("[IP=" + clientIp + "] User " + userId
+            + " successfully obliterated.");
 
         return true;
     }
@@ -108,12 +122,13 @@ public class CentralServerController implements ServerController {
      * @param user updated version of the user
      * @return "Was user successfully updated?"
      */
-    public boolean updateUser(User user) {
+    public boolean updateUser(User user, String clientIp) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
 
         if (!passwordFile.removeWithUserId(""+user.getID())) {
             // No such user
-            logger.warning("Attempt was made to update nonexistent user " + user.getID());
+            logger.warning("[IP=" + clientIp + "] Attempt was made to update "
+                + "nonexistent user " + user.getID() + ".");
             return false;
         }
 
@@ -121,7 +136,8 @@ public class CentralServerController implements ServerController {
 
         store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
-        logger.info("User " + user.getID() + " successfully updated.");
+        logger.info("[IP=" + clientIp + "] User " + user.getID()
+            + " successfully updated.");
 
         return true;
     }
@@ -132,7 +148,7 @@ public class CentralServerController implements ServerController {
      * @return array of account headers corresponding to
      *      user's stored accounts (null if no stored accounts)
      */
-    public Account.Header[] getAccountsForUser(int userId) {
+    public Account.Header[] getAccountsForUser(int userId, String clientIp) {
         UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
@@ -147,7 +163,7 @@ public class CentralServerController implements ServerController {
      * @param accountId ID of account to fetch
      * @return full description of specified accountId (null if does not exist)
      */
-    public Account getDetailsForAccount(int userId, int accountId) {
+    public Account getDetailsForAccount(int userId, int accountId, String clientIp) {
         UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
@@ -163,11 +179,12 @@ public class CentralServerController implements ServerController {
      * @return the account just created (null if unsuccessful)
      */
     public Account storeNewAccountForUser(int userId, String name,
-            String username, String password) {
+            String username, String password, String clientIp) {
         UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
-            logger.warning("Attempt was made to store a new account for nonexistent user " + userId);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to store "
+                + "a new account for nonexistent user " + userId + ".");
             return null;
         }
 
@@ -177,7 +194,8 @@ public class CentralServerController implements ServerController {
 
         store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
-        logger.info("New account " + newAccountId + " successfully stored for user " + userId);
+        logger.info("[IP=" + clientIp + "] New account " + newAccountId
+            + " successfully stored for user " + userId + ".");
 
         return newAccount;
     }
@@ -189,18 +207,22 @@ public class CentralServerController implements ServerController {
      * @param account updated version of the account
      * @return "Was account successfully updated?"
      */
-    public boolean updateAccount(int userId, Account account) {
+    public boolean updateAccount(int userId, Account account, String clientIp) {
         //UserStorageFile userFile = store.readFileForUser(getInputForUser(account.getUserID()));
         UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
-            logger.warning("Attempt was made to update account " + account.getID() + " for nonexistent user " + userId);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to update "
+                + "account " + account.getID() + " for nonexistent user "
+                + userId + ".");
             return false;
         }
 
         if (!userFile.deleteAccountWithId(account.getID())) {
             // No such account existed
-            logger.warning("Attempt was made to update nonexistent account " + account.getID() + " for user " + userId);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to update "
+                + "nonexistent account " + account.getID() + " for user "
+                + userId + ".");
             return false;
         }
 
@@ -208,7 +230,8 @@ public class CentralServerController implements ServerController {
 
         store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
-        logger.info("Account " + account.getID() + " for user " + userId + " successfully updated.");
+        logger.info("[IP=" + clientIp + "] Account " + account.getID()
+            + " for user " + userId + " successfully updated.");
 
         return true;
     }
@@ -218,23 +241,26 @@ public class CentralServerController implements ServerController {
      * @param accountId ID of account to be deleted
      * @return "Was account successfully deleted?"
      */
-    public boolean deleteAccount(int accountId, int userId) {
+    public boolean deleteAccount(int accountId, int userId, String clientIp) {
         UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed
-            logger.warning("Attempt was made to delete account " + accountId + " for nonexistent user " + userId);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to delete "
+                + "account " + accountId + " for nonexistent user " + userId + ".");
             return false;
         }
 
         if (!userFile.deleteAccountWithId(accountId)) {
             // No such account
-            logger.warning("Attempt was made to delete nonexistent account " + accountId + " for user " + userId);
+            logger.warning("[IP=" + clientIp + "] Attempt was made to delete "
+                + "nonexistent account " + accountId + " for user " + userId + ".");
             return false;
         }
 
         store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
-        logger.info("Account " + accountId + " for user " + userId + " successfully deleted.");
+        logger.info("[IP=" + clientIp + "] Account " + accountId
+            + " for user " + userId + " successfully deleted.");
 
         return true;
     }
@@ -244,7 +270,7 @@ public class CentralServerController implements ServerController {
      * is tied to the specified user.
      * @return "Is specified account tied to specified user?"
      */
-    public boolean isAccountForUser(int accountId, int userId) {
+    public boolean isAccountForUser(int accountId, int userId, String clientIp) {
         UserStorageFile userFile = store.readFileForUser(store.getInputForUser(userId));
         if (userFile == null) {
             // No such user existed

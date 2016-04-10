@@ -82,7 +82,7 @@ public class ClientController {
             String email = request.queryParams("email");
             String password = request.queryParams("password");
 
-            int loginResult = server.login(email, password); // user ID or -1
+            int loginResult = server.login(email, password, request.ip()); // user ID or -1
 
             if (loginResult != -1) {
                 // Log in user
@@ -117,7 +117,7 @@ public class ClientController {
                     isPasswordValid = isPasswordValid(password);
 
             if (isEmailValid && isPasswordValid) {
-                User newUser = server.registerNewUser(email, password);
+                User newUser = server.registerNewUser(email, password, request.ip());
                 if (newUser == null) response.redirect("/"); // Unknown server error
 
                 // TODO: Log in new user
@@ -163,7 +163,7 @@ public class ClientController {
                 return false;
             }
 
-            boolean result = server.obliterateUser(userId);
+            boolean result = server.obliterateUser(userId, request.ip());
             return result;
         });
 
@@ -200,7 +200,7 @@ public class ClientController {
             } else {
                 // Default content type: JSON
 
-                Account.Header[] accounts = server.getAccountsForUser(userId);
+                Account.Header[] accounts = server.getAccountsForUser(userId, request.ip());
                 return gson.toJson(accounts);
             }
         });
@@ -239,7 +239,7 @@ public class ClientController {
             }
 
             if (request.headers("Accept").contains("text/html")) {
-                if (!server.isAccountForUser(accountId, userId)) {
+                if (!server.isAccountForUser(accountId, userId, request.ip())) {
                     // Bad request
                     response.status(400);
                     return "";
@@ -256,13 +256,14 @@ public class ClientController {
             } else {
                 // Default content type: JSON
 
-                if (!server.isAccountForUser(accountId, userId)) {
+                if (!server.isAccountForUser(accountId, userId, request.ip())) {
                     // Bad request
                     response.status(400);
                     return gson.toJson("");
                 }
 
-                Account account = server.getDetailsForAccount(userId, accountId);
+                Account account = server.getDetailsForAccount(userId, accountId,
+                    request.ip());
                 if (account == null) return gson.toJson("");
 
                 return gson.toJson(account);
@@ -281,7 +282,7 @@ public class ClientController {
                 return false;
             }
 
-            if (!server.isAccountForUser(accountId, userId)) {
+            if (!server.isAccountForUser(accountId, userId, request.ip())) {
                 // Bad request
                 response.status(400);
                 return false;
@@ -306,13 +307,13 @@ public class ClientController {
                 return false;
             }
 
-            if (!server.isAccountForUser(accountId, userId)) {
+            if (!server.isAccountForUser(accountId, userId, request.ip())) {
                 // Bad request
                 response.status(400);
                 return false;
             }
 
-            boolean result = server.deleteAccount(accountId, userId);
+            boolean result = server.deleteAccount(accountId, userId, request.ip());
             return result;
         });
 
