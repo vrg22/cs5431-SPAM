@@ -40,7 +40,7 @@ public class UserStorageFile extends StorageFile {
     public void putAccount(Account account) {
         UserStorageEntry newEntry = new UserStorageEntry(account.getID(),
             /*account.getUserID(),*/ account.getName(), account.getUsername(),
-            account.getPassword());
+            account.getMaster());
         
         nextAccountID++; //TODO: Update to next AVAILABLE ID
         numRecords++;

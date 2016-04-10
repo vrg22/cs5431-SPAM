@@ -1,5 +1,3 @@
-
-
 /**
  * Transfers data between server communication module and storage
  */
