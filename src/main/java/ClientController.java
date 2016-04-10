@@ -43,7 +43,11 @@ public class ClientController {
 		 *
 		 *	Reference: https://www.javacodegeeks.com/2014/07/java-keystore-tutorial.html
 		 */
-		secure("cs5431spamkeystore.jks", "cs5431spamisthebest", null, null);
+		// secure("cs5431spamkeystore.jks", "cs5431spamisthebest", null, null);
+
+        get("/.well-known/acme-challenge/PX9_Q1viU1COl9rE8m22ctlirLTTP2O_r6btXhhlTj4", (request, response) -> {
+            return "PX9_Q1viU1COl9rE8m22ctlirLTTP2O_r6btXhhlTj4.WgVrcQInx_ldga0q7x65QMKB8K3x3kFaw9UWQ_BJpA0";
+        });
 
         // If already logged in, redirect to /users/:userid
         before("/", (request, response) -> {
