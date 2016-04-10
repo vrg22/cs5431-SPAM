@@ -22,18 +22,6 @@ public class XMLStorageController implements StorageController {
     //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
 
-    public void createPasswordsFileOnStream(FileOutputStream out) {
-        //Instantiates and prepares the DOM to be saved to disk
-        createMainDOM();
-
-        writeDOMtoStream(DOM, out);
-    }
-
-    public void createFileForUserOnStream(int userId, FileOutputStream out) {
-        Document userDOM = createUserDOM(userId);
-        writeDOMtoStream(userDOM, out);
-    }
-
     public PasswordStorageFile readPasswordsFile(FileInputStream in) {
         return DOMtoPasswordsFile(streamToDOM(in));
     }
@@ -41,17 +29,39 @@ public class XMLStorageController implements StorageController {
     public UserStorageFile readFileForUser(FileInputStream in) {
         return DOMtoUserFile(streamToDOM(in));
     }
+    
+    public String getExtension() {
+        return ".xml";
+    }
+    
+    //TESTING: Make sure getPasswordsOutput() gets executed AFTER fileToDOM
+    public void writeFileToDisk(PasswordStorageFile file) {
+    	writeDOMtoStream(fileToDOM(file), getPasswordsOutput());
+    }
 
+    public void writeFileToDisk(UserStorageFile file, int userId) {
+        writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
+    }
+    
+    
+    //THESE ARE UNUSED
+    public void createPasswordsFileOnStream(FileOutputStream out) {
+        //Instantiates and prepares the DOM to be saved to disk
+        createMainDOM();
+        writeDOMtoStream(DOM, out);
+    }
+
+    public void createFileForUserOnStream(int userId, FileOutputStream out) {
+        Document userDOM = createUserDOM(userId);
+        writeDOMtoStream(userDOM, out);
+    }
+    
     public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
-        writeDOMtoStream(fileToDOM(file), out);
+    	writeDOMtoStream(fileToDOM(file), out);
     }
 
     public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
-    }
-
-    public String getExtension() {
-        return ".xml";
     }
 
 
@@ -180,18 +190,25 @@ public class XMLStorageController implements StorageController {
 
     // Read file from `in` and store it in a Document object
     private Document streamToDOM(FileInputStream in) {
-    	
-		Document doc = null;
 
+//    	System.out.println("HERE...");
+
+		Document doc = null;
+				
 		try {
+//			System.out.println("AVAILABLE: " + in.available());
+			
 			//Load XML from disk and set DOM
 			//File inputFile = new File(fileLoc);
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        doc = dBuilder.parse(in); //TODO: IF FILE DNE, what exception needs to be caught?
-
+			
 			//StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
-
+			
+			in.close();
+//			System.out.println("NULL: " + in==null);
+			
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,8 +222,6 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		System.out.println("Got here!!");
 		
 		return doc;
         
@@ -223,10 +238,14 @@ public class XMLStorageController implements StorageController {
 			DOMSource source = new DOMSource(theDOM);
 			StreamResult streamResult =  new StreamResult(out);
 			transformer.transform(source, streamResult);
+			out.close(); //CHECK
 		} catch (TransformerConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -335,6 +354,7 @@ public class XMLStorageController implements StorageController {
         return userId + getExtension();
     }
 
+    // Methods for getting file stream objects to work with
     public FileInputStream getPasswordsInput() {
         try {
             return new FileInputStream(new File(getPasswordsFilename()));

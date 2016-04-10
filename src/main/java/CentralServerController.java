@@ -50,6 +50,29 @@ public class CentralServerController implements ServerController {
      * @return the user created (null if unsuccessful)
      */
     public User registerNewUser(String username, String master) {
+//    	//TESTING
+//    	FileInputStream fis = store.getPasswordsInput();
+//    	FileInputStream fis2 = store.getPasswordsInput();
+//    	PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
+//
+//    	FileOutputStream fos = store.getPasswordsOutput();
+//	    try {
+//	    	fos.close();
+//
+//			System.out.println("AVAILABLE: " + fis.available());
+//			System.out.println("AVAILABLE2: " + fis2.available());
+//			
+//			store.readPasswordsFile(fis);
+//			store.readPasswordsFile(fis2);
+//			
+//			store.writeFileToStream(passwordFile, fos);
+//			
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    	System.exit(1);
+    	
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
         
         if (passwordFile.contains("username", username)) {
@@ -65,8 +88,13 @@ public class CentralServerController implements ServerController {
 
         UserStorageFile userFile = new UserStorageFile(newUserId);
         
-        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
-        store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
+        //System.out.println("NextID: " + newUserId);
+        
+        store.writeFileToDisk(passwordFile);
+        store.writeFileToDisk(userFile, newUserId);
+        
+        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+        //store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
         
         return newUser;
     }
