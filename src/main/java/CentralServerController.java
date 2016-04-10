@@ -5,6 +5,7 @@ import java.io.*;
 public class CentralServerController implements ServerController {
 	private Logger logger;
     private StorageController store;
+	private CryptoServiceProvider crypto;
 
     public CentralServerController() {
         //Set up logging
@@ -20,6 +21,9 @@ public class CentralServerController implements ServerController {
         // Set up storage
         store = new XMLStorageController(); // TODO: make sure this is the proper initialization
         store.createPasswordsFileOnStream(store.getPasswordsOutput());
+
+		// Set up the crypto module
+		crypto = new CryptoServiceProvider();
     }
 
     /**
@@ -36,7 +40,8 @@ public class CentralServerController implements ServerController {
             return -1;
         }
 
-        String hashedMaster = null;//hash(master); // TODO: implement hash
+		byte[] userSalt = entry.getSalt();
+        String hashedMaster = crypto.genSaltedHash(master, userSalt);
         if (!hashedMaster.equals(entry.getMaster())) {
             // Incorrect password
             return -1;
@@ -58,7 +63,9 @@ public class CentralServerController implements ServerController {
         }
         
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
-        User newUser = new User(username, master, newUserId); // TODO: should password be hashed or in plaintext here?
+		byte[] userSalt = crypto.getNewSalt();
+		String hashedMaster = crypto.genSaltedHash(master, userSalt);
+        User newUser = new User(username, userSalt, hashedMaster, newUserId);
         PasswordStorageEntry newUserEntry =
             new PasswordStorageEntry(newUser); // TODO: password should be hashed here
         passwordFile.put(newUserEntry);
