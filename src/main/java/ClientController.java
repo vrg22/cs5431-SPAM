@@ -230,7 +230,7 @@ public class ClientController {
                     return "";
                 }
 
-                response.redirect("/users/" + request.params("userid") + "/accounts/" + newAcct.getID());
+                response.redirect("/users/" + request.params("userid") + "/accounts/" + newAcct.getId());
             } else if (name == null) {
                 // Invalid name
                 response.redirect("/addnew?error=1");
@@ -289,7 +289,7 @@ public class ClientController {
         });
 
         // Update a stored account
-        put("/users/:userid/accounts/:accountid", (request, response) -> {
+        post("/users/:userid/accounts/:accountid", (request, response) -> {
             int userId, accountId;
             try {
                 userId = Integer.parseInt(request.params("userid"));
@@ -312,10 +312,10 @@ public class ClientController {
             String name = request.queryParams("name");
             String username = request.queryParams("username");
             String password = request.queryParams("password");
-            
+
             if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
-                Account updatedAcct = new Account(accountId, name, username, password);		
-                
+                Account updatedAcct = new Account(accountId, name, username, password);
+
                 //Make update
                 if (!server.updateAccount(userId, updatedAcct)) {
                 	//TODO: CHECK THIS CASE!
@@ -323,7 +323,7 @@ public class ClientController {
                     response.status(400);
                     return false;
                 }
-                response.redirect("/users/" + request.params("userid") + "/accounts/" + updatedAcct.getID()); //Could change to go to vault instead...
+                response.redirect("/users/" + request.params("userid") + "/accounts/" + updatedAcct.getId()); //Could change to go to vault instead...
 
             } else if (name == null) {
                 // Invalid name
@@ -332,7 +332,7 @@ public class ClientController {
                 // Invalid password
                 response.redirect("/addnew?error=2");
             }
-            
+
             return "";
             //return "Not yet implemented";
         });
