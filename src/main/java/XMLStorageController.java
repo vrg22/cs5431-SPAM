@@ -205,17 +205,17 @@ public class XMLStorageController implements StorageController {
 			//TODO: See about making this field optional
 			Element name = userDOM.createElement("name");
 			name.setTextContent(acc.getName());
-			thisUser.appendChild(name);
+			account.appendChild(name);
 			
 			Element usrnm = userDOM.createElement("username");
 			usrnm.setTextContent(acc.getUsername());
-			thisUser.appendChild(usrnm);
+			account.appendChild(usrnm);
 			
 			Element pwd = userDOM.createElement("password");
 			pwd.setTextContent(acc.getPassword());
-			thisUser.appendChild(pwd);
+			account.appendChild(pwd);
 
-	        vElement.appendChild(thisUser);
+	        vElement.appendChild(account);
 		}
 		
     	return userDOM;
@@ -235,8 +235,12 @@ public class XMLStorageController implements StorageController {
 
     // Populate a UserStorageFile with the contents of a Document
     private UserStorageFile DOMtoUserFile(Document theDOM) {
-        // TODO: figure out how to implement this
-        return null;
+    	UserStorageFile file = new UserStorageFile(getUserId(theDOM));
+    	
+    	// Set records to match file
+    	file.setRecords(getRecords(theDOM));
+    	
+        return file;
     }
 
     // Read file from `in` and store it in a Document object
@@ -373,7 +377,7 @@ public class XMLStorageController implements StorageController {
 		String password;
 
 		//Get the "vault" element
-		Element vaultElement = getTagElement("vault", DOM);
+		Element vaultElement = getTagElement("vault", uDOM);
 
 	    //Iterate through all child nodes of "vault" Element
     	for (Node n = vaultElement.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -393,6 +397,21 @@ public class XMLStorageController implements StorageController {
     	}
 
         return accts;
+	}
+	
+	/**
+	 * Return userId from a specified user's DOM.
+	 * TODO: Exception handling
+	 * @return
+	 */
+	private int getUserId(Document uDOM) {
+		//Metadata
+		int userId;
+		
+		Element uElement = getTagElement("user", uDOM);
+		userId = Integer.parseInt(uElement.getAttribute("ID"));
+		
+		return userId;
 	}
 	
 	/**

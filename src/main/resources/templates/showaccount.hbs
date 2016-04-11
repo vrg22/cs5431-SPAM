@@ -13,5 +13,16 @@
 
     <p>Username: {{account.username}}</p>
     <p>Password: {{account.password}}</p>
+
+    <h2>Update Information:</h2>
+    <form name="addnew" action="/users/{{userid}}/accounts/{{accountid}}" method="put" accept-charset="utf-8">
+        <label for="name">Name</label>
+        <input type="text" name="name" required><br/>
+        <label for="username">Username (optional)</label>
+        <input type="text" name="username"><br/>
+        <label for="password">Password</label>
+        <input type="password" name="password" required><br/>
+        <input type="submit" value="Save">
+    </form>
 </body>
 </html>
