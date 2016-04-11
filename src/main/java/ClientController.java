@@ -202,7 +202,6 @@ public class ClientController {
                 return render("showaccounts.hbs", attributes);
             } else {
                 // Default content type: JSON
-
                 Account.Header[] accounts = server.getAccountsForUser(userId);
                 return gson.toJson(accounts);
             }

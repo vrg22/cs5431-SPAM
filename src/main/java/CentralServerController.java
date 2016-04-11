@@ -136,7 +136,6 @@ public class CentralServerController implements ServerController {
             // No such user existed
             return null;
         }
-
         return userFile.getAccountHeaders();
     }
 
@@ -171,7 +170,8 @@ public class CentralServerController implements ServerController {
         int newAccountId = Integer.parseInt(userFile.getNextAccountID()); // TODO: get unique account ID (Q: Need to be random?)
         Account newAccount = new Account(newAccountId, /*userId,*/ name, username,
             password);
-
+        userFile.putAccount(newAccount);
+        
         store.writeFileToDisk(userFile, userId);
         //store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
