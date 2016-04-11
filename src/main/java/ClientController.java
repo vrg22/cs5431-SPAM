@@ -229,7 +229,7 @@ public class ClientController {
                     return "";
                 }
 
-                response.redirect("/users/" + request.params("userid") + "/accounts");
+                response.redirect("/users/" + request.params("userid") + "/accounts/" + newAcct.getID());
             } else if (name == null) {
                 // Invalid name
                 response.redirect("/addnew?error=1");
@@ -268,6 +268,7 @@ public class ClientController {
                 String details = sendGet(request.url(), "text/json");
                 attributes.put("account", details);
 
+                System.out.println("TRYING TO SHOW ACCOUNT...");
                 return render("showaccount.hbs", attributes);
             } else {
                 // Default content type: JSON
@@ -306,8 +307,32 @@ public class ClientController {
             // TODO: implement- figure out where the account params are in the request
             // Account account = ...;
             // return server.updateAccount(account);
+            String name = request.queryParams("name");
+            String username = request.queryParams("username");
+            String password = request.queryParams("password");
+            
+            if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
+                Account updatedAcct = new Account(accountId, name, username, password);		
+                
+                //Make update
+                if (!server.updateAccount(userId, updatedAcct)) {
+                	//TODO: CHECK THIS CASE!
+                	// Bad request
+                    response.status(400);
+                    return false;
+                }
+                response.redirect("/users/" + request.params("userid") + "/accounts/" + updatedAcct.getID()); //Could change to go to vault instead...
 
-            return "Not yet implemented";
+            } else if (name == null) {
+                // Invalid name
+                response.redirect("/addnew?error=1");
+            } else if (password == null) {
+                // Invalid password
+                response.redirect("/addnew?error=2");
+            }
+            
+            return "";
+            //return "Not yet implemented";
         });
 
         // Delete a stored account

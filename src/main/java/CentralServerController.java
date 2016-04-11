@@ -204,6 +204,8 @@ public class CentralServerController implements ServerController {
         //store.writeFileToStream(userFile, store.getOutputForUser(userId));
         ////store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
 
+        System.out.println("IN THEORY THE USER's VAULT IS UPDATED ON DISK...");
+        
         return true;
     }
 
