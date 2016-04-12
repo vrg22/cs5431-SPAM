@@ -9,8 +9,9 @@ public class VaultPanel extends JPanel {
 
         view.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
+                Account.Header[] accounts = ClientApplication.getAccounts();
                 ClientFrame frame = ClientFrame.getFrameForComponent(view);
-                frame.setPanel(new ShowAccountsPanel());
+                frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
 

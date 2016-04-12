@@ -24,9 +24,9 @@ public class ShowAccountPanel extends JPanel {
 
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                int id = account.getID();
+                int id = account.getId();
                 String name = nameField.getText();
-                String username = usernameField.getText();
+                String username = emailField.getText();
                 String password = passwordField.getText();
                 Account updated = new Account(id, name, username, password);
                 boolean success = ClientApplication.updateAccount(account);
@@ -37,8 +37,9 @@ public class ShowAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                Account.Header[] accounts = ClientApplication.getAccounts();
                 ClientFrame frame = ClientFrame.getFrameForComponent(back);
-                frame.setPanel(new ShowAccountsPanel());
+                frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
 

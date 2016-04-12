@@ -22,14 +22,15 @@ public class StoreNewAccountPanel extends JPanel {
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String name = nameField.getText();
-                String username = usernameField.getText();
+                String username = emailField.getText();
                 String password = passwordField.getText();
                 boolean success = ClientApplication.storeNewAccount(name,
                     username, password);
 
                 if (success) {
+                    Account.Header[] accounts = ClientApplication.getAccounts();
                     ClientFrame frame = ClientFrame.getFrameForComponent(save);
-                    frame.setPanel(new ShowAccountsPanel());
+                    frame.setPanel(new ShowAccountsPanel(accounts));
                 } else {
                     JLabel errorLabel = new JLabel();
                     errorLabel.setText("Sorry there was a problem.");
@@ -42,8 +43,9 @@ public class StoreNewAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                Account.Header[] accounts = ClientApplication.getAccounts();
                 ClientFrame frame = ClientFrame.getFrameForComponent(back);
-                frame.setPanel(new ShowAccountsPanel());
+                frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
 

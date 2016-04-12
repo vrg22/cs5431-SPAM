@@ -6,14 +6,11 @@ public class ClientApplication
 {
     public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
 
-    private PasswordGenerator passwordGenerator;
     private static final int PASSWORD_LENGTH = 12;
 
     private int userId; // User ID of currently logged-in user
 
     public ClientApplication() {
-        passwordGenerator = new ComplexPasswordGenerator();
-
         new ClientFrame().start();
     }
 
@@ -43,21 +40,21 @@ public class ClientApplication
     }
 
     /**
-     * Obliterate user
+     * Obliterate logged-in user
      *
      * @return Was user successfully obliterated
      */
-    public static boolean obliterateUser(int userId) {
+    public static boolean obliterateUser() {
         // TODO: implement
         return false;
     }
 
     /**
-     * Get list of accounts associated with user
+     * Get list of accounts associated with logged-in user
      *
      * @return Array of account headers for user's accounts
      */
-    public static Account.Header[] getAccounts(int userId) {
+    public static Account.Header[] getAccounts() {
         // TODO: implement
         return null;
     }
@@ -109,7 +106,6 @@ public class ClientApplication
      * @return a random password
      */
     public static String generatePassword() {
-        // TODO: implement
-        return passwordGenerator.next(PASSWORD_LENGTH);
+        return new ComplexPasswordGenerator().next(PASSWORD_LENGTH);
     }
 }
