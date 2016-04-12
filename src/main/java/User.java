@@ -4,12 +4,15 @@ public class User {
 
 	// Private fields
 	private String username;
+	private byte[] salt; //Salt used to hash master pwd
+	private byte[] iv;
 	private String master; //salted hash of master pwd
 	private int id;
 	// ETC.
 
-	public User(String uname, String pword, int ID) {
+	public User(String uname, byte[] salt, String pword, int ID) {
 		this.username = uname;
+		this.salt = salt;
 		this.master = pword; //TODO: take salted hash - WHERE?
 		this.id = ID;
 	}
@@ -33,6 +36,14 @@ public class User {
 		return master;
 	}
 	
+	public byte[] getSalt() {
+		return salt;
+	}
+
+	public byte[] getIV() {
+		return iv;
+	}
+
 //	public String getPassword() {
 //		return password;
 //	}
