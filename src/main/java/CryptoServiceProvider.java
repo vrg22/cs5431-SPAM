@@ -16,7 +16,7 @@ public class CryptoServiceProvider {
 
 	private static final int HASHITERATIONS = 64000;
 	private static final int KEYGENITERATIONS = 96000;
-	private static final int KEYSIZE = 128;
+	private static final int KEYSIZE = 256;
 
 	public static String b64encode(byte[] bytes) {
 		return Base64.getEncoder().encodeToString(bytes);
