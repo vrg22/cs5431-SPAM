@@ -7,8 +7,7 @@ import java.io.*;
 
 public class ClientApplication
 {
-	// public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
-    public static final String HTTPS_ROOT = "localhost:5000";
+    public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
 
 	private static final int PASSWORD_LENGTH = 12;
     private Gson gson;
