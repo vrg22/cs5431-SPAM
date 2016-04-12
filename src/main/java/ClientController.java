@@ -270,7 +270,6 @@ public class ClientController {
                 Account details = gson.fromJson(detailsStr, Account.class);
                 attributes.put("account", details);
 
-                System.out.println("TRYING TO SHOW ACCOUNT...");
                 return render("showaccount.hbs", attributes);
             } else {
                 // Default content type: JSON
@@ -290,6 +289,8 @@ public class ClientController {
 
         // Update a stored account
         post("/users/:userid/accounts/:accountid", (request, response) -> {
+            System.out.println("TRYING TO SHOW ACCOUNT...");
+        	
             int userId, accountId;
             try {
                 userId = Integer.parseInt(request.params("userid"));
