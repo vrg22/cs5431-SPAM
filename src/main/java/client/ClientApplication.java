@@ -4,108 +4,112 @@ import java.awt.*;
 
 public class ClientApplication
 {
-    public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+	public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+	public static final String HTTPS_ROOT1 = "https://cs5431spam.herokuapp.com";
 
-    private static final int PASSWORD_LENGTH = 12;
+	private static final int PASSWORD_LENGTH = 12;
 
-    private int userId; // User ID of currently logged-in user
+	private int userId; // User ID of currently logged-in user
 
-    public ClientApplication() {
-        new ClientFrame().start();
-    }
+	public ClientApplication() {
+		new ClientFrame().start();
+	}
 
-    public static void main(String args[])
-    {
-        new ClientApplication();
-    }
+	public static void main(String args[])
+	{
+		new ClientApplication();
+		//String r = SendHttpsRequest.get("https://www.google.com");
+		String r = SendHttpsRequest.get(HTTPS_ROOT1);
+		System.out.println(r);
+	}
 
-    /**
-     * Attempt to log in with specified credentials
-     *
-     * @return Was login successful
-     */
-    public static boolean login(String email, String password) {
-        // TODO: implement. If successful, set userId field
-        return false;
-    }
+	/**
+	 * Attempt to log in with specified credentials
+	 *
+	 * @return Was login successful
+	 */
+	public static boolean login(String email, String password) {
+		// TODO: implement. If successful, set userId field
+		return false;
+	}
 
-    /**
-     * Register new user
-     *
-     * @return Was user successfully registered
-     */
-    public static boolean register(String email, String password) {
-        // TODO: implement
-        return false;
-    }
+	/**
+	 * Register new user
+	 *
+	 * @return Was user successfully registered
+	 */
+	public static boolean register(String email, String password) {
+		// TODO: implement
+		return false;
+	}
 
-    /**
-     * Obliterate logged-in user
-     *
-     * @return Was user successfully obliterated
-     */
-    public static boolean obliterateUser() {
-        // TODO: implement
-        return false;
-    }
+	/**
+	 * Obliterate logged-in user
+	 *
+	 * @return Was user successfully obliterated
+	 */
+	public static boolean obliterateUser() {
+		// TODO: implement
+		return false;
+	}
 
-    /**
-     * Get list of accounts associated with logged-in user
-     *
-     * @return Array of account headers for user's accounts
-     */
-    public static Account.Header[] getAccounts() {
-        // TODO: implement
-        return null;
-    }
+	/**
+	 * Get list of accounts associated with logged-in user
+	 *
+	 * @return Array of account headers for user's accounts
+	 */
+	public static Account.Header[] getAccounts() {
+		// TODO: implement
+		return null;
+	}
 
-    /**
-     * Store new account for logged-in user
-     *
-     * @return Was account successfully stored
-     */
-    public static boolean storeNewAccount(String name, String username,
-            String password) {
-        // TODO: implement
-        return false;
-    }
+	/**
+	 * Store new account for logged-in user
+	 *
+	 * @return Was account successfully stored
+	 */
+	public static boolean storeNewAccount(String name, String username,
+			String password) {
+		// TODO: implement
+		return false;
+	}
 
-    /**
-     * Get details for an account
-     *
-     * @return Account details for account with specified account ID
-     */
-    public static Account getAccount(int accountId) {
-        // TODO: implement
-        return null;
-    }
+	/**
+	 * Get details for an account
+	 *
+	 * @return Account details for account with specified account ID
+	 */
+	public static Account getAccount(int accountId) {
+		// TODO: implement
+		return null;
+	}
 
-    /**
-     * Update a stored account
-     *
-     * @return Was account successfully updated
-     */
-    public static boolean updateAccount(Account account) {
-        // TODO: implement
-        return false;
-    }
+	/**
+	 * Update a stored account
+	 *
+	 * @return Was account successfully updated
+	 */
+	public static boolean updateAccount(Account account) {
+		// TODO: implement
+		return false;
+	}
 
-    /**
-     * Delete a stored account
-     *
-     * @return Was account successfully deleted
-     */
-    public static boolean deleteAccount(int accountId) {
-        // TODO: implement
-        return false;
-    }
+	/**
+	 * Delete a stored account
+	 *
+	 * @return Was account successfully deleted
+	 */
+	public static boolean deleteAccount(int accountId) {
+		// TODO: implement
+		return false;
+	}
 
-    /**
-     * Generate a random password
-     *
-     * @return a random password
-     */
-    public static String generatePassword() {
-        return new ComplexPasswordGenerator().next(PASSWORD_LENGTH);
-    }
+	/**
+	 * Generate a random password
+	 *
+	 * @return a random password
+	 */
+	public static String generatePassword() {
+		return new ComplexPasswordGenerator().next(PASSWORD_LENGTH);
+	}
 }
