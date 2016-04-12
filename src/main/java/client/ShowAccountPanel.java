@@ -3,31 +3,33 @@ import java.awt.event.*;
 import java.awt.*;
 
 public class ShowAccountPanel extends JPanel {
-    public ShowAccountPanel() {
-        // TODO: get Account to display
-        Account account =  null;
-
+    public ShowAccountPanel(Account account) {
         JLabel nameLabel = new JLabel();
         nameLabel.setText("Name:");
-        JTextField name = new JTextField();
-        name.setText(account.getName());
+        JTextField nameField = new JTextField();
+        nameField.setText(account.getName());
 
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
-        JTextField email = new JTextField();
-        email.setText(account.getUsername());
+        JTextField emailField = new JTextField();
+        emailField.setText(account.getUsername());
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
-        JPasswordField password=new JPasswordField(10);
-        password.setText(account.getPassword());
+        JPasswordField passwordField = new JPasswordField(10);
+        passwordField.setText(account.getPassword());
 
         JButton save = new JButton();
         save.setText("Save Changes");
 
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                // TODO: save changes
+                int id = account.getID();
+                String name = nameField.getText();
+                String username = usernameField.getText();
+                String password = passwordField.getText();
+                Account updated = new Account(id, name, username, password);
+                boolean success = ClientApplication.updateAccount(account);
             }
         });
 
@@ -35,19 +37,19 @@ public class ShowAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClientApplication app = ClientApplication.getFrameForComponent(back);
-                app.setPanel(new ShowAccountsPanel());
+                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                frame.setPanel(new ShowAccountsPanel());
             }
         });
 
         add(back);
         add(new JPanel());
         add(nameLabel);
-        add(name);
+        add(nameField);
         add(emailLabel);
-        add(email);
+        add(emailField);
         add(passwordLabel);
-        add(password);
+        add(passwordField);
         add(save);
         add(new JPanel());
         setLayout(new GridLayout(5, 2));

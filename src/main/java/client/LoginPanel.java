@@ -7,25 +7,29 @@ public class LoginPanel extends JPanel {
     public LoginPanel() {
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
-        JTextField email = new JTextField();
+        JTextField emailField = new JTextField();
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
-        JPasswordField password=new JPasswordField(10);
+        JPasswordField passwordField = new JPasswordField(10);
 
         JButton login = new JButton();
         login.setText("Login");
 
-        login.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                String loginUrl = ClientApplication.HTTPS_ROOT + "/login";
-                Map<String, String> loginParams = new HashMap<>();
-                loginParams.put("email", email.getText());
-                loginParams.put("password", password.getText());
-                String response = SendHttpsRequest.post(loginUrl, loginParams);
+        login.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String email = emailField.getText();
+                String password = passwordField.getText();
+                boolean success = ClientApplication.login(email, password);
 
-                ClientApplication app = ClientApplication.getFrameForComponent(login);
-                app.setPanel(new VaultPanel());
+                if (success) {
+                    ClientFrame frame = ClientFrame.getFrameForComponent(login);
+                    frame.setPanel(new VaultPanel());
+                } else {
+                    JLabel errorLabel = new JLabel();
+                    errorLabel.setText("Invalid email and/or password.");
+                    add(errorLabel);
+                }
             }
         });
 
@@ -34,15 +38,15 @@ public class LoginPanel extends JPanel {
 
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientApplication app = ClientApplication.getFrameForComponent(register);
-                app.setPanel(new RegisterPanel());
+                ClientFrame frame = ClientFrame.getFrameForComponent(register);
+                frame.setPanel(new RegisterPanel());
             }
         });
 
         add(emailLabel);
-        add(email);
+        add(emailField);
         add(passwordLabel);
-        add(password);
+        add(passwordField);
         add(register);
         add(login);
         setLayout(new GridLayout(3, 2));
