@@ -11,7 +11,7 @@
         <p class="error">{{error}}</p>
     {{/if}}
 
-    <form id="addnew" name="addnew" action="/users/{{userid}}" method="post" accept-charset="utf-8">
+    <form id="addnew" name="addnew" action="/users/{{userid}}/accounts/create" method="post" accept-charset="utf-8">
         <label for="name">Name</label>
         <input type="text" name="name" required><br/>
         <label for="username">Username (optional)</label>

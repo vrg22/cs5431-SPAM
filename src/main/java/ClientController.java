@@ -118,7 +118,10 @@ public class ClientController {
 
             if (isEmailValid && isPasswordValid) {
                 User newUser = server.registerNewUser(email, password, request.ip());
-                if (newUser == null) response.redirect("/"); // Unknown server error
+                if (newUser == null) {
+                    response.redirect("/"); // Unknown server error
+                    return "";
+                }
 
                 // TODO: Log in new user
                 isLoggedIn = true;
@@ -193,29 +196,16 @@ public class ClientController {
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put("userid", userId);
 
-                String accounts = sendGet(request.url(), "text/json");
+                String accountsJson = sendGet(request.url(), "text/json");
+                Account.Header[] accounts = gson.fromJson(accountsJson, Account.Header[].class);
                 attributes.put("accounts", accounts);
 
                 return render("showaccounts.hbs", attributes);
             } else {
                 // Default content type: JSON
-
                 Account.Header[] accounts = server.getAccountsForUser(userId, request.ip());
                 return gson.toJson(accounts);
             }
-        });
-
-        // Store a new account for a user
-        post("/users/:userid/accounts", (request, response) -> {
-            // TODO: implement- figure out where the name/username/password parameters are
-            // int userId = request.params("userid");
-            // String name = ...;
-            // String username = ...;
-            // String password = ...;
-            // Account account = server.storeNewAccountForUser(userId, name,
-            //     username, password);
-
-            return "Not yet implemented";
         });
 
         // HTML: Show "Store new account" page
@@ -223,6 +213,33 @@ public class ClientController {
             Map<String, Object> attributes = new HashMap<>();
             attributes.put("userid", request.params("userid"));
             return render("addnew.hbs", attributes);
+        });
+
+        // Store new account
+        post("/users/:userid/accounts/create", (request, response) -> {
+            String name = request.queryParams("name");
+            String username = request.queryParams("username");
+            String password = request.queryParams("password");
+
+            //TODO: DO any conditions need to be checked here? <3rd-party account>
+
+            if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
+                Account newAcct = server.storeNewAccountForUser(userId, name, username, password, request.ip());
+                if (newAcct == null) {
+                    response.redirect("/"); // Unknown server error
+                    return "";
+                }
+
+                response.redirect("/users/" + request.params("userid") + "/accounts/" + newAcct.getId());
+            } else if (name == null) {
+                // Invalid name
+                response.redirect("/addnew?error=1");
+            } else if (password == null) {
+                // Invalid password
+                response.redirect("/addnew?error=2");
+            }
+
+            return "";
         });
 
         // HTML: Show "View/edit an account" page
@@ -249,7 +266,8 @@ public class ClientController {
                 attributes.put("userid", userId);
                 attributes.put("accountid", accountId);
 
-                String details = sendGet(request.url(), "text/json");
+                String detailsStr = sendGet(request.url(), "text/json");
+                Account details = gson.fromJson(detailsStr, Account.class);
                 attributes.put("account", details);
 
                 return render("showaccount.hbs", attributes);
@@ -271,7 +289,9 @@ public class ClientController {
         });
 
         // Update a stored account
-        put("/users/:userid/accounts/:accountid", (request, response) -> {
+        post("/users/:userid/accounts/:accountid", (request, response) -> {
+            System.out.println("TRYING TO SHOW ACCOUNT...");
+        	
             int userId, accountId;
             try {
                 userId = Integer.parseInt(request.params("userid"));
@@ -291,8 +311,32 @@ public class ClientController {
             // TODO: implement- figure out where the account params are in the request
             // Account account = ...;
             // return server.updateAccount(account);
+            String name = request.queryParams("name");
+            String username = request.queryParams("username");
+            String password = request.queryParams("password");
 
-            return "Not yet implemented";
+            if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
+                Account updatedAcct = new Account(accountId, name, username, password);
+
+                //Make update
+                if (!server.updateAccount(userId, updatedAcct, request.ip())) {
+                	//TODO: CHECK THIS CASE!
+                	// Bad request
+                    response.status(400);
+                    return false;
+                }
+                response.redirect("/users/" + request.params("userid") + "/accounts/" + updatedAcct.getId()); //Could change to go to vault instead...
+
+            } else if (name == null) {
+                // Invalid name
+                response.redirect("/addnew?error=1");
+            } else if (password == null) {
+                // Invalid password
+                response.redirect("/addnew?error=2");
+            }
+
+            return "";
+            //return "Not yet implemented";
         });
 
         // Delete a stored account

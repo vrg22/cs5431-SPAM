@@ -22,18 +22,6 @@ public class XMLStorageController implements StorageController {
     //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
 
-    public void createPasswordsFileOnStream(FileOutputStream out) {
-        //Instantiates and prepares the DOM to be saved to disk
-        createMainDOM();
-
-        writeDOMtoStream(DOM, out);
-    }
-
-    public void createFileForUserOnStream(int userId, FileOutputStream out) {
-        Document userDOM = createUserDOM(userId);
-        writeDOMtoStream(userDOM, out);
-    }
-
     public PasswordStorageFile readPasswordsFile(FileInputStream in) {
         return DOMtoPasswordsFile(streamToDOM(in));
     }
@@ -41,17 +29,50 @@ public class XMLStorageController implements StorageController {
     public UserStorageFile readFileForUser(FileInputStream in) {
         return DOMtoUserFile(streamToDOM(in));
     }
+    
+    public String getExtension() {
+        return ".xml";
+    }
+    
+    //TESTING: Make sure getPasswordsOutput() gets executed AFTER fileToDOM
+    public void writeFileToDisk(PasswordStorageFile file) {
+    	writeDOMtoStream(fileToDOM(file), getPasswordsOutput());
+    }
 
+    public void writeFileToDisk(UserStorageFile file, int userId) {
+        writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
+    }
+    
+    //TODO: Where used??
+    public void createPasswordsFileOnStream() {
+        //Instantiates and prepares the DOM to be saved to disk
+        createMainDOM();
+        writeDOMtoStream(DOM, getPasswordsOutput());
+    }
+
+    public void createFileForUserOnStream(int userId) {
+        Document userDOM = createUserDOM(userId);
+        writeDOMtoStream(userDOM, getOutputForUser(userId));
+    }
+    
+    //THESE ARE UNUSED
+    public void createPasswordsFileOnStream(FileOutputStream out) {
+        //Instantiates and prepares the DOM to be saved to disk
+        createMainDOM();
+        writeDOMtoStream(DOM, out);
+    }
+
+    public void createFileForUserOnStream(int userId, FileOutputStream out) {
+        Document userDOM = createUserDOM(userId);
+        writeDOMtoStream(userDOM, out);
+    }
+    
     public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
-        writeDOMtoStream(fileToDOM(file), out);
+    	writeDOMtoStream(fileToDOM(file), out);
     }
 
     public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
-    }
-
-    public String getExtension() {
-        return ".xml";
     }
 
 
@@ -97,7 +118,7 @@ public class XMLStorageController implements StorageController {
 			//Create XML base and set DOM
 			StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
 
-			//Specific setup for the main XML users file
+			//Specific setup for a particular user's file
 			setupUserXML(xmlStringBuilder, ID);
 
 			ByteArrayInputStream input =  new ByteArrayInputStream(xmlStringBuilder.toString().getBytes("UTF-8"));
@@ -156,8 +177,48 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a UserStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(UserStorageFile file) {
-        // TODO: figure out how to implement this
-        return null;
+    	
+    	Document initialDOM, userDOM = null;
+    	
+	    FileInputStream fis = getInputForUser(Integer.parseInt(file.getUserID()));
+	    initialDOM = streamToDOM(fis);
+    	
+    	// Put all entries, etc in the right place
+    	userDOM = initialDOM;
+    	
+    	// Set metadata to match
+		Element thisUser = getTagElement("user", userDOM);
+		thisUser.setAttribute("ID", file.getUserID());
+		
+		// Make vault data match by simply overwriting content
+		Element vElement = getTagElement("vault", userDOM);
+		vElement.setTextContent(""); //CHECK!
+		
+		UserStorageEntry uEntry;
+		for (StorageEntry entry : file.entries) {
+			uEntry = (UserStorageEntry) entry;
+			Element account = userDOM.createElement("account");
+			account.setAttribute("ID", Integer.toString(uEntry.getAccountId()));
+			
+			Account acc = uEntry.getAccount();
+			
+			//TODO: See about making this field optional
+			Element name = userDOM.createElement("name");
+			name.setTextContent(acc.getName());
+			account.appendChild(name);
+			
+			Element usrnm = userDOM.createElement("username");
+			usrnm.setTextContent(acc.getUsername());
+			account.appendChild(usrnm);
+			
+			Element pwd = userDOM.createElement("password");
+			pwd.setTextContent(acc.getPassword());
+			account.appendChild(pwd);
+
+	        vElement.appendChild(account);
+		}
+		
+    	return userDOM;
     }
 
     // Populate a PasswordStorageFile with the contents of a Document
@@ -174,24 +235,33 @@ public class XMLStorageController implements StorageController {
 
     // Populate a UserStorageFile with the contents of a Document
     private UserStorageFile DOMtoUserFile(Document theDOM) {
-        // TODO: figure out how to implement this
-        return null;
+    	UserStorageFile file = new UserStorageFile(getUserId(theDOM));
+    	
+    	// Set records to match file
+    	file.setRecords(getRecords(theDOM));
+    	
+        return file;
     }
 
     // Read file from `in` and store it in a Document object
     private Document streamToDOM(FileInputStream in) {
-    	
-		Document doc = null;
 
+		Document doc = null;
+				
 		try {
+//			System.out.println("AVAILABLE: " + in.available());
+			
 			//Load XML from disk and set DOM
 			//File inputFile = new File(fileLoc);
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        doc = dBuilder.parse(in); //TODO: IF FILE DNE, what exception needs to be caught?
-
+			
 			//StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
-
+			
+			in.close();
+//			System.out.println("NULL: " + in==null);
+			
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,8 +275,6 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		System.out.println("Got here!!");
 		
 		return doc;
         
@@ -223,10 +291,14 @@ public class XMLStorageController implements StorageController {
 			DOMSource source = new DOMSource(theDOM);
 			StreamResult streamResult =  new StreamResult(out);
 			transformer.transform(source, streamResult);
+			out.close(); //CHECK
 		} catch (TransformerConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -263,6 +335,7 @@ public class XMLStorageController implements StorageController {
 		//Attributes of each user
 		String username;
 		String password;
+		byte[] salt;
 		int id;
 
 		//Get the "users" element
@@ -278,13 +351,67 @@ public class XMLStorageController implements StorageController {
 
             	username = uElt.getElementsByTagName("username").item(0).getTextContent();
             	password = uElt.getElementsByTagName("password").item(0).getTextContent();
-            	User u = new User(username, password, id);
+            	salt = uElt.getElementsByTagName("salt").item(0).getTextContent().getBytes();
+            	User u = new User(username, salt, password, id);
 
             	users.add(u);
             }
     	}
 
         return users;
+	}
+	
+	/**
+	 * Return ArrayList of accounts from a specified user's DOM. //Or null if no accounts yet?
+	 * TODO: Exception handling
+	 * @return
+	 */
+	private ArrayList<Account> getRecords(Document uDOM) {
+		//ArrayList of records to be returned
+		ArrayList<Account> accts = new ArrayList<Account>();
+
+		//Attributes of each record
+		int accId;
+		String accName;
+		String username;
+		String password;
+
+		//Get the "vault" element
+		Element vaultElement = getTagElement("vault", uDOM);
+
+	    //Iterate through all child nodes of "vault" Element
+    	for (Node n = vaultElement.getFirstChild(); n != null; n = n.getNextSibling()) {
+
+    		//Add this account to our list
+    		if (n.getNodeType() == Node.ELEMENT_NODE) {
+            	Element accElt = (Element) n;
+            	accId = Integer.parseInt(accElt.getAttribute("ID"));
+
+            	accName = accElt.getElementsByTagName("name").item(0).getTextContent();
+            	username = accElt.getElementsByTagName("username").item(0).getTextContent();
+            	password = accElt.getElementsByTagName("password").item(0).getTextContent();
+            	Account a = new Account(accId, accName, username, password);
+
+            	accts.add(a);
+            }
+    	}
+
+        return accts;
+	}
+	
+	/**
+	 * Return userId from a specified user's DOM.
+	 * TODO: Exception handling
+	 * @return
+	 */
+	private int getUserId(Document uDOM) {
+		//Metadata
+		int userId;
+		
+		Element uElement = getTagElement("user", uDOM);
+		userId = Integer.parseInt(uElement.getAttribute("ID"));
+		
+		return userId;
 	}
 	
 	/**
@@ -335,6 +462,7 @@ public class XMLStorageController implements StorageController {
         return userId + getExtension();
     }
 
+    // Methods for getting file stream objects to work with
     public FileInputStream getPasswordsInput() {
         try {
             return new FileInputStream(new File(getPasswordsFilename()));

@@ -2,16 +2,7 @@ import java.io.*;
 
 // Handles parsing storage files
 public interface StorageController {
-    /**
-     * Create a new passwords file, write to output stream
-     */
-    public void createPasswordsFileOnStream(FileOutputStream out);
-
-    /**
-     * Create a new user file, write to output stream
-     */
-    public void createFileForUserOnStream(int userId, FileOutputStream out);
-
+	
     /**
      * Read passwords file from input stream, return as a StorageFile
      */
@@ -22,6 +13,40 @@ public interface StorageController {
      */
     public UserStorageFile readFileForUser(FileInputStream in);
 
+    
+    
+    
+    /**
+     * Create a new passwords file, write to designated output stream
+     */
+    public void writeFileToDisk(PasswordStorageFile file);
+
+    /**
+     * Create a new passwords file, write to designated output stream
+     */
+    public void writeFileToDisk(UserStorageFile file, int userId);
+    /**
+     * Create a new passwords file, write to designated output stream
+     */
+    public void createPasswordsFileOnStream();
+
+    /**
+     * Create a new user file, write to designated output stream
+     */
+    public void createFileForUserOnStream(int userId);
+    
+    
+    
+    //THE BELOW 4 ARE UNUSED
+    /**
+     * Create a new passwords file, write to output stream
+     */
+    public void createPasswordsFileOnStream(FileOutputStream out);
+
+    /**
+     * Create a new user file, write to output stream
+     */
+    public void createFileForUserOnStream(int userId, FileOutputStream out);
     /**
      * Convert a PasswordStorageFile into file-writable form,
      * and write to output stream

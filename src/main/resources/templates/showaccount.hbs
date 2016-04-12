@@ -5,13 +5,17 @@
     <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
 </head>
 <body>
-    <h1>Show Account</h1>
+    <h1>Details for {{account.name}}</h1>
 
     {{#if error}}
         <p class="error">{{error}}</p>
     {{/if}}
 
-    <form name="addnew" action="/users/{{userid}}" method="post" accept-charset="utf-8">
+    <p>Username: {{account.username}}</p>
+    <p>Password: {{account.password}}</p>
+
+    <h2>Update Information:</h2>
+    <form name="addnew" action="/users/{{userid}}/accounts/{{accountid}}" method="post" accept-charset="utf-8">
         <label for="name">Name</label>
         <input type="text" name="name" required><br/>
         <label for="username">Username (optional)</label>

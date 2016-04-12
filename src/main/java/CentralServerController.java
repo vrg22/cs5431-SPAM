@@ -1,4 +1,7 @@
 import java.util.logging.*;
+
+import org.w3c.dom.Document;
+
 import java.io.*;
 
 // Provides public methods to complete user-level actions
@@ -11,7 +14,8 @@ public class CentralServerController implements ServerController {
         //Set up logging
         try {
             String loggerName = CentralServerController.class.getName();
-            logger = SimpleLogger.getLogger(loggerName);
+            logger = Logger.getLogger(loggerName);
+            //logger = SimpleLogger.getLogger(loggerName);   //TODO: This didn't work, do we want SimpleLogger?
 
             FileHandler fh = new FileHandler(logLocation, true);
             logger.addHandler(fh);
@@ -78,6 +82,7 @@ public class CentralServerController implements ServerController {
             return null;
         }
 
+        // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
 		byte[] userSalt = crypto.getNewSalt();
 		String hashedMaster = crypto.genSaltedHash(master, userSalt);
@@ -88,8 +93,16 @@ public class CentralServerController implements ServerController {
 
         UserStorageFile userFile = new UserStorageFile(newUserId);
 
-        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
-        store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
+		
+        store.writeFileToDisk(passwordFile);
+		
+		// Create new user vault file
+		store.createFileForUserOnStream(newUserId);
+		//UserStorageFile userFile = new UserStorageFile(newUserId);
+		//store.writeFileToDisk(userFile, newUserId);
+		
+		//store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+		//store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
 
         logger.info("[IP=" + clientIp + "] New user " + newUserId
             + " successfully registered.");
@@ -114,7 +127,8 @@ public class CentralServerController implements ServerController {
 
         // TODO: delete user's file too
 
-        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+        store.writeFileToDisk(passwordFile);
+        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         logger.info("[IP=" + clientIp + "] User " + userId
             + " successfully obliterated.");
@@ -141,7 +155,8 @@ public class CentralServerController implements ServerController {
 
         passwordFile.putUser(user);
 
-        store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+        store.writeFileToDisk(passwordFile);
+        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         logger.info("[IP=" + clientIp + "] User " + user.getID()
             + " successfully updated.");
@@ -161,7 +176,6 @@ public class CentralServerController implements ServerController {
             // No such user existed
             return null;
         }
-
         return userFile.getAccountHeaders();
     }
 
@@ -198,8 +212,10 @@ public class CentralServerController implements ServerController {
         int newAccountId = Integer.parseInt(userFile.getNextAccountID()); // TODO: get unique account ID (Q: Need to be random?)
         Account newAccount = new Account(newAccountId, /*userId,*/ name, username,
             password);
-
-        store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        userFile.putAccount(newAccount);
+        
+        store.writeFileToDisk(userFile, userId);
+        //store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
         logger.info("[IP=" + clientIp + "] New account " + newAccountId
             + " successfully stored for user " + userId + ".");
@@ -220,26 +236,28 @@ public class CentralServerController implements ServerController {
         if (userFile == null) {
             // No such user existed
             logger.warning("[IP=" + clientIp + "] Attempt was made to update "
-                + "account " + account.getID() + " for nonexistent user "
+                + "account " + account.getId() + " for nonexistent user "
                 + userId + ".");
             return false;
         }
 
-        if (!userFile.deleteAccountWithId(account.getID())) {
+        if (!userFile.deleteAccountWithId(account.getId())) {
             // No such account existed
             logger.warning("[IP=" + clientIp + "] Attempt was made to update "
-                + "nonexistent account " + account.getID() + " for user "
+                + "nonexistent account " + account.getId() + " for user "
                 + userId + ".");
             return false;
         }
 
         userFile.putAccount(account);
 
-        store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        store.writeFileToDisk(userFile, userId);
+		//store.writeFileToStream(userFile, store.getOutputForUser(userId));
+		////store.writeFileToStream(userFile, getOutputForUser(account.getUserID()));
 
-        logger.info("[IP=" + clientIp + "] Account " + account.getID()
+        logger.info("[IP=" + clientIp + "] Account " + account.getId()
             + " for user " + userId + " successfully updated.");
-
+        
         return true;
     }
 
@@ -264,7 +282,8 @@ public class CentralServerController implements ServerController {
             return false;
         }
 
-        store.writeFileToStream(userFile, store.getOutputForUser(userId));
+        store.writeFileToDisk(userFile, userId);
+        //store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
         logger.info("[IP=" + clientIp + "] Account " + accountId
             + " for user " + userId + " successfully deleted.");

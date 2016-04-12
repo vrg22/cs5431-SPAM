@@ -1,7 +1,7 @@
 public class User {
 
-	public static final int MAX_USERS = 300; //TODO: Adjust this
-
+	public static int MAX_USERS = 300;
+	
 	// Private fields
 	private String username;
 	private byte[] salt; //Salt used to hash master pwd
