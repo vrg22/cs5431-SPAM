@@ -1,33 +1,51 @@
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.*;
+import com.google.gson.Gson;
 
 public class ClientApplication
 {
-    public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+	public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
 
-    private static final int PASSWORD_LENGTH = 12;
+	private static final int PASSWORD_LENGTH = 12;
+	private int userId; // User ID of currently logged-in user
+    private Gson gson;
+    private CryptoServiceProvider crypto;
 
-    private int userId; // User ID of currently logged-in user
+	public ClientApplication() {
+        gson = new Gson();
+        crypto = new CryptoServiceProvider();
+		new ClientFrame().start();
+	}
 
-    public ClientApplication() {
-        new ClientFrame().start();
-    }
+	public static void main(String args[])
+	{
+		new ClientApplication();
+	}
 
-    public static void main(String args[])
-    {
-        new ClientApplication();
-    }
+	/**
+	 * Attempt to log in with specified credentials
+	 *
+	 * @return Was login successful
+	 */
+	public static boolean login(String email, String password) {
+		// TODO: implement. If successful, set userId field
+        Map<String, String> params = new HashMap<>();
+        params.put("email", email);
 
-    /**
-     * Attempt to log in with specified credentials
-     *
-     * @return Was login successful
-     */
-    public static boolean login(String email, String password) {
-        // TODO: implement. If successful, set userId field
-        return false;
-    }
+        String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/login", params);
+        LoginResponse response = gson.fromJson(responseJson, LoginResponse.class);
+
+        byte[] salt = response.getSalt();
+        String saltedHash = crypto.genSaltedHash(password, salt);
+
+        if (saltedHash.equals(response.getSaltedHash())) {
+            // Success
+        } else {
+            // Incorrect email and/or password
+        }
+	}
 
     /**
      * Register new user

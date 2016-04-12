@@ -25,6 +25,8 @@ public class SendHttpsRequest {
 
             return response.toString();
         } catch (IOException e) {
+			System.err.println("IOException occured");
+			e.printStackTrace();
             return null;
         }
     }
