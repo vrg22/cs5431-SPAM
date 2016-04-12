@@ -18,8 +18,6 @@ public class CryptoServiceProvider {
     private static final int KEYSIZE = 256;
 
     public CryptoServiceProvider() {
-        curSystemAESKey = null;
-
         try {
             aesCipher = Cipher.getInstance("AES/CBC/PKCS5PADDING", "SunJCE");
             skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256", "SunJCE");
@@ -95,7 +93,7 @@ public class CryptoServiceProvider {
         return new String(hash);
     }
 
-    private String saltedHash(String password, byte[] salt, int iter) {
+    private byte[] saltedHash(String password, byte[] salt, int iter) {
         byte[] temp = null;
         try {
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt,
@@ -104,6 +102,6 @@ public class CryptoServiceProvider {
         } catch (InvalidKeySpecException ex) {
             System.err.println("InvalidKeySpec exception caught");
         }
-        return new String(temp);
+        return new String(temp).getBytes();
     }
 }
