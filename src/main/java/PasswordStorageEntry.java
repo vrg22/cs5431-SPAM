@@ -6,7 +6,7 @@ public class PasswordStorageEntry extends StorageEntry {
 
         put("userid", ""+user.getID());
         put("username", user.getUsername());
-		put("iv", new String(user.getIV()));
+		//put("iv", new String(user.getIV()));
 		put("salt", new String(user.getSalt()));
         put("master", user.getMaster());
     }
