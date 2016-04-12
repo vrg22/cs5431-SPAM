@@ -3,7 +3,10 @@ import java.awt.event.*;
 import java.awt.*;
 
 public class ShowAccountPanel extends JPanel {
-    public ShowAccountPanel(Account account) {
+    public ShowAccountPanel() {
+        // TODO: get Account to display
+        Account account =  null;
+
         JLabel nameLabel = new JLabel();
         nameLabel.setText("Name:");
         JTextField name = new JTextField();
@@ -24,12 +27,21 @@ public class ShowAccountPanel extends JPanel {
 
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-
                 // TODO: save changes
             }
         });
 
+        JButton back = new JButton();
+        back.setText("Back");
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientApplication app = ClientApplication.getFrameForComponent(back);
+                app.setPanel(new ShowAccountsPanel());
+            }
+        });
+
+        add(back);
+        add(new JPanel());
         add(nameLabel);
         add(name);
         add(emailLabel);
@@ -37,6 +49,7 @@ public class ShowAccountPanel extends JPanel {
         add(passwordLabel);
         add(password);
         add(save);
-        setLayout(new GridLayout(4, 2));
+        add(new JPanel());
+        setLayout(new GridLayout(5, 2));
     }
 }

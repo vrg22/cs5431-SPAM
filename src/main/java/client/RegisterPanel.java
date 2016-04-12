@@ -17,9 +17,10 @@ public class RegisterPanel extends JPanel {
 
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                // TODO: register new user
 
-                // TODO: register new user, then go to vault panel
+                ClientApplication app = ClientApplication.getFrameForComponent(register);
+                app.setPanel(new VaultPanel());
             }
         });
 

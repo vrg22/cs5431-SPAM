@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.*;
 
 public class LoginPanel extends JPanel {
     public LoginPanel() {
@@ -17,7 +18,14 @@ public class LoginPanel extends JPanel {
 
         login.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                // TODO: log in user
+                String loginUrl = ClientApplication.HTTPS_ROOT + "/login";
+                Map<String, String> loginParams = new HashMap<>();
+                loginParams.put("email", email.getText());
+                loginParams.put("password", password.getText());
+                String response = SendHttpsRequest.post(loginUrl, loginParams);
+
+                ClientApplication app = ClientApplication.getFrameForComponent(login);
+                app.setPanel(new VaultPanel());
             }
         });
 
@@ -26,7 +34,8 @@ public class LoginPanel extends JPanel {
 
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                // TODO: go to register new user panel
+                ClientApplication app = ClientApplication.getFrameForComponent(register);
+                app.setPanel(new RegisterPanel());
             }
         });
 

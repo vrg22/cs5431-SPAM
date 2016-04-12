@@ -11,7 +11,7 @@ public class CentralServerController implements ServerController {
         //Set up logging
         try {
             String loggerName = CentralServerController.class.getName();
-            logger = SimpleLogger.getLogger(loggerName);
+            logger = Logger.getLogger(loggerName);
 
             FileHandler fh = new FileHandler(logLocation, true);
             logger.addHandler(fh);

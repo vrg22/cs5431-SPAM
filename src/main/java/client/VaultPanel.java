@@ -5,24 +5,22 @@ import java.awt.*;
 public class VaultPanel extends JPanel {
     public VaultPanel() {
         JButton view = new JButton();
-        view.setText("View/Edit my stored accounts");
+        view.setText("View/Edit My Stored Accounts");
 
         view.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-                // TODO: go to view/edit accounts page
+                ClientApplication app = ClientApplication.getFrameForComponent(view);
+                app.setPanel(new ShowAccountsPanel());
             }
         });
 
         JButton create = new JButton();
-        create.setText("Register");
+        create.setText("Store New Account");
 
         create.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-                // TODO: go to store new account panel
+                ClientApplication app = ClientApplication.getFrameForComponent(create);
+                app.setPanel(new StoreNewAccountPanel());
             }
         });
 

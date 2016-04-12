@@ -21,12 +21,24 @@ public class StoreNewAccountPanel extends JPanel {
 
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                // TODO: store new account
 
-                // TODO: store new account, then go to show accounts panel
+                ClientApplication app = ClientApplication.getFrameForComponent(save);
+                app.setPanel(new ShowAccountsPanel());
             }
         });
 
+        JButton back = new JButton();
+        back.setText("Back");
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientApplication app = ClientApplication.getFrameForComponent(back);
+                app.setPanel(new ShowAccountsPanel());
+            }
+        });
+
+        add(back);
+        add(new JPanel());
         add(nameLabel);
         add(name);
         add(emailLabel);
@@ -34,6 +46,7 @@ public class StoreNewAccountPanel extends JPanel {
         add(passwordLabel);
         add(password);
         add(save);
-        setLayout(new GridLayout(4, 2));
+        add(new JPanel());
+        setLayout(new GridLayout(5, 2));
     }
 }
