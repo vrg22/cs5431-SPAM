@@ -3,22 +3,19 @@ import java.awt.event.*;
 import java.awt.*;
 
 public class ShowAccountsPanel extends JPanel {
-    public ShowAccountsPanel() {
-        // TODO: get accounts for user
-        Account[] accounts = new Account[] {};
-
+    public ShowAccountsPanel(Account.Header[] accounts) {
         JButton back = new JButton();
         back.setText("Back");
         add(back);
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClientApplication app = ClientApplication.getFrameForComponent(back);
-                app.setPanel(new VaultPanel());
+                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                frame.setPanel(new VaultPanel());
             }
         });
         add(new JPanel());
 
-        for (Account account : accounts) {
+        for (Account.Header account : accounts) {
             JLabel nameLabel = new JLabel();
             nameLabel.setText(account.getName());
             add(nameLabel);
@@ -29,8 +26,9 @@ public class ShowAccountsPanel extends JPanel {
 
             view.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e){
-                    ClientApplication app = ClientApplication.getFrameForComponent(view);
-                    app.setPanel(new ShowAccountPanel());
+                    Account fullAccount = ClientApplication.getAccount(account.getId());
+                    ClientFrame frame = ClientFrame.getFrameForComponent(view);
+                    frame.setPanel(new ShowAccountPanel(fullAccount));
                 }
             });
         }

@@ -6,25 +6,36 @@ public class StoreNewAccountPanel extends JPanel {
     public StoreNewAccountPanel() {
         JLabel nameLabel = new JLabel();
         nameLabel.setText("Name:");
-        JTextField name = new JTextField();
+        JTextField nameField = new JTextField();
 
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
-        JTextField email = new JTextField();
+        JTextField emailField = new JTextField();
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
-        JPasswordField password=new JPasswordField(10);
+        JPasswordField passwordField = new JPasswordField(10);
 
         JButton save = new JButton();
         save.setText("Save");
 
-        save.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                // TODO: store new account
+        save.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String name = nameField.getText();
+                String username = emailField.getText();
+                String password = passwordField.getText();
+                boolean success = ClientApplication.storeNewAccount(name,
+                    username, password);
 
-                ClientApplication app = ClientApplication.getFrameForComponent(save);
-                app.setPanel(new ShowAccountsPanel());
+                if (success) {
+                    Account.Header[] accounts = ClientApplication.getAccounts();
+                    ClientFrame frame = ClientFrame.getFrameForComponent(save);
+                    frame.setPanel(new ShowAccountsPanel(accounts));
+                } else {
+                    JLabel errorLabel = new JLabel();
+                    errorLabel.setText("Sorry there was a problem.");
+                    add(errorLabel);
+                }
             }
         });
 
@@ -32,19 +43,20 @@ public class StoreNewAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClientApplication app = ClientApplication.getFrameForComponent(back);
-                app.setPanel(new ShowAccountsPanel());
+                Account.Header[] accounts = ClientApplication.getAccounts();
+                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
 
         add(back);
         add(new JPanel());
         add(nameLabel);
-        add(name);
+        add(nameField);
         add(emailLabel);
-        add(email);
+        add(emailField);
         add(passwordLabel);
-        add(password);
+        add(passwordField);
         add(save);
         add(new JPanel());
         setLayout(new GridLayout(5, 2));

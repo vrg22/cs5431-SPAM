@@ -6,28 +6,35 @@ public class RegisterPanel extends JPanel {
     public RegisterPanel() {
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
-        JTextField email = new JTextField();
+        JTextField emailField = new JTextField();
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
-        JPasswordField password=new JPasswordField(10);
+        JPasswordField passwordField = new JPasswordField(10);
 
         JButton register = new JButton();
         register.setText("Register");
 
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                // TODO: register new user
-
-                ClientApplication app = ClientApplication.getFrameForComponent(register);
-                app.setPanel(new VaultPanel());
+                String email = emailField.getText();
+                String password = passwordField.getText();
+                boolean success = ClientApplication.register(email, password);
+                if (success) {
+                    ClientFrame frame = ClientFrame.getFrameForComponent(register);
+                    frame.setPanel(new VaultPanel());
+                } else {
+                    JLabel errorLabel = new JLabel();
+                    errorLabel.setText("Sorry there was a problem.");
+                    add(errorLabel);
+                }
             }
         });
 
         add(emailLabel);
-        add(email);
+        add(emailField);
         add(passwordLabel);
-        add(password);
+        add(passwordField);
         add(register);
         setLayout(new GridLayout(3, 2));
     }

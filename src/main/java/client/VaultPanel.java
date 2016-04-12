@@ -9,8 +9,9 @@ public class VaultPanel extends JPanel {
 
         view.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientApplication app = ClientApplication.getFrameForComponent(view);
-                app.setPanel(new ShowAccountsPanel());
+                Account.Header[] accounts = ClientApplication.getAccounts();
+                ClientFrame frame = ClientFrame.getFrameForComponent(view);
+                frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
 
@@ -19,8 +20,8 @@ public class VaultPanel extends JPanel {
 
         create.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientApplication app = ClientApplication.getFrameForComponent(create);
-                app.setPanel(new StoreNewAccountPanel());
+                ClientFrame frame = ClientFrame.getFrameForComponent(create);
+                frame.setPanel(new StoreNewAccountPanel());
             }
         });
 
