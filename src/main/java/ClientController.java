@@ -70,7 +70,7 @@ public class ClientController {
             RegisterResponse body = new RegisterResponse(true);
             response.body(gson.toJson(body));
 
-            return "";
+            return "hey";
         });
 
         // Obliterate entire user account
