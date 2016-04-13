@@ -689,6 +689,7 @@ public class StoreAndRetrieveUnit {
 		String username;
 		String password;
 		int id;
+		byte[] salt = null;
 
 		//Get the "users" element
 		Element usersElement = getTagElement("users", DOM);
@@ -704,7 +705,9 @@ public class StoreAndRetrieveUnit {
 
             	username = uElt.getElementsByTagName("username").item(0).getTextContent();
             	password = uElt.getElementsByTagName("password").item(0).getTextContent();
-            	User u = new User(username, password, id);
+		//TODO: load the correct salt value here
+		//Value is null here at the moment
+		User u = new User(username, salt, password, id);
 
             	users.add(u);
             }
