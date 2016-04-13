@@ -30,7 +30,7 @@ public class CentralServerController implements ServerController {
         }
 
         // Set up storage
-        store = new XMLStorageController(); // TODO: make sure this is the proper initialization
+        store = new XMLStorageController();
         store.createPasswordsFileOnStream(store.getPasswordsOutput());
 
 		// Set up the crypto module
@@ -73,7 +73,9 @@ public class CentralServerController implements ServerController {
      * @return the user created (null if unsuccessful)
      */
     public User registerNewUser(String username, String master, String clientIp) {
+        System.out.println("Registering user: "+username+"; "+master);
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
+        System.out.println("passwordFile: "+passwordFile);
 
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
@@ -86,27 +88,28 @@ public class CentralServerController implements ServerController {
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
 		byte[] userSalt = crypto.getNewSalt();
 		String hashedMaster = crypto.genSaltedHash(master, userSalt);
-        User newUser = new User(username, userSalt, hashedMaster, newUserId);
-        PasswordStorageEntry newUserEntry =
-            new PasswordStorageEntry(newUser); // TODO: password should be hashed here
+        byte[] userIV = crypto.getIV();
+        System.out.println("USERIV: "+userIV);
+        User newUser = new User(username, userSalt, hashedMaster, newUserId, userIV);
+        PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);
 
         UserStorageFile userFile = new UserStorageFile(newUserId);
 
-		
+
         store.writeFileToDisk(passwordFile);
-		
+
 		// Create new user vault file
 		store.createFileForUserOnStream(newUserId);
 		//UserStorageFile userFile = new UserStorageFile(newUserId);
 		//store.writeFileToDisk(userFile, newUserId);
-		
+
 		//store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 		//store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
 
         logger.info("[IP=" + clientIp + "] New user " + newUserId
             + " successfully registered.");
-
+        System.out.println("done registering");
         return newUser;
     }
 
@@ -213,7 +216,7 @@ public class CentralServerController implements ServerController {
         Account newAccount = new Account(newAccountId, /*userId,*/ name, username,
             password);
         userFile.putAccount(newAccount);
-        
+
         store.writeFileToDisk(userFile, userId);
         //store.writeFileToStream(userFile, store.getOutputForUser(userId));
 
@@ -257,7 +260,7 @@ public class CentralServerController implements ServerController {
 
         logger.info("[IP=" + clientIp + "] Account " + account.getId()
             + " for user " + userId + " successfully updated.");
-        
+
         return true;
     }
 

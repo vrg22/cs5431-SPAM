@@ -24,12 +24,12 @@ public class StoreNewAccountPanel extends JPanel {
                 String name = nameField.getText();
                 String username = emailField.getText();
                 String password = passwordField.getText();
-                boolean success = ClientApplication.storeNewAccount(name,
+                ClientFrame frame = ClientFrame.getFrameForComponent(save);
+                boolean success = frame.getApp().storeNewAccount(name,
                     username, password);
 
                 if (success) {
-                    Account.Header[] accounts = ClientApplication.getAccounts();
-                    ClientFrame frame = ClientFrame.getFrameForComponent(save);
+                    Account.Header[] accounts = frame.getApp().getAccounts();
                     frame.setPanel(new ShowAccountsPanel(accounts));
                 } else {
                     JLabel errorLabel = new JLabel();
@@ -43,8 +43,8 @@ public class StoreNewAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Account.Header[] accounts = ClientApplication.getAccounts();
                 ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                Account.Header[] accounts = frame.getApp().getAccounts();
                 frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });

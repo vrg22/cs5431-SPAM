@@ -19,9 +19,9 @@ public class RegisterPanel extends JPanel {
             public void actionPerformed(ActionEvent e){
                 String email = emailField.getText();
                 String password = passwordField.getText();
-                boolean success = ClientApplication.register(email, password);
+                ClientFrame frame = ClientFrame.getFrameForComponent(register);
+                boolean success = frame.getApp().register(email, password);
                 if (success) {
-                    ClientFrame frame = ClientFrame.getFrameForComponent(register);
                     frame.setPanel(new VaultPanel());
                 } else {
                     JLabel errorLabel = new JLabel();

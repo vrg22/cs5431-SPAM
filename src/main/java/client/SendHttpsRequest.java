@@ -63,6 +63,32 @@ public class SendHttpsRequest {
         }
     }
 
+    public static String delete(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+
+            con.setRequestMethod("DELETE");
+
+            InputStream ins = con.getInputStream();
+            InputStreamReader isr = new InputStreamReader(ins);
+            BufferedReader in = new BufferedReader(isr);
+
+            StringBuffer response = new StringBuffer();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null)
+            {
+                response.append(inputLine);
+            }
+
+            in.close();
+
+            return response.toString();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public static String formatParams(Map<String, String> params) {
         StringBuffer formatted = new StringBuffer();
 

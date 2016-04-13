@@ -20,10 +20,10 @@ public class LoginPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String email = emailField.getText();
                 String password = passwordField.getText();
-                boolean success = ClientApplication.login(email, password);
+                ClientFrame frame = ClientFrame.getFrameForComponent(login);
+                boolean success = frame.getApp().login(email, password);
 
                 if (success) {
-                    ClientFrame frame = ClientFrame.getFrameForComponent(login);
                     frame.setPanel(new VaultPanel());
                 } else {
                     JLabel errorLabel = new JLabel();
