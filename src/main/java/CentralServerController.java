@@ -42,39 +42,39 @@ public class CentralServerController implements ServerController {
      * matches an existing user.
      * @return user ID of matching user (-1 if invalid combination)
      */
-    public int login(String username, String master, String clientIp) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
-        PasswordStorageEntry entry = passwordFile.getWithUsername(username);
-
-        if (entry == null) {
-            // No user with that username exists
-            logger.warning("[IP=" + clientIp + "] Attempt was made to log "
-                + "into nonexistent username " + username + ".");
-            return -1;
-        }
-
-		byte[] userSalt = entry.getSalt();
-        String hashedMaster = crypto.genSaltedHash(master, userSalt);
-        if (!hashedMaster.equals(entry.getMaster())) {
-            // Incorrect password
-            logger.warning("[IP=" + clientIp + "] Attempt was made to log into "
-                + "username " + username + " with incorrect password.");
-            return -1;
-        }
-
-        logger.info("[IP=" + clientIp + "] User " + entry.getUserId()
-            + " successfully logged in.");
-
-        return entry.getUserId();
-    }
+    // public int login(String username, String master, String clientIp,
+    //         PasswordStorageFile passwordFile) {
+    //     PasswordStorageEntry entry = passwordFile.getWithUsername(username);
+    //
+    //     if (entry == null) {
+    //         // No user with that username exists
+    //         logger.warning("[IP=" + clientIp + "] Attempt was made to log "
+    //             + "into nonexistent username " + username + ".");
+    //         return -1;
+    //     }
+    //
+	// 	byte[] userSalt = entry.getSalt();
+    //     String hashedMaster = crypto.genSaltedHash(master, userSalt);
+    //     if (!hashedMaster.equals(entry.getMaster())) {
+    //         // Incorrect password
+    //         logger.warning("[IP=" + clientIp + "] Attempt was made to log into "
+    //             + "username " + username + " with incorrect password.");
+    //         return -1;
+    //     }
+    //
+    //     logger.info("[IP=" + clientIp + "] User " + entry.getUserId()
+    //         + " successfully logged in.");
+    //
+    //     return entry.getUserId();
+    // }
 
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
      */
     public User registerNewUser(String username, String userSalt,
-            String saltedHash, String vault, String clientIp) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
+            String saltedHash, String vault, String clientIp,
+            PasswordStorageFile passwordFile) {
 
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
@@ -86,6 +86,8 @@ public class CentralServerController implements ServerController {
         // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
         byte[] userIV = new byte[1];
+
+        System.out.println("SERVER REGISTERING USER WITH SALT " + userSalt + " HASH " + saltedHash);
         User newUser = new User(username, userSalt.getBytes(), saltedHash, newUserId, userIV);
         PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);
@@ -108,8 +110,8 @@ public class CentralServerController implements ServerController {
      * @param userId ID of user to obliterate
      * @return "Was user's account successfully obliterated?"
      */
-    public boolean obliterateUser(int userId, String clientIp) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
+    public boolean obliterateUser(int userId, String clientIp,
+            PasswordStorageFile passwordFile) {
 
         if (!passwordFile.removeWithUserId(""+userId)) {
             // No such user
@@ -136,8 +138,8 @@ public class CentralServerController implements ServerController {
      * @param user updated version of the user
      * @return "Was user successfully updated?"
      */
-    public boolean updateUser(User user, String clientIp) {
-        PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
+    public boolean updateUser(User user, String clientIp,
+            PasswordStorageFile passwordFile) {
 
         if (!passwordFile.removeWithUserId(""+user.getID())) {
             // No such user

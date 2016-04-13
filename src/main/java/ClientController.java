@@ -19,6 +19,7 @@ public class ClientController {
         }
 
         staticFileLocation("/public");
+        secure("keystore.jks", "cs5431spamisthebest", null, null);
 
         // Initialize instance variables
         Gson gson = new Gson();
@@ -30,16 +31,18 @@ public class ClientController {
             e.printStackTrace();
             return;
         }
-        ((CentralServerController)server).logger.info("STARTING UP");
+
         PasswordStorageFile passwordFile = store.readPasswordsFile(passwordStream);
         store.writeFileToDisk(passwordFile);
-        ((CentralServerController)server).logger.info("WROTE PW FILE TO DISK");
+
+        get("/", (request, response) -> {
+            return "HEY";
+        });
 
         // Log in user
         post("/login", (request, response) -> {
             String email = request.queryParams("email");
 
-            // TODO: construct LoginResponse
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
             if (entry != null) {
                 int id = entry.getUserId();
@@ -51,19 +54,19 @@ public class ClientController {
                 return gson.toJson(body);
             }
 
+            // User with specified email does not exist
             return "";
         });
 
         // Register new user
         post("/register", (request, response) -> {
-            System.out.println("Registering");
             String email = request.queryParams("email");
             String salt = request.queryParams("salt");
             String saltedHash = request.queryParams("saltedHash");
             String vault = request.queryParams("vault");
 
             User newUser = server.registerNewUser(email, salt, saltedHash,
-                vault, request.ip());
+                vault, request.ip(), passwordFile);
             if (newUser == null) {
                 RegisterResponse body = new RegisterResponse(false);
                 response.body(gson.toJson(body));
@@ -86,7 +89,8 @@ public class ClientController {
                 return false;
             }
 
-            boolean result = server.obliterateUser(userId, request.ip());
+            boolean result = server.obliterateUser(userId, request.ip(),
+                passwordFile);
 
             RegisterResponse body = new RegisterResponse(result);
 

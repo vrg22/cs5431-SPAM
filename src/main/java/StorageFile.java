@@ -43,4 +43,8 @@ public abstract class StorageFile {
         return get(key, value) != null; //Contains a value if you get something non-null
     	//return get(key, value) == null;
     }
+
+    public String toString() {
+        return Arrays.toString(entries.toArray());
+    }
 }

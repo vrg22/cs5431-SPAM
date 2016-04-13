@@ -40,6 +40,7 @@ public class SendHttpsRequest {
             con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
             String paramsStr = SendHttpsRequest.formatParams(params);
+            System.out.println("PARAMS: "+paramsStr);
     		wr.writeBytes(paramsStr);
     		wr.flush();
     		wr.close();
