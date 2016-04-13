@@ -2,6 +2,8 @@ import java.util.*;
 import java.util.regex.*;
 import java.net.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import com.google.gson.Gson;
 
@@ -10,18 +12,6 @@ import spark.template.handlebars.HandlebarsTemplateEngine;
 import spark.ModelAndView;
 
 public class ClientController {
-
-    // Set to false to fail (relatively) gracefully when features are not implemented
-    private static final boolean DEV_MODE = true;
-
-    private Map<String, String> loginErrorMessages;
-    private Map<String, String> registerErrorMessages;
-
-    private PasswordGenerator passwordGenerator;
-    private static final int PASSWORD_LENGTH = 12;
-
-    private boolean isLoggedIn = false; // TODO: this is just a placeholder for testing
-    private int userId; // TODO: this is just a placeholder for testing
 
     public ClientController(ServerController server) {
         if (System.getenv("PORT") != null) {
@@ -32,86 +22,41 @@ public class ClientController {
 
         // Initialize instance variables
         Gson gson = new Gson();
-        populateErrorMessages();
-
-        // Select algorithm for password generator
-        passwordGenerator = new ComplexPasswordGenerator();
-
-        // If already logged in, redirect to /users/:userid
-        before("/", (request, response) -> {
-            if (isLoggedIn) response.redirect("/users/" + userId);
-        });
-
-        // Show "Home (Logged out)" page
-        get("/", (request, response) -> {
-            return render("home.hbs", null);
-        });
-
-        // Check for valid server controller
-        if (!DEV_MODE) {
-            before("/*", (request, response) -> {
-                String[] splat = request.splat();
-                boolean isRoot = splat.length == 0;
-                boolean isNoserver = splat.length == 1 && splat[0].equals("noserver");
-                if (server == null && !isNoserver && !isRoot) {
-                    response.redirect("/noserver");
-                }
-            });
+        XMLStorageController store = new XMLStorageController();
+        FileInputStream passwordStream;
+        try {
+            passwordStream = new FileInputStream("users.xml");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return;
         }
-
-        // HTML: Show "Server not yet implemented" page
-        get("/noserver", (request, response) -> render("noserver.hbs", null));
-
-        // If already logged in, redirect to /users/:userid
-        before("/login", (request, response) -> {
-            if (isLoggedIn) response.redirect("/users/" + userId);
-        });
-
-        // HTML: Show "Login" page
-        get("/login", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            String errorCode = request.queryParams("error");
-            if (loginErrorMessages.containsKey(errorCode)) {
-                attributes.put("error", loginErrorMessages.get(errorCode));
-            }
-            return render("login.hbs", attributes);
-        });
+        PasswordStorageFile passwordFile = store.readPasswordsFile(passwordStream);
 
         // Log in user
         post("/login", (request, response) -> {
             String email = request.queryParams("email");
-            String password = request.queryParams("password");
 
-            int loginResult = server.login(email, password, request.ip()); // user ID or -1
-
-            if (loginResult != -1) {
-                // Log in user
-                isLoggedIn = true;
-                userId = loginResult;
-
-                response.redirect("/");
-            } else {
-                // Incorrect email and/or password
-                response.redirect("/login?error=1");
+            // TODO: construct LoginResponse
+            PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+            if (entry != null) {
+                int id = entry.getUserId();
+                String vault = new String(Files.readAllBytes(Paths.get(id + ".xml")));;
+                String saltedHash = entry.getMaster();
+                byte[] salt = entry.getSalt();
+                String iv = new String(entry.getIV());
+                LoginResponse body = new LoginResponse(id, vault, saltedHash, salt, iv);
+                response.body(gson.toJson(body));
             }
 
             return "";
         });
 
-        // HTML: Show "Register new user" page
-        get("/register", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            String errorCode = request.queryParams("error");
-            if (registerErrorMessages.containsKey(errorCode)) {
-                attributes.put("error", registerErrorMessages.get(errorCode));
-            }
-            return render("register.hbs", attributes);
-        });
-
         // Register new user
         post("/register", (request, response) -> {
+            System.out.println("Registering");
             String email = request.queryParams("email");
             String password = request.queryParams("password");
+
 
             boolean isEmailValid = isEmailValid(email),
                     isPasswordValid = isPasswordValid(password);
@@ -119,47 +64,31 @@ public class ClientController {
             if (isEmailValid && isPasswordValid) {
                 User newUser = server.registerNewUser(email, password, request.ip());
                 if (newUser == null) {
-                    response.redirect("/"); // Unknown server error
+                    RegisterResponse body = new RegisterResponse(false);
+                    response.body(gson.toJson(body));
                     return "";
                 }
 
-                // TODO: Log in new user
-                isLoggedIn = true;
-                userId = newUser.getID();
-
-                response.redirect("/");
+                RegisterResponse body = new RegisterResponse(true);
+                response.body(gson.toJson(body));
             } else if (isPasswordValid) {
                 // Invalid email
-                response.redirect("/register?error=1");
+                RegisterResponse body = new RegisterResponse(false);
+                response.body(gson.toJson(body));
             } else {
                 // Invalid password
-                response.redirect("/register?error=2");
+                RegisterResponse body = new RegisterResponse(false);
+                response.body(gson.toJson(body));
             }
 
             return "";
         });
 
-        // If not logged in, redirect to /
-        // If logged in as different user, redirect to /users/<logged-in user id>
-        before("/users/:userid", (request, response) -> {
-            if (!isLoggedIn) {
-                response.redirect("/");
-            } else if (!("" + userId).equals(request.params("userid"))) {
-                response.redirect("/users/" + userId);
-            }
-        });
-
-        // HTML: Show "User Vault" page
-        get("/users/:userid", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            attributes.put("userid", request.params("userid"));
-            return render("vault.hbs", attributes);
-        });
-
         // Obliterate entire user account
         delete("/users/:userid", (request, response) -> {
+            int userId = -1;
             try {
-                int userId = Integer.parseInt(request.params("userid"));
+                userId = Integer.parseInt(request.params("userid"));
             } catch (NumberFormatException e) {
                 // Bad request
                 response.status(400);
@@ -167,257 +96,12 @@ public class ClientController {
             }
 
             boolean result = server.obliterateUser(userId, request.ip());
-            return result;
+
+            RegisterResponse body = new RegisterResponse(result);
+            response.body(gson.toJson(body));
+
+            return response;
         });
-
-        // If not logged in, redirect to /
-        // If logged in as different user, redirect to /users/<logged-in user id>
-        before("/users/:userid/*", (request, response) -> {
-            if (!isLoggedIn) {
-                response.redirect("/");
-            } else if (!("" + userId).equals(request.params("userid"))) {
-                response.redirect("/users/" + userId);
-            }
-        });
-
-        // HTML: Show "View/edit my stored accounts" page
-        // JSON: Get list of stored accounts for user
-        get("/users/:userid/accounts", (request, response) -> {
-            int userId;
-            try {
-                userId = Integer.parseInt(request.params("userid"));
-            } catch (NumberFormatException e) {
-                // Bad request
-                response.status(400);
-                return false;
-            }
-
-            if (request.headers("Accept").contains("text/html")) {
-                Map<String, Object> attributes = new HashMap<>();
-                attributes.put("userid", userId);
-
-                String accountsJson = sendGet(request.url(), "text/json");
-                Account.Header[] accounts = gson.fromJson(accountsJson, Account.Header[].class);
-                attributes.put("accounts", accounts);
-
-                return render("showaccounts.hbs", attributes);
-            } else {
-                // Default content type: JSON
-                Account.Header[] accounts = server.getAccountsForUser(userId, request.ip());
-                return gson.toJson(accounts);
-            }
-        });
-
-        // HTML: Show "Store new account" page
-        get("/users/:userid/accounts/create", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            attributes.put("userid", request.params("userid"));
-            return render("addnew.hbs", attributes);
-        });
-
-        // Store new account
-        post("/users/:userid/accounts/create", (request, response) -> {
-            String name = request.queryParams("name");
-            String username = request.queryParams("username");
-            String password = request.queryParams("password");
-
-            //TODO: DO any conditions need to be checked here? <3rd-party account>
-
-            if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
-                Account newAcct = server.storeNewAccountForUser(userId, name, username, password, request.ip());
-                if (newAcct == null) {
-                    response.redirect("/"); // Unknown server error
-                    return "";
-                }
-
-                response.redirect("/users/" + request.params("userid") + "/accounts/" + newAcct.getId());
-            } else if (name == null) {
-                // Invalid name
-                response.redirect("/addnew?error=1");
-            } else if (password == null) {
-                // Invalid password
-                response.redirect("/addnew?error=2");
-            }
-
-            return "";
-        });
-
-        // HTML: Show "View/edit an account" page
-        // JSON: Get details for an account
-        get("/users/:userid/accounts/:accountid", (request, response) -> {
-            int userId, accountId;
-            try {
-                userId = Integer.parseInt(request.params("userid"));
-                accountId = Integer.parseInt(request.params("accountid"));
-            } catch (NumberFormatException e) {
-                // Bad request
-                response.status(400);
-                return "";
-            }
-
-            if (request.headers("Accept").contains("text/html")) {
-                if (!server.isAccountForUser(accountId, userId, request.ip())) {
-                    // Bad request
-                    response.status(400);
-                    return "";
-                }
-
-                Map<String, Object> attributes = new HashMap<>();
-                attributes.put("userid", userId);
-                attributes.put("accountid", accountId);
-
-                String detailsStr = sendGet(request.url(), "text/json");
-                Account details = gson.fromJson(detailsStr, Account.class);
-                attributes.put("account", details);
-
-                return render("showaccount.hbs", attributes);
-            } else {
-                // Default content type: JSON
-
-                if (!server.isAccountForUser(accountId, userId, request.ip())) {
-                    // Bad request
-                    response.status(400);
-                    return gson.toJson("");
-                }
-
-                Account account = server.getDetailsForAccount(userId, accountId,
-                    request.ip());
-                if (account == null) return gson.toJson("");
-
-                return gson.toJson(account);
-            }
-        });
-
-        // Update a stored account
-        post("/users/:userid/accounts/:accountid", (request, response) -> {
-            System.out.println("TRYING TO SHOW ACCOUNT...");
-        	
-            int userId, accountId;
-            try {
-                userId = Integer.parseInt(request.params("userid"));
-                accountId = Integer.parseInt(request.params("accountid"));
-            } catch (NumberFormatException e) {
-                // Bad request
-                response.status(400);
-                return false;
-            }
-
-            if (!server.isAccountForUser(accountId, userId, request.ip())) {
-                // Bad request
-                response.status(400);
-                return false;
-            }
-
-            // TODO: implement- figure out where the account params are in the request
-            // Account account = ...;
-            // return server.updateAccount(account);
-            String name = request.queryParams("name");
-            String username = request.queryParams("username");
-            String password = request.queryParams("password");
-
-            if (name != null && password != null) { //TODO: Can password be null? How to reflect empty?
-                Account updatedAcct = new Account(accountId, name, username, password);
-
-                //Make update
-                if (!server.updateAccount(userId, updatedAcct, request.ip())) {
-                	//TODO: CHECK THIS CASE!
-                	// Bad request
-                    response.status(400);
-                    return false;
-                }
-                response.redirect("/users/" + request.params("userid") + "/accounts/" + updatedAcct.getId()); //Could change to go to vault instead...
-
-            } else if (name == null) {
-                // Invalid name
-                response.redirect("/addnew?error=1");
-            } else if (password == null) {
-                // Invalid password
-                response.redirect("/addnew?error=2");
-            }
-
-            return "";
-            //return "Not yet implemented";
-        });
-
-        // Delete a stored account
-        delete("/users/:userid/accounts/:accountid", (request, response) -> {
-            int userId, accountId;
-            try {
-                userId = Integer.parseInt(request.params("userid"));
-                accountId = Integer.parseInt(request.params("accountid"));
-            } catch (NumberFormatException e) {
-                // Bad request
-                response.status(400);
-                return false;
-            }
-
-            if (!server.isAccountForUser(accountId, userId, request.ip())) {
-                // Bad request
-                response.status(400);
-                return false;
-            }
-
-            boolean result = server.deleteAccount(accountId, userId, request.ip());
-            return result;
-        });
-
-        // HTML: Show "Confirm obliterate SPAM account" page
-        get("/users/:userid/delete", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            attributes.put("userid", request.params("userid"));
-            return render("confirmdeletespam.hbs", attributes);
-        });
-
-        // Get random password
-        get("/password", (request, response) -> {
-            response.type("text/plain");
-            return passwordGenerator.next(PASSWORD_LENGTH);
-        });
-    }
-
-    // Return HTML for a Handlebars template
-    private String render(String template, Map<String, Object> attributes) {
-        return new HandlebarsTemplateEngine()
-            .render(new ModelAndView(attributes, template));
-    }
-
-    // Send GET request to specified URL
-    // with Accept header set to specified content type.
-    private String sendGet(String url, String accept) {
-        try {
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection)obj.openConnection();
-
-            con.setRequestMethod("GET");
-            if (accept != null) con.setRequestProperty("Accept", accept);
-
-            int responseCode = con.getResponseCode();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // return response
-            return response.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // Initialize error message maps
-    private void populateErrorMessages() {
-        loginErrorMessages = new HashMap<>();
-        loginErrorMessages.put("1", "Incorrect email and/or password.");
-
-        registerErrorMessages = new HashMap<>();
-        registerErrorMessages.put("1", "Invalid email address.");
-        registerErrorMessages.put("2", "Invalid master password.");
     }
 
     // Check that `email` is a valid email address (e.g., some@email.com)
@@ -431,5 +115,4 @@ public class ClientController {
     private static boolean isPasswordValid(String password) {
         return password != null && password.length() > 0;
     }
-
 }
