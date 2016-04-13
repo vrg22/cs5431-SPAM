@@ -29,11 +29,11 @@ public class XMLStorageController implements StorageController {
     public UserStorageFile readFileForUser(FileInputStream in) {
         return DOMtoUserFile(streamToDOM(in));
     }
-    
+
     public String getExtension() {
         return ".xml";
     }
-    
+
     //TESTING: Make sure getPasswordsOutput() gets executed AFTER fileToDOM
     public void writeFileToDisk(PasswordStorageFile file) {
     	writeDOMtoStream(fileToDOM(file), getPasswordsOutput());
@@ -42,7 +42,7 @@ public class XMLStorageController implements StorageController {
     public void writeFileToDisk(UserStorageFile file, int userId) {
         writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
     }
-    
+
     //TODO: Where used??
     public void createPasswordsFileOnStream() {
         //Instantiates and prepares the DOM to be saved to disk
@@ -54,7 +54,7 @@ public class XMLStorageController implements StorageController {
         Document userDOM = createUserDOM(userId);
         writeDOMtoStream(userDOM, getOutputForUser(userId));
     }
-    
+
     //THESE ARE UNUSED
     public void createPasswordsFileOnStream(FileOutputStream out) {
         //Instantiates and prepares the DOM to be saved to disk
@@ -66,13 +66,23 @@ public class XMLStorageController implements StorageController {
         Document userDOM = createUserDOM(userId);
         writeDOMtoStream(userDOM, out);
     }
-    
+
     public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
     	writeDOMtoStream(fileToDOM(file), out);
     }
 
     public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
+    }
+
+    public void writeEncryptedUserFileToDisk(int userId, String contents) {
+        try {
+            PrintWriter out = new PrintWriter(userId + ".xml");
+            out.println(contents);
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -136,25 +146,25 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a PasswordStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(PasswordStorageFile file) {
-    	    	
+
     	Document initialDOM, DOM = null;
-    	
+
 	    FileInputStream fis = getPasswordsInput();
 	    initialDOM = streamToDOM(fis);
-    	
+
     	// Put all entries, etc in the right place
     	DOM = initialDOM;
-    	
+
     	// Set metadata to match
 		Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
 		Element nextIDElement = getTagElement("nextID", DOM);
 		nextIDElement.setTextContent(file.readNextID());
-		
+
 		// Make user data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
 		uElement.setTextContent(""); //CHECK!
-		
+
 		PasswordStorageEntry pEntry;
 		for (StorageEntry entry : file.entries) {
 			pEntry = (PasswordStorageEntry) entry;
@@ -170,76 +180,76 @@ public class XMLStorageController implements StorageController {
 
 	        uElement.appendChild(newUser);
 		}
-		
+
     	return DOM;
     }
 
     // Populate a Document with the contents of a UserStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(UserStorageFile file) {
-    	
+
     	Document initialDOM, userDOM = null;
-    	
+
 	    FileInputStream fis = getInputForUser(Integer.parseInt(file.getUserID()));
 	    initialDOM = streamToDOM(fis);
-    	
+
     	// Put all entries, etc in the right place
     	userDOM = initialDOM;
-    	
+
     	// Set metadata to match
 		Element thisUser = getTagElement("user", userDOM);
 		thisUser.setAttribute("ID", file.getUserID());
-		
+
 		// Make vault data match by simply overwriting content
 		Element vElement = getTagElement("vault", userDOM);
 		vElement.setTextContent(""); //CHECK!
-		
+
 		UserStorageEntry uEntry;
 		for (StorageEntry entry : file.entries) {
 			uEntry = (UserStorageEntry) entry;
 			Element account = userDOM.createElement("account");
 			account.setAttribute("ID", Integer.toString(uEntry.getAccountId()));
-			
+
 			Account acc = uEntry.getAccount();
-			
+
 			//TODO: See about making this field optional
 			Element name = userDOM.createElement("name");
 			name.setTextContent(acc.getName());
 			account.appendChild(name);
-			
+
 			Element usrnm = userDOM.createElement("username");
 			usrnm.setTextContent(acc.getUsername());
 			account.appendChild(usrnm);
-			
+
 			Element pwd = userDOM.createElement("password");
 			pwd.setTextContent(acc.getPassword());
 			account.appendChild(pwd);
 
 	        vElement.appendChild(account);
 		}
-		
+
     	return userDOM;
     }
 
     // Populate a PasswordStorageFile with the contents of a Document
     private PasswordStorageFile DOMtoPasswordsFile(Document theDOM) {
-    	
+
     	PasswordStorageFile file = new PasswordStorageFile();
-    	
+
     	// Set Users and metadata to match file. This will make numUsers correct.
     	// TODO: Need to make nextID variable correct? Or can we just build this into getNextID()?
     	file.setUsers(getUsers(theDOM));
-    	
+
         return file;
     }
 
     // Populate a UserStorageFile with the contents of a Document
     private UserStorageFile DOMtoUserFile(Document theDOM) {
     	UserStorageFile file = new UserStorageFile(getUserId(theDOM));
-    	
+
     	// Set records to match file
     	file.setRecords(getRecords(theDOM));
-    	
+
         return file;
     }
 
@@ -247,21 +257,21 @@ public class XMLStorageController implements StorageController {
     private Document streamToDOM(FileInputStream in) {
 
 		Document doc = null;
-				
+
 		try {
 //			System.out.println("AVAILABLE: " + in.available());
-			
+
 			//Load XML from disk and set DOM
 			//File inputFile = new File(fileLoc);
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        doc = dBuilder.parse(in); //TODO: IF FILE DNE, what exception needs to be caught?
-			
+
 			//StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
-			
+
 			in.close();
 //			System.out.println("NULL: " + in==null);
-			
+
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -275,9 +285,9 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return doc;
-        
+
     }
 
     // Convert a Document into file-writable format, write to output stream
@@ -302,7 +312,7 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
+
     }
 
 
@@ -322,7 +332,7 @@ public class XMLStorageController implements StorageController {
 		Element elt = (Element) n;
 		return elt;
 	}
-    
+
 	/**
 	 * Return ArrayList of current users from loaded main DOM. //Or null if no users yet?
 	 * TODO: Exception handling
@@ -352,7 +362,7 @@ public class XMLStorageController implements StorageController {
             	username = uElt.getElementsByTagName("username").item(0).getTextContent();
             	password = uElt.getElementsByTagName("password").item(0).getTextContent();
             	salt = uElt.getElementsByTagName("salt").item(0).getTextContent().getBytes();
-            	User u = new User(username, salt, password, id);
+            	User u = new User(username, salt, password, id, new byte[1]); // TODO: set IV?
 
             	users.add(u);
             }
@@ -360,7 +370,7 @@ public class XMLStorageController implements StorageController {
 
         return users;
 	}
-	
+
 	/**
 	 * Return ArrayList of accounts from a specified user's DOM. //Or null if no accounts yet?
 	 * TODO: Exception handling
@@ -398,7 +408,7 @@ public class XMLStorageController implements StorageController {
 
         return accts;
 	}
-	
+
 	/**
 	 * Return userId from a specified user's DOM.
 	 * TODO: Exception handling
@@ -407,13 +417,13 @@ public class XMLStorageController implements StorageController {
 	private int getUserId(Document uDOM) {
 		//Metadata
 		int userId;
-		
+
 		Element uElement = getTagElement("user", uDOM);
 		userId = Integer.parseInt(uElement.getAttribute("ID"));
-		
+
 		return userId;
 	}
-	
+
 	/**
 	 * Take in a StringBuilder and append to it the bare bones text necessary for the users XML file.
 	 */
@@ -438,7 +448,7 @@ public class XMLStorageController implements StorageController {
     /**
 	 * Take in a StringBuilder and append to it the bare bones text necessary for a particular user's XML file.
 	 */
-	private void setupUserXML(StringBuilder sb, int ID) {
+	public void setupUserXML(StringBuilder sb, int ID) {
 		String newID = Integer.toString(ID);
 
 		String basicText =
@@ -450,9 +460,9 @@ public class XMLStorageController implements StorageController {
 
 		sb.append(basicText);
 	}
-	
-	
-	
+
+
+
 	// Filename access methods
     public String getPasswordsFilename() {
         return PasswordStorageFile.getPasswordsFilename() + getExtension();
