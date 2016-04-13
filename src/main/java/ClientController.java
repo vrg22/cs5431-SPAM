@@ -31,6 +31,7 @@ public class ClientController {
             return;
         }
         PasswordStorageFile passwordFile = store.readPasswordsFile(passwordStream);
+        store.writeFileToDisk(passwordFile);
 
         // Log in user
         post("/login", (request, response) -> {

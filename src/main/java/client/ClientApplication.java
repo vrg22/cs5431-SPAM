@@ -40,6 +40,7 @@ public class ClientApplication
         params.put("email", email);
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/login", params);
+        System.out.println(responseJson);
         LoginResponse response = gson.fromJson(responseJson, LoginResponse.class);
 
         byte[] salt = response.getSalt();
@@ -92,15 +93,10 @@ public class ClientApplication
         params.put("salt", new String(salt));
         params.put("saltedHash", saltedHash);
         params.put("vault", xmlStringBuilder.toString());
-        System.out.println("email: "+email);
-        System.out.println("salt: "+new String(salt));
-        System.out.println("saltedHash: "+saltedHash);
-        System.out.println("vault: "+xmlStringBuilder.toString());
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
-        System.out.println("json: "+responseJson);
-        System.out.println("response: "+response);
+
         if (response.success()) {
             login(email, password);
 
