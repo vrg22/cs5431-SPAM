@@ -7,8 +7,8 @@ import java.io.*;
 
 public class ClientApplication
 {
-	// public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
-    public static final String HTTPS_ROOT = "localhost:5000";
+	public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+    // public static final String HTTPS_ROOT = "localhost:5000";
 
 	private static final int PASSWORD_LENGTH = 12;
     private Gson gson;
@@ -92,6 +92,10 @@ public class ClientApplication
         params.put("salt", new String(salt));
         params.put("saltedHash", saltedHash);
         params.put("vault", xmlStringBuilder.toString());
+        System.out.println("email: "+email);
+        System.out.println("salt: "+new String(salt));
+        System.out.println("saltedHash: "+saltedHash);
+        SYstem.out.println("vault: "+xmlStringBuilder.toString());
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
