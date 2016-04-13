@@ -40,7 +40,6 @@ public class SendHttpsRequest {
             con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
             String paramsStr = SendHttpsRequest.formatParams(params);
-            System.out.println("PARAMS: "+paramsStr);
     		wr.writeBytes(paramsStr);
     		wr.flush();
     		wr.close();
@@ -94,11 +93,16 @@ public class SendHttpsRequest {
         StringBuffer formatted = new StringBuffer();
 
         for (String key : params.keySet()) {
-            String value = params.get(key);
+            try {
+                String value = URLEncoder.encode(params.get(key), "UTF-8");
 
-            // TODO: sanitize user input (prevent XSS attacks)
+                // TODO: sanitize user input (prevent XSS attacks)
 
-            formatted.append(key + "=" + value + "&");
+                formatted.append(URLEncoder.encode(key, "UTF-8") + "="
+                    + value + "&");
+            } catch (UnsupportedEncodingException e) {
+                return null;
+            }
         }
 
         // Trim trailing '&'

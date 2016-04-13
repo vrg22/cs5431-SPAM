@@ -13,7 +13,7 @@ public class User {
 	public User(String uname, byte[] salt, String pword, int ID, byte[] IV) {
 		this.username = uname;
 		this.salt = salt;
-		this.master = pword; //TODO: take salted hash - WHERE?
+		this.master = pword;
 		this.id = ID;
         this.iv = IV;
 	}
