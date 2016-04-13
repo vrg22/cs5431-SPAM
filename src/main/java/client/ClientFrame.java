@@ -4,6 +4,12 @@ import java.awt.*;
 
 public class ClientFrame extends JFrame
 {
+    private ClientApplication app;
+
+    public ClientFrame(ClientApplication app) {
+        this.app = app;
+    }
+
     public void start()
     {
         setPanel(new LoginPanel());
@@ -17,6 +23,10 @@ public class ClientFrame extends JFrame
         getContentPane().removeAll();
         getContentPane().add(newView);
         pack();
+    }
+
+    public ClientApplication getApp() {
+        return app;
     }
 
     public static ClientFrame getFrameForComponent(Component c) {

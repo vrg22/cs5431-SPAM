@@ -26,8 +26,8 @@ public class ShowAccountsPanel extends JPanel {
 
             view.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e){
-                    Account fullAccount = ClientApplication.getAccount(account.getId());
                     ClientFrame frame = ClientFrame.getFrameForComponent(view);
+                    Account fullAccount = frame.getApp().getAccount(account.getId());
                     frame.setPanel(new ShowAccountPanel(fullAccount));
                 }
             });

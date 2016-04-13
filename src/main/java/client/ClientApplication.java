@@ -3,20 +3,26 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 import com.google.gson.Gson;
+import java.io.*;
 
 public class ClientApplication
 {
-	public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+	// public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+    public static final String HTTPS_ROOT = "localhost:5000";
 
 	private static final int PASSWORD_LENGTH = 12;
-	private int userId; // User ID of currently logged-in user
     private Gson gson;
     private CryptoServiceProvider crypto;
+    private XMLStorageController store;
+
+    private int userId; // User ID of currently logged-in user
+    private UserStorageFile userVault; // Vault of currently logged-in user
 
 	public ClientApplication() {
         gson = new Gson();
         crypto = new CryptoServiceProvider();
-		new ClientFrame().start();
+        store = new XMLStorageController();
+		new ClientFrame(this).start();
 	}
 
 	public static void main(String args[])
@@ -29,8 +35,7 @@ public class ClientApplication
 	 *
 	 * @return Was login successful
 	 */
-	public static boolean login(String email, String password) {
-		// TODO: implement. If successful, set userId field
+	public boolean login(String email, String password) {
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
 
@@ -42,19 +47,58 @@ public class ClientApplication
 
         if (saltedHash.equals(response.getSaltedHash())) {
             // Success
+            byte[] encVault = response.getVault().getBytes();
+            byte[] iv = response.getIV().getBytes();
+            String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
+
+            try {
+                PrintWriter tmpWriter = new PrintWriter(".tmpvault");
+                tmpWriter.println(userVaultStr);
+                tmpWriter.close();
+                FileInputStream tmpStream = new FileInputStream(".tmpvault");
+                userVault = store.readFileForUser(tmpStream);
+            } catch (FileNotFoundException e) {
+                return false;
+            }
+
+            userId = response.getId();
+
+            return true;
         } else {
             // Incorrect email and/or password
+            return false;
         }
 	}
 
+    public void logout() {
+        userId = -1;
+        userVault = null;
+    }
+
     /**
-     * Register new user
+     * Register new user, and log in with the new user.
      *
      * @return Was user successfully registered
      */
-    public static boolean register(String email, String password) {
-        // TODO: implement
-        return false;
+    public boolean register(String email, String password) {
+        byte[] salt = crypto.getNewSalt();
+        String saltedHash = crypto.genSaltedHash(password, salt);
+
+        Map<String, String> params = new HashMap<>();
+        params.put("email", email);
+        params.put("password", saltedHash);
+
+        String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
+        RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
+        System.out.println("json: "+responseJson);
+        System.out.println("response: "+response);
+        if (response.success()) {
+            login(email, password);
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -62,9 +106,18 @@ public class ClientApplication
      *
      * @return Was user successfully obliterated
      */
-    public static boolean obliterateUser() {
-        // TODO: implement
-        return false;
+    public boolean obliterateUser() {
+        String responseJson = SendHttpsRequest.delete(HTTPS_ROOT
+            + "/users/" + userId);
+        ObliterateResponse response = gson.fromJson(responseJson, ObliterateResponse.class);
+
+        if (response.success()) {
+            logout();
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -72,9 +125,10 @@ public class ClientApplication
      *
      * @return Array of account headers for user's accounts
      */
-    public static Account.Header[] getAccounts() {
-        // TODO: implement
-        return null;
+    public Account.Header[] getAccounts() {
+        if (userVault == null) return null;
+
+        return userVault.getAccountHeaders();
     }
 
     /**
@@ -82,7 +136,7 @@ public class ClientApplication
      *
      * @return Was account successfully stored
      */
-    public static boolean storeNewAccount(String name, String username,
+    public boolean storeNewAccount(String name, String username,
             String password) {
         // TODO: implement
         return false;
@@ -93,9 +147,10 @@ public class ClientApplication
      *
      * @return Account details for account with specified account ID
      */
-    public static Account getAccount(int accountId) {
-        // TODO: implement
-        return null;
+    public Account getAccount(int accountId) {
+        if (userVault == null) return null;
+
+        return userVault.getAccountWithId(accountId);
     }
 
     /**
@@ -103,7 +158,7 @@ public class ClientApplication
      *
      * @return Was account successfully updated
      */
-    public static boolean updateAccount(Account account) {
+    public boolean updateAccount(Account account) {
         // TODO: implement
         return false;
     }
@@ -113,9 +168,10 @@ public class ClientApplication
      *
      * @return Was account successfully deleted
      */
-    public static boolean deleteAccount(int accountId) {
-        // TODO: implement
-        return false;
+    public boolean deleteAccount(int accountId) {
+        if (userVault == null) return false;
+
+        return userVault.deleteAccountWithId(accountId);
     }
 
     /**
@@ -123,7 +179,7 @@ public class ClientApplication
      *
      * @return a random password
      */
-    public static String generatePassword() {
+    public String generatePassword() {
         return new ComplexPasswordGenerator().next(PASSWORD_LENGTH);
     }
 }

@@ -24,12 +24,13 @@ public class ShowAccountPanel extends JPanel {
 
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
+                ClientFrame frame = ClientFrame.getFrameForComponent(save);
                 int id = account.getId();
                 String name = nameField.getText();
                 String username = emailField.getText();
                 String password = passwordField.getText();
                 Account updated = new Account(id, name, username, password);
-                boolean success = ClientApplication.updateAccount(account);
+                boolean success = frame.getApp().updateAccount(account);
             }
         });
 
@@ -37,8 +38,8 @@ public class ShowAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Account.Header[] accounts = ClientApplication.getAccounts();
                 ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                Account.Header[] accounts = frame.getApp().getAccounts();
                 frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
