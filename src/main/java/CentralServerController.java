@@ -87,8 +87,8 @@ public class CentralServerController implements ServerController {
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
         byte[] userIV = new byte[1];
 
-        System.out.println("SERVER REGISTERING USER WITH SALT " + userSalt + " HASH " + saltedHash);
-        User newUser = new User(username, userSalt.getBytes(), saltedHash, newUserId, userIV);
+        User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
+            saltedHash, newUserId, userIV);
         PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);
 

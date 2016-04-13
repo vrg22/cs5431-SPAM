@@ -44,18 +44,11 @@ public class ClientApplication
         byte[] salt = response.getSalt();
         String saltedHash = crypto.genSaltedHash(password, salt);
 
-        System.out.println("MASTER: "+password);
-        System.out.println("SALTEDHASH: "+saltedHash);
-        System.out.println("LOGINRESPONSE SALT: "+salt);
-        System.out.println("LOGINRESPONSE SALTEDHASH: "+response.getSaltedHash());
-
         if (saltedHash.equals(response.getSaltedHash())) {
             // Success
             String encVault = response.getVault();
             byte[] iv = response.getIV().getBytes();
             String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
-            System.out.println("ENCRYPTED VAULT STRING: "+encVault);
-            System.out.println("DECRYPTED VAULT STRING: "+userVaultStr);
 
             try {
                 PrintWriter tmpWriter = new PrintWriter(".tmpvault");
@@ -95,7 +88,7 @@ public class ClientApplication
 
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
-        params.put("salt", new String(salt));
+        params.put("salt", CryptoServiceProvider.b64encode(salt));
         params.put("saltedHash", saltedHash);
         params.put("vault", xmlStringBuilder.toString());
 

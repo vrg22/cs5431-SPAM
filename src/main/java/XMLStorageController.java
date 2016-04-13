@@ -361,7 +361,8 @@ public class XMLStorageController implements StorageController {
 
             	username = uElt.getElementsByTagName("username").item(0).getTextContent();
             	password = uElt.getElementsByTagName("password").item(0).getTextContent();
-            	salt = uElt.getElementsByTagName("salt").item(0).getTextContent().getBytes();
+            	salt = CryptoServiceProvider.b64decode(
+                    uElt.getElementsByTagName("salt").item(0).getTextContent());
             	User u = new User(username, salt, password, id, new byte[1]); // TODO: set IV?
 
             	users.add(u);

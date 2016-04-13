@@ -62,9 +62,13 @@ public class CryptoServiceProvider {
 	}
 
 	public String decrypt(String cipherText, String pass, byte[] salt, byte[] iv) {
+        System.out.println("ciphertext: "+cipherText);
+        System.out.println("password: "+pass);
+        System.out.println("salt: "+b64encode(salt));
+        System.out.println("iv: "+b64encode(iv));
 		byte[] decrypted = null;
 		try {
-			aesCipher.init(Cipher.DECRYPT_MODE, genKey(pass, salt), new IvParameterSpec( iv));
+			aesCipher.init(Cipher.DECRYPT_MODE, genKey(pass, salt), new IvParameterSpec(iv));
 			decrypted = aesCipher.doFinal(b64decode(cipherText));
 		} catch (InvalidKeyException e) {
 			System.err.println("AES Decrypt Invalid key exception");
@@ -73,7 +77,9 @@ public class CryptoServiceProvider {
 			System.err.println("AES Decrypt Illegal block size exception");
 		} catch (Exception e) {
 			System.err.println("Exception raised while decrypting");
+            e.printStackTrace();
 		}
+        System.out.println("decrypted: "+decrypted);
 
 		return new String(decrypted);
 	}
@@ -105,7 +111,6 @@ public class CryptoServiceProvider {
 	 */
 	public String genSaltedHash(String password, byte[] salt) {
 		byte[] hash = saltedHash(password, salt, HASHITERATIONS);
-        System.out.println("GENSALTEDHASH PASS "+password+" SALT "+b64encode(salt)+" HASH "+b64encode(hash));
 		return b64encode(hash);
 	}
 
