@@ -45,7 +45,7 @@ public class ClientController {
                 byte[] salt = entry.getSalt();
                 String iv = new String(entry.getIV());
                 LoginResponse body = new LoginResponse(id, vault, saltedHash, salt, iv);
-                response.body(gson.toJson(body));
+                return gson.toJson(body);
             }
 
             return "";
@@ -68,9 +68,8 @@ public class ClientController {
             }
 
             RegisterResponse body = new RegisterResponse(true);
-            response.body(gson.toJson(body));
 
-            return "hey";
+            return gson.toJson(body);
         });
 
         // Obliterate entire user account
@@ -87,9 +86,8 @@ public class ClientController {
             boolean result = server.obliterateUser(userId, request.ip());
 
             RegisterResponse body = new RegisterResponse(result);
-            response.body(gson.toJson(body));
 
-            return response;
+            return gson.toJson(body);
         });
     }
 
