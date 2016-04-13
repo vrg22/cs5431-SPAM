@@ -55,31 +55,20 @@ public class ClientController {
         post("/register", (request, response) -> {
             System.out.println("Registering");
             String email = request.queryParams("email");
-            String password = request.queryParams("password");
+            String salt = request.queryParams("salt");
+            String saltedHash = request.queryParams("saltedHash");
+            String vault = request.queryParams("vault");
 
-
-            boolean isEmailValid = isEmailValid(email),
-                    isPasswordValid = isPasswordValid(password);
-
-            if (isEmailValid && isPasswordValid) {
-                User newUser = server.registerNewUser(email, password, request.ip());
-                if (newUser == null) {
-                    RegisterResponse body = new RegisterResponse(false);
-                    response.body(gson.toJson(body));
-                    return "";
-                }
-
-                RegisterResponse body = new RegisterResponse(true);
-                response.body(gson.toJson(body));
-            } else if (isPasswordValid) {
-                // Invalid email
+            User newUser = server.registerNewUser(email, salt, saltedHash,
+                vault, request.ip());
+            if (newUser == null) {
                 RegisterResponse body = new RegisterResponse(false);
                 response.body(gson.toJson(body));
-            } else {
-                // Invalid password
-                RegisterResponse body = new RegisterResponse(false);
-                response.body(gson.toJson(body));
+                return "";
             }
+
+            RegisterResponse body = new RegisterResponse(true);
+            response.body(gson.toJson(body));
 
             return "";
         });

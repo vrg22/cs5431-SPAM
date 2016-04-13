@@ -72,10 +72,9 @@ public class CentralServerController implements ServerController {
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
      */
-    public User registerNewUser(String username, String master, String clientIp) {
-        System.out.println("Registering user: "+username+"; "+master);
+    public User registerNewUser(String username, String userSalt,
+            String saltedHash, String vault, String clientIp) {
         PasswordStorageFile passwordFile = store.readPasswordsFile(store.getPasswordsInput());
-        System.out.println("passwordFile: "+passwordFile);
 
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
@@ -86,11 +85,8 @@ public class CentralServerController implements ServerController {
 
         // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
-		byte[] userSalt = crypto.getNewSalt();
-		String hashedMaster = crypto.genSaltedHash(master, userSalt);
-        byte[] userIV = crypto.getIV();
-        System.out.println("USERIV: "+userIV);
-        User newUser = new User(username, userSalt, hashedMaster, newUserId, userIV);
+        byte[] userIV = new byte[1];
+        User newUser = new User(username, userSalt.getBytes(), saltedHash, newUserId, userIV);
         PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);
 
@@ -100,16 +96,10 @@ public class CentralServerController implements ServerController {
         store.writeFileToDisk(passwordFile);
 
 		// Create new user vault file
-		store.createFileForUserOnStream(newUserId);
-		//UserStorageFile userFile = new UserStorageFile(newUserId);
-		//store.writeFileToDisk(userFile, newUserId);
-
-		//store.writeFileToStream(passwordFile, store.getPasswordsOutput());
-		//store.writeFileToStream(userFile, store.getOutputForUser(newUserId));
+		store.writeEncryptedUserFileToDisk(newUserId, vault);
 
         logger.info("[IP=" + clientIp + "] New user " + newUserId
             + " successfully registered.");
-        System.out.println("done registering");
         return newUser;
     }
 

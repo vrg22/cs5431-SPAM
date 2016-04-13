@@ -12,7 +12,8 @@ public interface ServerController {
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
      */
-    public User registerNewUser(String username, String password, String clientIp);
+    public User registerNewUser(String username, String userSalt,
+            String saltedHash, String vault, String clientIp);
 
     /**
      * Attempts to obliterate a user's entire account.

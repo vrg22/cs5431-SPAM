@@ -46,7 +46,7 @@ public class ClientApplication
 
         if (saltedHash.equals(response.getSaltedHash())) {
             // Success
-            byte[] encVault = response.getVault().getBytes();
+            String encVault = response.getVault();
             byte[] iv = response.getIV().getBytes();
             String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
 
@@ -83,9 +83,14 @@ public class ClientApplication
         byte[] salt = crypto.getNewSalt();
         String saltedHash = crypto.genSaltedHash(password, salt);
 
+        StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
+        store.setupUserXML(xmlStringBuilder, 0); // TODO: set user ID (or get rid of in user XML files?)
+
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
-        params.put("password", saltedHash);
+        params.put("salt", new String(salt));
+        params.put("saltedHash", saltedHash);
+        params.put("vault", xmlStringBuilder.toString());
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
