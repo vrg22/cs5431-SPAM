@@ -7,7 +7,7 @@ import java.io.*;
 
 public class ClientApplication
 {
-    public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com";
+	public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com:5000";
 
 	private static final int PASSWORD_LENGTH = 12;
     private Gson gson;
@@ -39,17 +39,23 @@ public class ClientApplication
         params.put("email", email);
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/login", params);
-        System.out.println(responseJson);
         LoginResponse response = gson.fromJson(responseJson, LoginResponse.class);
 
         byte[] salt = response.getSalt();
         String saltedHash = crypto.genSaltedHash(password, salt);
+
+        System.out.println("MASTER: "+password);
+        System.out.println("SALTEDHASH: "+saltedHash);
+        System.out.println("LOGINRESPONSE SALT: "+salt);
+        System.out.println("LOGINRESPONSE SALTEDHASH: "+response.getSaltedHash());
 
         if (saltedHash.equals(response.getSaltedHash())) {
             // Success
             String encVault = response.getVault();
             byte[] iv = response.getIV().getBytes();
             String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
+            System.out.println("ENCRYPTED VAULT STRING: "+encVault);
+            System.out.println("DECRYPTED VAULT STRING: "+userVaultStr);
 
             try {
                 PrintWriter tmpWriter = new PrintWriter(".tmpvault");
@@ -130,6 +136,8 @@ public class ClientApplication
      * @return Array of account headers for user's accounts
      */
     public Account.Header[] getAccounts() {
+        System.out.println("GETTING USER ACCOUNTS");
+        System.out.println("VAULT: "+userVault);
         if (userVault == null) return null;
 
         return userVault.getAccountHeaders();

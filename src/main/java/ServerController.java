@@ -6,21 +6,24 @@ public interface ServerController {
      * matches an existing user.
      * @return user ID of matching user (-1 if invalid combination)
      */
-    public int login(String username, String password, String clientIp);
+    // public int login(String username, String password, String clientIp,
+    //         PasswordStorageFile passwordFile);
 
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
      */
     public User registerNewUser(String username, String userSalt,
-            String saltedHash, String vault, String clientIp);
+            String saltedHash, String vault, String clientIp,
+            PasswordStorageFile passwordFile);
 
     /**
      * Attempts to obliterate a user's entire account.
      * @param userId ID of user to obliterate
      * @return "Was user's account successfully obliterated?"
      */
-    public boolean obliterateUser(int userId, String clientIp);
+    public boolean obliterateUser(int userId, String clientIp,
+            PasswordStorageFile passwordFile);
 
     /**
      * Attempts to update an existing user.
@@ -29,7 +32,8 @@ public interface ServerController {
      * @param user updated version of the user
      * @return "Was user successfully updated?"
      */
-    public boolean updateUser(User user, String clientIp);
+    public boolean updateUser(User user, String clientIp,
+            PasswordStorageFile passwordFile);
 
     /**
      * Returns a list of a user's stored accounts.

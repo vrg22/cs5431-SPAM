@@ -105,6 +105,7 @@ public class CryptoServiceProvider {
 	 */
 	public String genSaltedHash(String password, byte[] salt) {
 		byte[] hash = saltedHash(password, salt, HASHITERATIONS);
+        System.out.println("GENSALTEDHASH PASS "+password+" SALT "+new String(salt)+" HASH "+new String(hash));
 		return new String(hash);
 	}
 
