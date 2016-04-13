@@ -30,8 +30,10 @@ public class ClientController {
             e.printStackTrace();
             return;
         }
+        server.logger.info("STARTING UP");
         PasswordStorageFile passwordFile = store.readPasswordsFile(passwordStream);
         store.writeFileToDisk(passwordFile);
+        server.logger.info("WROTE PW FILE TO DISK");
 
         // Log in user
         post("/login", (request, response) -> {

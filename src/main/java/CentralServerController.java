@@ -6,7 +6,7 @@ import java.io.*;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
-	private Logger logger;
+	public Logger logger;
     private StorageController store;
 	private CryptoServiceProvider crypto;
 
