@@ -16,6 +16,8 @@ public class ClientApplication
 
     private int userId; // User ID of currently logged-in user
     private UserStorageFile userVault; // Vault of currently logged-in user
+    private byte[] userSalt;
+    private String master;
 
 	public ClientApplication() {
         gson = new Gson();
@@ -40,6 +42,7 @@ public class ClientApplication
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/login", params);
         LoginResponse response = gson.fromJson(responseJson, LoginResponse.class);
+        if (response == null) return false;
 
         byte[] salt = response.getSalt();
         String saltedHash = crypto.genSaltedHash(password, salt);
@@ -47,7 +50,7 @@ public class ClientApplication
         if (saltedHash.equals(response.getSaltedHash())) {
             // Success
             String encVault = response.getVault();
-            byte[] iv = response.getIV().getBytes();
+            byte[] iv = response.getIV();
             String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
 
             try {
@@ -61,6 +64,8 @@ public class ClientApplication
             }
 
             userId = response.getId();
+            userSalt = salt;
+            master = password;
 
             return true;
         } else {
@@ -85,12 +90,16 @@ public class ClientApplication
 
         StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
         store.setupUserXML(xmlStringBuilder, 0); // TODO: set user ID (or get rid of in user XML files?)
+        String decryptedVault = xmlStringBuilder.toString();
+        String encVault = crypto.encrypt(decryptedVault, password, salt);
+        byte[] iv = crypto.getIV();
 
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
         params.put("salt", CryptoServiceProvider.b64encode(salt));
         params.put("saltedHash", saltedHash);
-        params.put("vault", xmlStringBuilder.toString());
+        params.put("vault", encVault);
+        params.put("iv", CryptoServiceProvider.b64encode(iv));
 
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
@@ -129,8 +138,6 @@ public class ClientApplication
      * @return Array of account headers for user's accounts
      */
     public Account.Header[] getAccounts() {
-        System.out.println("GETTING USER ACCOUNTS");
-        System.out.println("VAULT: "+userVault);
         if (userVault == null) return null;
 
         return userVault.getAccountHeaders();
@@ -143,8 +150,13 @@ public class ClientApplication
      */
     public boolean storeNewAccount(String name, String username,
             String password) {
-        // TODO: implement
-        return false;
+        if (userVault == null) return false;
+
+        int newAccountId = Integer.parseInt(userVault.getNextAccountID());
+        Account account = new Account(newAccountId, name, username, password);
+        userVault.putAccount(account);
+
+        return saveVault();
     }
 
     /**
@@ -164,8 +176,9 @@ public class ClientApplication
      * @return Was account successfully updated
      */
     public boolean updateAccount(Account account) {
-        // TODO: implement
-        return false;
+        if (userVault == null) return false;
+
+        return userVault.updateAccount(account) && saveVault();
     }
 
     /**
@@ -176,7 +189,7 @@ public class ClientApplication
     public boolean deleteAccount(int accountId) {
         if (userVault == null) return false;
 
-        return userVault.deleteAccountWithId(accountId);
+        return userVault.deleteAccountWithId(accountId) && saveVault();
     }
 
     /**
@@ -186,5 +199,40 @@ public class ClientApplication
      */
     public String generatePassword() {
         return new ComplexPasswordGenerator().next(PASSWORD_LENGTH);
+    }
+
+    private boolean saveVault() {
+        String decryptedVault;
+        try {
+            FileOutputStream tmpOut = new FileOutputStream(new File(".tmpvault"));
+            store.writeFileToStream(userVault, tmpOut);
+            tmpOut.close();
+
+            FileInputStream in = new FileInputStream(new File(".tmpvault"));
+            StringBuilder builder = new StringBuilder();
+            int ch;
+            while((ch = in.read()) != -1){
+                builder.append((char)ch);
+            }
+            in.close();
+            decryptedVault = builder.toString();
+        } catch (IOException e) {
+            return false;
+        }
+
+        String encVault = crypto.encrypt(decryptedVault, master, userSalt);
+        byte[] iv = crypto.getIV();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("vault", encVault);
+        params.put("iv", CryptoServiceProvider.b64encode(iv));
+
+        String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/users/"
+            + userId + "/save", params);
+        SaveResponse response = gson.fromJson(responseJson, SaveResponse.class);
+
+        System.out.println("UPDATED USER VAULT: "+userVault);
+
+        return response.success();
     }
 }

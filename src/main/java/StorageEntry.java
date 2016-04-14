@@ -1,7 +1,6 @@
 import java.util.*;
 
 public abstract class StorageEntry {
-//public interface StorageEntry {
 	private Map<String, String> values;
 
     public StorageEntry() {
@@ -16,4 +15,11 @@ public abstract class StorageEntry {
         values.put(key, value);
     }
 
+    protected void update(String key, String value) {
+        values.replace(key, value);
+    }
+
+    public String toString() {
+        return "Entry:" + values;
+    }
 }

@@ -23,7 +23,7 @@ public class CryptoServiceProvider {
 	}
 
 	public static byte[] b64decode(String str) {
-		return Base64.getDecoder().decode(str);
+		return Base64.getDecoder().decode(str.trim());
 	}
 
 	public CryptoServiceProvider() {
@@ -62,10 +62,6 @@ public class CryptoServiceProvider {
 	}
 
 	public String decrypt(String cipherText, String pass, byte[] salt, byte[] iv) {
-        System.out.println("ciphertext: "+cipherText);
-        System.out.println("password: "+pass);
-        System.out.println("salt: "+b64encode(salt));
-        System.out.println("iv: "+b64encode(iv));
 		byte[] decrypted = null;
 		try {
 			aesCipher.init(Cipher.DECRYPT_MODE, genKey(pass, salt), new IvParameterSpec(iv));
@@ -79,7 +75,6 @@ public class CryptoServiceProvider {
 			System.err.println("Exception raised while decrypting");
             e.printStackTrace();
 		}
-        System.out.println("decrypted: "+decrypted);
 
 		return new String(decrypted);
 	}

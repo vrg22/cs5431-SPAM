@@ -45,6 +45,6 @@ public abstract class StorageFile {
     }
 
     public String toString() {
-        return Arrays.toString(entries.toArray());
+        return "File:" + Arrays.toString(entries.toArray());
     }
 }

@@ -46,11 +46,13 @@ public class ClientController {
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
             if (entry != null) {
                 int id = entry.getUserId();
-                String vault = new String(Files.readAllBytes(Paths.get(id + ".xml")));;
+                String vault = new String(Files.readAllBytes(Paths.get(
+                    id + ".xml")));
                 String saltedHash = entry.getMaster();
                 byte[] salt = entry.getSalt();
-                String iv = new String(entry.getIV());
-                LoginResponse body = new LoginResponse(id, vault, saltedHash, salt, iv);
+                byte[] iv = entry.getIV();
+                LoginResponse body = new LoginResponse(id, vault, saltedHash,
+                    salt, iv);
                 return gson.toJson(body);
             }
 
@@ -64,9 +66,10 @@ public class ClientController {
             String salt = request.queryParams("salt");
             String saltedHash = request.queryParams("saltedHash");
             String vault = request.queryParams("vault");
+            String iv = request.queryParams("iv");
 
             User newUser = server.registerNewUser(email, salt, saltedHash,
-                vault, request.ip(), passwordFile);
+                vault, iv, request.ip(), passwordFile);
             if (newUser == null) {
                 RegisterResponse body = new RegisterResponse(false);
                 response.body(gson.toJson(body));
@@ -75,6 +78,27 @@ public class ClientController {
 
             RegisterResponse body = new RegisterResponse(true);
 
+            return gson.toJson(body);
+        });
+
+        // Update user vault
+        post("/users/:userid/save", (request, response) -> {
+            int userId = -1;
+            try {
+                userId = Integer.parseInt(request.params("userid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                SaveResponse body = new SaveResponse(false);
+                return gson.toJson(body);
+            }
+
+            String vault = request.queryParams("vault");
+            String iv = request.queryParams("iv");
+
+            server.updateUserVault(userId, vault, iv, passwordFile);
+
+            SaveResponse body = new SaveResponse(true);
             return gson.toJson(body);
         });
 

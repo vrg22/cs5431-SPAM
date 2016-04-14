@@ -5,7 +5,7 @@ public class Account {
     private String username;
     private String password;
 
-	public Account(int id, /*int userId,*/ String name, String username, String password) {
+	public Account(int id, String name, String username, String password) {
 		this.header = new Header(id, /*userId,*/ name);
         this.username = username;
         this.password = password;
@@ -14,10 +14,6 @@ public class Account {
 	public int getId() {
 		return header.getId();
 	}
-
-//    public int getUserID() {
-//        return header.getUserID();
-//    }
 
     public String getName() {
         return header.getName();
@@ -48,19 +44,14 @@ public class Account {
         //private int userId;
         private String name;
 
-        public Header(int id, /*int userId,*/ String name) {
+        public Header(int id, String name) {
             this.id = id;
-            //this.userId = userId;
             this.name = name;
         }
 
         public int getId() {
     		return id;
     	}
-
-//        public int getUserID() {
-//            return userId;
-//        }
 
         public String getName() {
             return name;

@@ -170,13 +170,22 @@ public class XMLStorageController implements StorageController {
 			pEntry = (PasswordStorageEntry) entry;
 			Element newUser = DOM.createElement("user");
 			newUser.setAttribute("ID", Integer.toString(pEntry.getUserId()));
-			Element usrnm = DOM.createElement("username");
+
+            Element usrnm = DOM.createElement("username");
 			usrnm.setTextContent(pEntry.getUsername());
 			newUser.appendChild(usrnm);
 
 	        Element master = DOM.createElement("password");
 			master.setTextContent(pEntry.getMaster());
 	        newUser.appendChild(master);
+
+            Element salt = DOM.createElement("salt");
+            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
+            newUser.appendChild(salt);
+
+            Element iv = DOM.createElement("iv");
+            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
+            newUser.appendChild(iv);
 
 	        uElement.appendChild(newUser);
 		}
@@ -190,17 +199,20 @@ public class XMLStorageController implements StorageController {
 
     	Document initialDOM, userDOM = null;
 
-	    FileInputStream fis = getInputForUser(Integer.parseInt(file.getUserID()));
-	    initialDOM = streamToDOM(fis);
+	    // FileInputStream fis = getInputForUser(Integer.parseInt(file.getUserID()));
+	    // initialDOM = streamToDOM(fis);
+        int userId;
+        try {
+            userId = Integer.parseInt(file.getUserID());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        initialDOM = createUserDOM(userId);
 
     	// Put all entries, etc in the right place
     	userDOM = initialDOM;
 
-    	// Set metadata to match
-		Element thisUser = getTagElement("user", userDOM);
-		thisUser.setAttribute("ID", file.getUserID());
-
-		// Make vault data match by simply overwriting content
+        // Make vault data match by simply overwriting content
 		Element vElement = getTagElement("vault", userDOM);
 		vElement.setTextContent(""); //CHECK!
 
@@ -346,6 +358,7 @@ public class XMLStorageController implements StorageController {
 		String username;
 		String password;
 		byte[] salt;
+        byte[] iv;
 		int id;
 
 		//Get the "users" element
@@ -363,7 +376,9 @@ public class XMLStorageController implements StorageController {
             	password = uElt.getElementsByTagName("password").item(0).getTextContent();
             	salt = CryptoServiceProvider.b64decode(
                     uElt.getElementsByTagName("salt").item(0).getTextContent());
-            	User u = new User(username, salt, password, id, new byte[1]); // TODO: set IV?
+                iv = CryptoServiceProvider.b64decode(
+                    uElt.getElementsByTagName("iv").item(0).getTextContent());
+            	User u = new User(username, salt, password, id, iv);
 
             	users.add(u);
             }
