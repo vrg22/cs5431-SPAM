@@ -43,25 +43,36 @@ public class ClientController {
             return;
         }
 
-        // Log in user
-        post("/login", (request, response) -> {
+        // Send client salt for user with specified username
+        post("/salt", (request, response) -> {
             String email = request.queryParams("email");
 
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
-            if (entry != null) {
-                int id = entry.getUserId();
-                String vault = new String(Files.readAllBytes(Paths.get(
-                    store.getFilenameForUser(id))));
-                String saltedHash = entry.getMaster();
-                byte[] salt = entry.getSalt();
-                byte[] iv = entry.getIV();
-                LoginResponse body = new LoginResponse(id, vault, saltedHash,
-                    salt, iv);
-                return gson.toJson(body);
-            }
+            if (entry == null) return "";
 
-            // User with specified email does not exist
-            return "";
+            byte[] salt = entry.getSalt();
+            SaltResponse body = new SaltResponse(salt);
+            return gson.toJson(body);
+        });
+
+        // If correct master password, send client user's ID,
+        // IV, and encrypted vault
+        post("/auth", (request, response) -> {
+            String email = request.queryParams("email");
+            String saltedHash = request.queryParams("master");
+
+            PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+            if (entry == null) return "";
+
+            String correctSaltedHash = entry.getMaster();
+            if (!saltedHash.equals(correctSaltedHash)) return "";
+
+            int id = entry.getUserId();
+            String vault = new String(Files.readAllBytes(Paths.get(
+                store.getFilenameForUser(id))));
+            byte[] iv = entry.getIV();
+            AuthResponse body = new AuthResponse(id, vault, iv);
+            return gson.toJson(body);
         });
 
         // Register new user

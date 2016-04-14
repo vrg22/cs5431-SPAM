@@ -37,54 +37,58 @@ public class ClientApplication
 	 * @return Was login successful
 	 */
 	public boolean login(String email, String password) {
-        Map<String, String> params = new HashMap<>();
-        params.put("email", email);
+        // Request server for salt with user's email
+        Map<String, String> saltParams = new HashMap<>();
+        saltParams.put("email", email);
+        String saltResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/salt",
+            saltParams);
+        SaltResponse saltResponse = gson.fromJson(saltResponseJson,
+            SaltResponse.class);
+        if (saltResponse == null) return false;
+        byte[] salt = saltResponse.getSalt();
 
-        String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/login", params);
-        LoginResponse response = gson.fromJson(responseJson, LoginResponse.class);
-        if (response == null) return false;
-
-        byte[] salt = response.getSalt();
         String saltedHash = crypto.genSaltedHash(password, salt);
 
-        System.out.println("trying to log in");
-        System.out.println("password: '"+password+"', salt: '"+crypto.b64encode(salt)+"'");
-        System.out.println("saltedhash: '"+saltedHash+"'");
-        System.out.println("storedhash: '"+response.getSaltedHash()+"'");
+        // Request user for user's ID, IV, and encrypted vault
+        Map<String, String> authParams = new HashMap<>();
+        authParams.put("email", email);
+        authParams.put("master", saltedHash);
+        String authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/auth",
+            authParams);
+        AuthResponse authResponse = gson.fromJson(authResponseJson,
+            AuthResponse.class);
+        if (authResponse == null) return false;
+        int id = authResponse.getId();
+        String encVault = authResponse.getVault();
+        byte[] iv = authResponse.getIV();
 
-        if (saltedHash.equals(response.getSaltedHash())) {
-            // Success
-            String encVault = response.getVault();
-            byte[] iv = response.getIV();
-            String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
-
+        String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
+        try {
+            FileInputStream tmpStream = null;
             try {
-                FileInputStream tmpStream = null;
-                try {
-                    PrintWriter tmpWriter = new PrintWriter(".tmpvault");
-                    tmpWriter.println(userVaultStr);
-                    tmpWriter.close();
-                    tmpStream = new FileInputStream(".tmpvault");
-                    userVault = store.readFileForUser(tmpStream);
-                    tmpStream.close();
-                } catch (IOException e) {
-                    return false;
-                } finally {
-                    if (tmpStream != null) tmpStream.close();
-                }
+                PrintWriter tmpWriter = new PrintWriter(".tmpvault");
+                tmpWriter.println(userVaultStr);
+                tmpWriter.close();
+                tmpStream = new FileInputStream(".tmpvault");
+                userVault = store.readFileForUser(tmpStream);
+                tmpStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
+            } finally {
+                if (tmpStream != null) tmpStream.close();
             }
-
-            userId = response.getId();
-            userSalt = salt;
-            master = password;
-
-            return true;
-        } else {
-            // Incorrect email and/or password
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
+
+        // Successful login
+        userId = authResponse.getId();
+        userSalt = salt;
+        master = password;
+
+        return true;
 	}
 
     public void logout() {
