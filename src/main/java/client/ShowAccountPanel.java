@@ -48,6 +48,7 @@ public class ShowAccountPanel extends JPanel {
         JButton save = new JButton();
         save.setText("Save Changes");
 
+        JLabel errorLabel = new JLabel();
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 ClientFrame frame = ClientFrame.getFrameForComponent(save);
@@ -61,6 +62,8 @@ public class ShowAccountPanel extends JPanel {
                 if (success) {
                     Account.Header[] accounts = frame.getApp().getAccounts();
                     frame.setPanel(new ShowAccountsPanel(accounts));
+                } else {
+                    errorLabel.setText("Sorry there was a problem saving.");
                 }
             }
         });
@@ -87,6 +90,8 @@ public class ShowAccountPanel extends JPanel {
         add(passwordField);
         add(generatePassword);
         add(save);
-        setLayout(new GridLayout(6, 2));
+        add(errorLabel);
+        add(new JPanel());
+        setLayout(new GridLayout(7, 2));
     }
 }

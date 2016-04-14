@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.*;
 import com.google.gson.Gson;
 import java.io.*;
+import java.net.*;
 
 public class ClientApplication
 {
@@ -40,8 +41,14 @@ public class ClientApplication
         // Request server for salt with user's email
         Map<String, String> saltParams = new HashMap<>();
         saltParams.put("email", email);
-        String saltResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/salt",
-            saltParams);
+        String saltResponseJson;
+        try {
+            saltResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/salt",
+                saltParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
         SaltResponse saltResponse = gson.fromJson(saltResponseJson,
             SaltResponse.class);
         if (saltResponse == null) return false;
@@ -53,8 +60,14 @@ public class ClientApplication
         Map<String, String> authParams = new HashMap<>();
         authParams.put("email", email);
         authParams.put("master", saltedHash);
-        String authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/auth",
-            authParams);
+        String authResponseJson;
+        try {
+            authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/auth",
+                authParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
         AuthResponse authResponse = gson.fromJson(authResponseJson,
             AuthResponse.class);
         if (authResponse == null) return false;
@@ -66,21 +79,25 @@ public class ClientApplication
         try {
             FileInputStream tmpStream = null;
             try {
-                System.out.println("decrypted: "+userVaultStr);
+                System.out.println("uservaultenc: '"+encVault+"'");
+                System.out.println("uservaultdec: '"+userVaultStr+"'");
+                System.out.println("password: '"+password+"'");
+                System.out.println("salt: '"+crypto.b64encode(salt)+"'");
+                System.out.println("iv: '"+crypto.b64encode(iv)+"'");
                 PrintWriter tmpWriter = new PrintWriter(".tmpvault");
                 tmpWriter.println(userVaultStr);
                 tmpWriter.close();
                 tmpStream = new FileInputStream(".tmpvault");
                 userVault = store.readFileForUser(tmpStream);
                 tmpStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                System.err.println("Problem logging in");
                 return false;
             } finally {
                 if (tmpStream != null) tmpStream.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Problem logging in");
             return false;
         }
 
@@ -110,9 +127,7 @@ public class ClientApplication
         store.setupUserXML(xmlStringBuilder, 0); // TODO: set user ID (or get rid of in user XML files?)
         String decryptedVault = xmlStringBuilder.toString();
         String encVault = crypto.encrypt(decryptedVault, password, salt);
-        System.out.println("registering with vault: "+decryptedVault);
         byte[] iv = crypto.getIV();
-        System.out.println("immediate decrypt: "+crypto.decrypt(encVault, password, salt, iv));
 
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
@@ -121,7 +136,13 @@ public class ClientApplication
         params.put("vault", encVault);
         params.put("iv", CryptoServiceProvider.b64encode(iv));
 
-        String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
+        String responseJson;
+        try {
+            responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
 
         if (response != null && response.success()) {
@@ -139,8 +160,14 @@ public class ClientApplication
      * @return Was user successfully obliterated
      */
     public boolean obliterateUser() {
-        String responseJson = SendHttpsRequest.delete(HTTPS_ROOT
-            + "/users/" + userId);
+        String responseJson;
+        try {
+            responseJson = SendHttpsRequest.delete(HTTPS_ROOT
+                + "/users/" + userId);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
         ObliterateResponse response = gson.fromJson(responseJson, ObliterateResponse.class);
 
         if (response.success()) {
@@ -250,15 +277,24 @@ public class ClientApplication
             return false;
         }
 
+        System.out.println("Will save decvault: '"+decryptedVault+"'");
+
         String encVault = crypto.encrypt(decryptedVault, master, userSalt);
         byte[] iv = crypto.getIV();
+        System.out.println("Imm dec: '"+crypto.decrypt(encVault, master, userSalt, iv)+"'");
 
         Map<String, String> params = new HashMap<>();
         params.put("vault", encVault);
         params.put("iv", CryptoServiceProvider.b64encode(iv));
 
-        String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/users/"
-            + userId + "/save", params);
+        String responseJson;
+        try {
+            responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/users/"
+                + userId + "/save", params);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
         SaveResponse response = gson.fromJson(responseJson, SaveResponse.class);
 
         return response.success();

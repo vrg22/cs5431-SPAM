@@ -15,6 +15,7 @@ public class RegisterPanel extends JPanel {
         JButton register = new JButton();
         register.setText("Register");
 
+        JLabel errorLabel = new JLabel();
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 String email = emailField.getText();
@@ -24,9 +25,7 @@ public class RegisterPanel extends JPanel {
                 if (success) {
                     frame.setPanel(new VaultPanel());
                 } else {
-                    JLabel errorLabel = new JLabel();
-                    errorLabel.setText("Sorry there was a problem.");
-                    add(errorLabel);
+                    errorLabel.setText("Sorry there was a problem registering.");
                 }
             }
         });
@@ -36,6 +35,9 @@ public class RegisterPanel extends JPanel {
         add(passwordLabel);
         add(passwordField);
         add(register);
-        setLayout(new GridLayout(3, 2));
+        add(new JPanel());
+        add(errorLabel);
+        add(new JPanel());
+        setLayout(new GridLayout(4, 2));
     }
 }

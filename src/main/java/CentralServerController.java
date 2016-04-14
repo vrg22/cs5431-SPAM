@@ -139,7 +139,6 @@ public class CentralServerController implements ServerController {
         passwordFile.putUser(user);
 
         store.writeFileToDisk(passwordFile);
-        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
         logger.info("[IP=" + clientIp + "] User " + user.getId()
             + " successfully updated.");
@@ -153,5 +152,7 @@ public class CentralServerController implements ServerController {
 
         PasswordStorageEntry entry = passwordFile.getWithUserId(""+userId);
         entry.setIV(iv);
+
+        store.writeFileToDisk(passwordFile);
     }
 }

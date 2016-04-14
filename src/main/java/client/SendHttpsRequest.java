@@ -4,118 +4,85 @@ import javax.net.ssl.*;
 import java.util.*;
 
 public class SendHttpsRequest {
-    public static String get(String urlStr) {
+    public static String get(String urlStr) throws IOException {
         InputStream ins = null;
-        try {
-            try {
-                URL url = new URL(urlStr);
-                HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+        URL url = new URL(urlStr);
+        HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
 
-                con.setRequestMethod("GET");
-                ins = con.getInputStream();
-                InputStreamReader isr = new InputStreamReader(ins);
-                BufferedReader in = new BufferedReader(isr);
+        con.setRequestMethod("GET");
+        ins = con.getInputStream();
+        InputStreamReader isr = new InputStreamReader(ins);
+        BufferedReader in = new BufferedReader(isr);
 
-                StringBuffer response = new StringBuffer();
-                String inputLine;
-                while ((inputLine = in.readLine()) != null)
-                {
-                    response.append(inputLine);
-                }
-
-                in.close();
-
-                return response.toString();
-            } catch (IOException e) {
-    			System.err.println("IOException occured");
-    			e.printStackTrace();
-                return null;
-            } finally {
-                if (ins != null) ins.close();
-            }
-        } catch (IOException e) {
-            return null;
+        StringBuffer response = new StringBuffer();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+        {
+            response.append(inputLine);
         }
+
+        in.close();
+
+        return response.toString();
     }
 
-    public static String post(String urlStr, Map<String, String> params) {
-        try {
-            DataOutputStream wr = null;
-            InputStream ins = null;
-            try {
-                URL url = new URL(urlStr);
-                HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+    public static String post(String urlStr, Map<String, String> params)
+             throws IOException {
+        DataOutputStream wr = null;
+        InputStream ins = null;
+        URL url = new URL(urlStr);
+        HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
 
-                con.setRequestMethod("POST");
-                con.setDoOutput(true);
-                wr = new DataOutputStream(con.getOutputStream());
-                String paramsStr = SendHttpsRequest.formatParams(params);
-        		wr.writeBytes(paramsStr);
-        		wr.flush();
-        		wr.close();
+        con.setRequestMethod("POST");
+        con.setDoOutput(true);
+        wr = new DataOutputStream(con.getOutputStream());
+        String paramsStr = SendHttpsRequest.formatParams(params);
+		wr.writeBytes(paramsStr);
+		wr.flush();
+		wr.close();
 
-                ins = con.getInputStream();
-                InputStreamReader isr = new InputStreamReader(ins);
-                BufferedReader in = new BufferedReader(isr);
+        ins = con.getInputStream();
+        InputStreamReader isr = new InputStreamReader(ins);
+        BufferedReader in = new BufferedReader(isr);
 
-                StringBuffer response = new StringBuffer();
-                String inputLine;
-                while ((inputLine = in.readLine()) != null)
-                {
-                    response.append(inputLine);
-                }
-
-                in.close();
-
-                return response.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            } finally {
-                if (wr != null) wr.close();
-                if (ins != null) ins.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+        StringBuffer response = new StringBuffer();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+        {
+            response.append(inputLine);
         }
+
+        in.close();
+
+        return response.toString();
     }
 
-    public static String delete(String urlStr) {
-        try {
-            InputStream ins = null;
-            try {
-                URL url = new URL(urlStr);
-                HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+    public static String delete(String urlStr) throws IOException {
+        InputStream ins = null;
+        URL url = new URL(urlStr);
+        HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
 
-                con.setRequestMethod("DELETE");
+        con.setRequestMethod("DELETE");
 
-                ins = con.getInputStream();
-                InputStreamReader isr = new InputStreamReader(ins);
-                BufferedReader in = new BufferedReader(isr);
+        ins = con.getInputStream();
+        InputStreamReader isr = new InputStreamReader(ins);
+        BufferedReader in = new BufferedReader(isr);
 
-                StringBuffer response = new StringBuffer();
-                String inputLine;
-                while ((inputLine = in.readLine()) != null)
-                {
-                    response.append(inputLine);
-                }
-
-                in.close();
-
-                return response.toString();
-            } catch (IOException e) {
-                return null;
-            } finally {
-                if (ins != null) ins.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+        StringBuffer response = new StringBuffer();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+        {
+            response.append(inputLine);
         }
+
+        in.close();
+
+        return response.toString();
     }
 
     public static String formatParams(Map<String, String> params) {
+        if (params == null) return "";
+
         StringBuffer formatted = new StringBuffer();
 
         for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -132,6 +99,7 @@ public class SendHttpsRequest {
         }
 
         // Trim trailing '&'
+        if (formatted.length() == 0) return "";
         return formatted.substring(0, formatted.length() - 1);
     }
 }

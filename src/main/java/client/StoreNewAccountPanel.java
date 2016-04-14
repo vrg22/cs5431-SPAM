@@ -19,6 +19,7 @@ public class StoreNewAccountPanel extends JPanel {
         JButton save = new JButton();
         save.setText("Save");
 
+        JLabel errorLabel = new JLabel();
         save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String name = nameField.getText();
@@ -32,9 +33,7 @@ public class StoreNewAccountPanel extends JPanel {
                     Account.Header[] accounts = frame.getApp().getAccounts();
                     frame.setPanel(new ShowAccountsPanel(accounts));
                 } else {
-                    JLabel errorLabel = new JLabel();
-                    errorLabel.setText("Sorry there was a problem.");
-                    add(errorLabel);
+                    errorLabel.setText("Sorry there was a problem saving.");
                 }
             }
         });
@@ -58,6 +57,8 @@ public class StoreNewAccountPanel extends JPanel {
         add(passwordField);
         add(save);
         add(new JPanel());
-        setLayout(new GridLayout(5, 2));
+        add(errorLabel);
+        add(new JPanel());
+        setLayout(new GridLayout(6, 2));
     }
 }

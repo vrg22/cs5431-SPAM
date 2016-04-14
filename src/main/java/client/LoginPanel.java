@@ -16,6 +16,7 @@ public class LoginPanel extends JPanel {
         JButton login = new JButton();
         login.setText("Login");
 
+        JLabel errorLabel = new JLabel();
         login.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String email = emailField.getText();
@@ -26,9 +27,7 @@ public class LoginPanel extends JPanel {
                 if (success) {
                     frame.setPanel(new VaultPanel());
                 } else {
-                    JLabel errorLabel = new JLabel();
                     errorLabel.setText("Invalid email and/or password.");
-                    add(errorLabel);
                 }
             }
         });
@@ -49,6 +48,8 @@ public class LoginPanel extends JPanel {
         add(passwordField);
         add(register);
         add(login);
-        setLayout(new GridLayout(3, 2));
+        add(errorLabel);
+        add(new JPanel());
+        setLayout(new GridLayout(4, 2));
     }
 }
