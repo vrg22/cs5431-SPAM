@@ -1,8 +1,7 @@
 import java.util.logging.*;
-
 import org.w3c.dom.Document;
-
 import java.io.*;
+import java.nio.file.*;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
@@ -103,11 +102,12 @@ public class CentralServerController implements ServerController {
 
         // Delete user's vault file
         try {
-            Files.delete(store.getFilenameForUser(userId));
+            Files.delete(FileSystems.getDefault().getPath(
+                store.getFilenameForUser(userId)));
         } catch (NoSuchFileException x) {
-            System.err.format("%s: no such" + " file or directory%n", path);
+            System.err.println("User vault file not found.");
         } catch (DirectoryNotEmptyException x) {
-            System.err.format("%s not empty%n", path);
+            System.err.println("User vault file not found");
         } catch (IOException x) {
             // File permission problems are caught here.
             System.err.println(x);
