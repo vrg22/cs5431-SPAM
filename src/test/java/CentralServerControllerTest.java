@@ -1,6 +1,6 @@
 import org.junit.*;
+import java.io.*;
 import static org.junit.Assert.*;
-
 import static spark.Spark.*;
 
 public class CentralServerControllerTest {
@@ -8,36 +8,42 @@ public class CentralServerControllerTest {
 
     @Test
     public void testSingleUser() {
-        ServerController server = new CentralServerController();
+        ServerController server = null;
+        try {
+            server = new CentralServerController("tests.log");
+        } catch (IOException e) {
+            fail("IOException opening log file");
+            return;
+        }
 
         // Register new user
-        User registered = server.registerNewUser("Bob", "supersecretpassword");
+        PasswordStorageFile passwordFile = new PasswordStorageFile();
+        User registered = server.registerNewUser("Bob",
+            CryptoServiceProvider.b64encode(new byte[64]), "saltedhash",
+            "encryptedvault", CryptoServiceProvider.b64encode(new byte[64]),
+            "0.0.0.0", passwordFile);
         assertNotNull(registered);
 
         int registeredId = registered.getID();
         assertFalse(registeredId == -1);
 
-        // Login with registered user
-        assertEquals(registeredId, server.login("Bob", "supersecretpassword"));
+        assertTrue(passwordFile.containsUsername("Bob"));
 
         // Obliterate registered user
-        assertTrue(server.obliterateUser(registeredId));
-
-        // Login with obliterated user
-        assertEquals(-1, server.login("Bob", "supersecretpassword"));
+        assertTrue(server.obliterateUser(registeredId, "0.0.0.0", passwordFile));
+        assertFalse(passwordFile.containsUsername("Bob"));
 
         // Register new user with same username as obliterated username
-        registered = server.registerNewUser("Bob", "newpassword");
+        registered = server.registerNewUser("Bob",
+            CryptoServiceProvider.b64encode(new byte[64]), "newsaltedhash",
+            "newencryptedvault", CryptoServiceProvider.b64encode(new byte[64]),
+            "0.0.0.0", passwordFile);
         assertNotNull(registered);
 
         registeredId = registered.getID();
         assertFalse(registeredId == -1);
 
-        // Login with re-registered username, new password
-        assertEquals(registeredId, server.login("Bob", "newpassword"));
-
-        // Login with re-registered username, old passwordFile
-        assertEquals(-1, server.login("Bob", "supersecretpassword"));
+        assertTrue(passwordFile.containsUsername("Bob"));
 
         // TODO: test updateUser(), getAccountsForUser(),
         //      getDetailsForAccount(), storeNewAccountForUser(),

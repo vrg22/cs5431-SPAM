@@ -13,9 +13,6 @@ public interface StorageController {
      */
     public UserStorageFile readFileForUser(FileInputStream in);
 
-
-
-
     /**
      * Create a new passwords file, write to designated output stream
      */
@@ -35,8 +32,6 @@ public interface StorageController {
      */
     public void createFileForUserOnStream(int userId);
 
-
-
     //THE BELOW 4 ARE UNUSED
     /**
      * Create a new passwords file, write to output stream
@@ -51,13 +46,13 @@ public interface StorageController {
      * Convert a PasswordStorageFile into file-writable form,
      * and write to output stream
      */
-    public void writeFileToStream(PasswordStorageFile file, OutputStream out);
+    public void writeFileToStream(PasswordStorageFile file, FileOutputStream out);
 
     /**
      * Convert a UserStorageFile into file-writable form,
      * and write to output stream
      */
-    public void writeFileToStream(UserStorageFile file, OutputStream out);
+    public void writeFileToStream(UserStorageFile file, FileOutputStream out);
 
     /**
      * Return file extension that this controller uses to store files (e.g., ".xml")

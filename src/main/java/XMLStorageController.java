@@ -71,7 +71,7 @@ public class XMLStorageController implements StorageController {
     	writeDOMtoStream(fileToDOM(file), out);
     }
 
-    public void writeFileToStream(UserStorageFile file, OutputStream out) {
+    public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
         writeDOMtoStream(fileToDOM(file), out);
     }
 
