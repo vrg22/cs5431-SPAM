@@ -7,6 +7,9 @@ public class CryptoServiceProviderTest {
 			CryptoServiceProvider csp = new CryptoServiceProvider();
 			byte[] salt = csp.getNewSalt();
 			String salted = csp.genSaltedHash("supersecretpassword", salt);
+			String salted_new = csp.genSaltedHash("supersecretpassword", salt);
+
+			assertEquals(salted, salted_new);
 		}
 
 	@Test

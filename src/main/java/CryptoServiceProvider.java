@@ -10,9 +10,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 public class CryptoServiceProvider {
-	private static Cipher aesCipher;
-	private static SecretKeyFactory skf;
-	private static SecureRandom secure;
+	private Cipher aesCipher;
+	private SecretKeyFactory skf;
+	private SecureRandom secure;
 
 	private static final int HASHITERATIONS = 64000;
 	private static final int KEYGENITERATIONS = 96000;
