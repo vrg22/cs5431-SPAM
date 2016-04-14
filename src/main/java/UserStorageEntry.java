@@ -1,12 +1,10 @@
-// TODO: use of account ID, user ID, 
-// Keys: name, username, plaintext password
+// Keys: account ID, name, username, plaintext password
 public class UserStorageEntry extends StorageEntry {
-    public UserStorageEntry(int accountId, /*int userId,*/ String name, String username,
+    public UserStorageEntry(int accountId, String name, String username,
             String password) {
         super();
 
         put("accountid", ""+accountId);
-        //put("userid", ""+userId);
         put("name", name);
         put("username", username);
         put("password", password);
@@ -14,7 +12,6 @@ public class UserStorageEntry extends StorageEntry {
 
     public Account getAccount() {
         int accountId = Integer.parseInt(get("accountid"));
-        //int userId = Integer.parseInt(get("userid"));
         String name = get("name");
         String username = get("username");
         String password = get("password");
@@ -23,9 +20,8 @@ public class UserStorageEntry extends StorageEntry {
 
     public Account.Header getHeader() {
         int accountId = Integer.parseInt(get("accountid"));
-        //int userId = Integer.parseInt(get("userid"));
         String name = get("name");
-        return new Account.Header(accountId, /*userId,*/ name);
+        return new Account.Header(accountId, name);
     }
 
     public int getAccountId() {

@@ -87,8 +87,8 @@ public class ClientController {
             String vault = new String(Files.readAllBytes(Paths.get(
                 store.getFilenameForUser(id))));
             byte[] iv = entry.getIV();
-            AuthResponse body = new AuthResponse(id, vault, iv);
 
+            AuthResponse body = new AuthResponse(id, vault, iv);
             return gson.toJson(body);
         });
 
@@ -100,16 +100,21 @@ public class ClientController {
             String vault = request.queryParams("vault");
             String iv = request.queryParams("iv");
 
+            if (!isEmailValid(email)) {
+                // Invalid email
+                RegisterResponse body = new RegisterResponse(false);
+                return gson.toJson(body);
+            }
+
             User newUser = server.registerNewUser(email, salt, saltedHash,
                 vault, iv, request.ip(), passwordFile);
             if (newUser == null) {
+                // User already exists, or other problem creating the user
                 RegisterResponse body = new RegisterResponse(false);
-                response.body(gson.toJson(body));
-                return "";
+                return gson.toJson(body);
             }
 
             RegisterResponse body = new RegisterResponse(true);
-
             return gson.toJson(body);
         });
 
@@ -142,14 +147,14 @@ public class ClientController {
             } catch (NumberFormatException e) {
                 // Bad request
                 response.status(400);
-                return false;
+                RegisterResponse body = new RegisterResponse(false);
+                return gson.toJson(body);
             }
 
             boolean result = server.obliterateUser(userId, request.ip(),
                 passwordFile);
 
             RegisterResponse body = new RegisterResponse(result);
-
             return gson.toJson(body);
         });
     }

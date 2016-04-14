@@ -22,21 +22,15 @@ public class PasswordStorageFile extends StorageFile {
         return (PasswordStorageEntry)get("username", username);
     }
 
-    public PasswordStorageEntry getWithMaster(String master) { //TODO: This may not be viable, because multiple users may have the same password
-        return (PasswordStorageEntry)get("master", master);
-    }
-
     public void putUser(User user) {
     	// TODO: VERIFY that the user already used the nextID field to set user's ID
     	// TODO: Find the next 'nextID' value that doesn't correspond but ONLY if it doesn't duplicate
-    	// TODO: Check max users
     	if (numUsers < User.MAX_USERS) {
     		numUsers++;
             put(new PasswordStorageEntry(user));
-            // TODO: Advance nextID to next valid number, if numUsers < MAX_USERS -> Or could build this into "getNextID"
     	}
     	else {
-    		/* RAISE SOME EXCEPTION */
+    		// TODO: RAISE SOME EXCEPTION
     	}
     }
 

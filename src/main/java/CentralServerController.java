@@ -92,17 +92,26 @@ public class CentralServerController implements ServerController {
     public boolean obliterateUser(int userId, String clientIp,
             PasswordStorageFile passwordFile) {
 
+        // Delete user from passwords file
         if (!passwordFile.removeWithUserId(""+userId)) {
             // No such user
             logger.warning("[IP=" + clientIp + "] Attempt was made to "
                 + "obliterate nonexistent user " + userId + ".");
             return false;
         }
-
-        // TODO: delete user's file too
-
         store.writeFileToDisk(passwordFile);
-        //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
+
+        // Delete user's vault file
+        try {
+            Files.delete(store.getFilenameForUser(userId));
+        } catch (NoSuchFileException x) {
+            System.err.format("%s: no such" + " file or directory%n", path);
+        } catch (DirectoryNotEmptyException x) {
+            System.err.format("%s not empty%n", path);
+        } catch (IOException x) {
+            // File permission problems are caught here.
+            System.err.println(x);
+        }
 
         logger.info("[IP=" + clientIp + "] User " + userId
             + " successfully obliterated.");

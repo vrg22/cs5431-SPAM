@@ -4,8 +4,6 @@ import static org.junit.Assert.*;
 import static spark.Spark.*;
 
 public class CentralServerControllerTest {
-    // TODO: support a separate storage system for testing
-
     @Test
     public void testSingleUser() {
         ServerController server = null;
