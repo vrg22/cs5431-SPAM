@@ -7,7 +7,6 @@ import java.nio.file.*;
 public class CentralServerController implements ServerController {
 	private Logger logger;
     private StorageController store;
-	private CryptoServiceProvider crypto;
     private String passwordFilename;
 
     public CentralServerController(String logLocation, String passwordFilename)
@@ -35,9 +34,6 @@ public class CentralServerController implements ServerController {
         if (!(new File(store.getPasswordsFilename()).exists())) {
             store.createPasswordsFileOnStream(store.getPasswordsOutput());
         }
-
-		// Set up the crypto module
-		crypto = new CryptoServiceProvider();
     }
 
     public String getPasswordsFilename() {
