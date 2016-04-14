@@ -12,7 +12,6 @@ public class ClientApplication
 
 	private static final int PASSWORD_LENGTH = 12;
     private Gson gson;
-    private CryptoServiceProvider crypto;
     private XMLStorageController store;
 
     private int userId; // User ID of currently logged-in user
@@ -22,7 +21,6 @@ public class ClientApplication
 
 	public ClientApplication() {
         gson = new Gson();
-        crypto = new CryptoServiceProvider();
         store = new XMLStorageController("users");
 		new ClientFrame(this).start();
 	}
@@ -54,7 +52,7 @@ public class ClientApplication
         if (saltResponse == null) return false;
         byte[] salt = saltResponse.getSalt();
 
-        String saltedHash = crypto.genSaltedHash(password, salt);
+        String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
 
         // Request user for user's ID, IV, and encrypted vault
         Map<String, String> authParams = new HashMap<>();
@@ -75,7 +73,7 @@ public class ClientApplication
         String encVault = authResponse.getVault();
         byte[] iv = authResponse.getIV();
 
-        String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
+        String userVaultStr = CryptoServiceProvider.decrypt(encVault, password, salt, iv);
         try {
             FileInputStream tmpStream = null;
             try {
@@ -120,14 +118,14 @@ public class ClientApplication
      * @return Was user successfully registered
      */
     public boolean register(String email, String password) {
-        byte[] salt = crypto.getNewSalt();
-        String saltedHash = crypto.genSaltedHash(password, salt);
+        byte[] salt = CryptoServiceProvider.getNewSalt();
+        String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
 
         StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
         store.setupUserXML(xmlStringBuilder, 0); // TODO: set user ID (or get rid of in user XML files?)
         String decryptedVault = xmlStringBuilder.toString();
-        String encVault = crypto.encrypt(decryptedVault, password, salt);
-        byte[] iv = crypto.getIV();
+        String encVault = CryptoServiceProvider.encrypt(decryptedVault, password, salt);
+        byte[] iv = CryptoServiceProvider.getIV();
 
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
@@ -277,11 +275,8 @@ public class ClientApplication
             return false;
         }
 
-        System.out.println("Will save decvault: '"+decryptedVault+"'");
-
-        String encVault = crypto.encrypt(decryptedVault, master, userSalt);
-        byte[] iv = crypto.getIV();
-        System.out.println("Imm dec: '"+crypto.decrypt(encVault, master, userSalt, iv)+"'");
+        String encVault = CryptoServiceProvider.encrypt(decryptedVault, master, userSalt);
+        byte[] iv = CryptoServiceProvider.getIV();
 
         Map<String, String> params = new HashMap<>();
         params.put("vault", encVault);
