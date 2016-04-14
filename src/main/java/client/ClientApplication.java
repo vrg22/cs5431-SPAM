@@ -104,7 +104,7 @@ public class ClientApplication
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
 
-        if (response && response.success()) {
+        if ((response != null) && response.success()) {
             login(email, password);
 
             return true;
