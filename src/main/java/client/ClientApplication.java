@@ -22,7 +22,7 @@ public class ClientApplication
 	public ClientApplication() {
         gson = new Gson();
         crypto = new CryptoServiceProvider();
-        store = new XMLStorageController();
+        store = new XMLStorageController("users");
 		new ClientFrame(this).start();
 	}
 
@@ -46,6 +46,11 @@ public class ClientApplication
 
         byte[] salt = response.getSalt();
         String saltedHash = crypto.genSaltedHash(password, salt);
+
+        System.out.println("trying to log in");
+        System.out.println("password: '"+password+"', salt: '"+crypto.b64encode(salt)+"'");
+        System.out.println("saltedhash: '"+saltedHash+"'");
+        System.out.println("storedhash: '"+response.getSaltedHash()+"'");
 
         if (saltedHash.equals(response.getSaltedHash())) {
             // Success
@@ -104,7 +109,7 @@ public class ClientApplication
         String responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
 
-        if (response && response.success()) {
+        if (response != null && response.success()) {
             login(email, password);
 
             return true;

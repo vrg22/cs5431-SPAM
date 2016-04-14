@@ -23,10 +23,10 @@ public class ClientController {
 
         // Initialize instance variables
         Gson gson = new Gson();
-        XMLStorageController store = new XMLStorageController();
+        XMLStorageController store = new XMLStorageController(server.getPasswordsFilename());
         FileInputStream passwordStream;
         try {
-            passwordStream = new FileInputStream("users.xml");
+            passwordStream = new FileInputStream(store.getPasswordsFilename());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return;
@@ -34,10 +34,6 @@ public class ClientController {
 
         PasswordStorageFile passwordFile = store.readPasswordsFile(passwordStream);
         store.writeFileToDisk(passwordFile);
-
-        get("/", (request, response) -> {
-            return "HEY";
-        });
 
         // Log in user
         post("/login", (request, response) -> {
@@ -47,7 +43,7 @@ public class ClientController {
             if (entry != null) {
                 int id = entry.getUserId();
                 String vault = new String(Files.readAllBytes(Paths.get(
-                    id + ".xml")));
+                    store.getFilenameForUser(id))));
                 String saltedHash = entry.getMaster();
                 byte[] salt = entry.getSalt();
                 byte[] iv = entry.getIV();

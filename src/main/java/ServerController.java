@@ -9,6 +9,8 @@ public interface ServerController {
     // public int login(String username, String password, String clientIp,
     //         PasswordStorageFile passwordFile);
 
+    public String getPasswordsFilename();
+
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)

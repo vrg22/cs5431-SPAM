@@ -19,8 +19,13 @@ import javax.xml.transform.stream.*;
 // Handles parsing storage files
 public class XMLStorageController implements StorageController {
 
+    private String passwordFilename;
     //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
+
+    public XMLStorageController(String passwordFilename) {
+        this.passwordFilename = passwordFilename;
+    }
 
     public PasswordStorageFile readPasswordsFile(FileInputStream in) {
         return DOMtoPasswordsFile(streamToDOM(in));
@@ -43,19 +48,6 @@ public class XMLStorageController implements StorageController {
         writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
     }
 
-    //TODO: Where used??
-    public void createPasswordsFileOnStream() {
-        //Instantiates and prepares the DOM to be saved to disk
-        createMainDOM();
-        writeDOMtoStream(DOM, getPasswordsOutput());
-    }
-
-    public void createFileForUserOnStream(int userId) {
-        Document userDOM = createUserDOM(userId);
-        writeDOMtoStream(userDOM, getOutputForUser(userId));
-    }
-
-    //THESE ARE UNUSED
     public void createPasswordsFileOnStream(FileOutputStream out) {
         //Instantiates and prepares the DOM to be saved to disk
         createMainDOM();
@@ -77,7 +69,7 @@ public class XMLStorageController implements StorageController {
 
     public void writeEncryptedUserFileToDisk(int userId, String contents) {
         try {
-            PrintWriter out = new PrintWriter(userId + ".xml");
+            PrintWriter out = new PrintWriter(getFilenameForUser(userId));
             out.println(contents);
             out.close();
         } catch (FileNotFoundException e) {
@@ -481,11 +473,11 @@ public class XMLStorageController implements StorageController {
 
 	// Filename access methods
     public String getPasswordsFilename() {
-        return PasswordStorageFile.getPasswordsFilename() + getExtension();
+        return passwordFilename + getExtension();
     }
 
     public String getFilenameForUser(int userId) {
-        return userId + getExtension();
+        return passwordFilename + "-" + userId + getExtension() + ".enc";
     }
 
     // Methods for getting file stream objects to work with

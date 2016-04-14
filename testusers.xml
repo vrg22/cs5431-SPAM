@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><usersXML>
+<metadata>
+<nextID>0</nextID>
+<numUsers>-1</numUsers>
+</metadata>
+<users><user ID="0"><username>Bob</username><password>newsaltedhash</password><salt>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</salt><iv>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</iv></user></users>
+</usersXML>

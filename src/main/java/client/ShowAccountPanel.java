@@ -14,10 +14,36 @@ public class ShowAccountPanel extends JPanel {
         JTextField emailField = new JTextField();
         emailField.setText(account.getUsername());
 
+        JButton showPassword = new JButton();
+        showPassword.setText("Show Password");
         JLabel passwordLabel = new JLabel();
-        passwordLabel.setText("Master Password:");
+        showPassword.addActionListener(new ActionListener(){
+            boolean passwordShowing = false;
+            public void actionPerformed(ActionEvent e) {
+                if (!passwordShowing) {
+                    passwordShowing = true;
+                    showPassword.setText("Hide Password");
+                    passwordLabel.setText(account.getPassword());
+                } else {
+                    passwordShowing = false;
+                    showPassword.setText("Show Password");
+                    passwordLabel.setText("");
+                }
+            }
+        });
+
+        JLabel changePasswordLabel = new JLabel();
+        changePasswordLabel.setText("Change Password:");
         JPasswordField passwordField = new JPasswordField(10);
         passwordField.setText(account.getPassword());
+
+        JButton generatePassword = new JButton();
+        generatePassword.setText("Generate Secure Password");
+        generatePassword.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                passwordField.setText(new ComplexPasswordGenerator().next(12));
+            }
+        });
 
         JButton save = new JButton();
         save.setText("Save Changes");
@@ -53,10 +79,12 @@ public class ShowAccountPanel extends JPanel {
         add(nameField);
         add(emailLabel);
         add(emailField);
+        add(showPassword);
         add(passwordLabel);
+        add(changePasswordLabel);
         add(passwordField);
+        add(generatePassword);
         add(save);
-        add(new JPanel());
-        setLayout(new GridLayout(5, 2));
+        setLayout(new GridLayout(6, 2));
     }
 }

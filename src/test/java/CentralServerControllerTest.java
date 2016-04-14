@@ -10,7 +10,7 @@ public class CentralServerControllerTest {
     public void testSingleUser() {
         ServerController server = null;
         try {
-            server = new CentralServerController("tests.log");
+            server = new CentralServerController("tests.log", "testusers");
         } catch (IOException e) {
             fail("IOException opening log file");
             return;
