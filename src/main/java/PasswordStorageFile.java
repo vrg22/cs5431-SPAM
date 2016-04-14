@@ -34,7 +34,7 @@ public class PasswordStorageFile extends StorageFile {
     		numUsers++;
             put(new PasswordStorageEntry(user));
             // TODO: Advance nextID to next valid number, if numUsers < MAX_USERS -> Or could build this into "getNextID"
-    	}
+        }
     	else {
     		/* RAISE SOME EXCEPTION */
     	}
@@ -60,12 +60,15 @@ public class PasswordStorageFile extends StorageFile {
     
     
     // Retrieving metadata
-    public String readNextID() {
-    	return Integer.toString(nextID);
-    }
+//    public String readNextID() {
+//    	return Integer.toString(nextID);
+//    }
     
+	//Obtains AN unused ID for a user, assuming User.MAX_USERS is not reached.
     public String getNextID() {
-    	//TODO: Could add logic to auto-find the next valid ID from users!
+    	while(containsUserId(Integer.toString(nextID)) && numUsers < User.MAX_USERS) {
+    		nextID++;
+    	}
     	return Integer.toString(nextID);
     }
     

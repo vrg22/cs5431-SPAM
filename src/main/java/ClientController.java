@@ -29,6 +29,13 @@ public class ClientController {
         }
 
         staticFileLocation("/public");
+        
+        //TODO: Check Thread conditions
+        int maxThreads = 8;
+        int minThreads = 2;
+        int timeOutMillis = 30000;
+        threadPool(maxThreads, minThreads, timeOutMillis);
+        //System.out.println("THIS IS A THREAD?");
 
         // Initialize instance variables
         Gson gson = new Gson();
@@ -37,9 +44,25 @@ public class ClientController {
         // Select algorithm for password generator
         passwordGenerator = new ComplexPasswordGenerator();
 
-        // If already logged in, redirect to /users/:userid
+        // If already logged in, redirect to /users/:userid EXCEPT if came from there (TODO: Enforce this only on logout buttonclick!)
         before("/", (request, response) -> {
-            if (isLoggedIn) response.redirect("/users/" + userId);
+        	String referrer = request.headers("referer"); //Note legendary misspelling!
+        	if (referrer == null) {
+        		// Perhaps tried to directly type into browser bar - leave at vault page, otherwise properly take to homepage
+        		if (isLoggedIn) response.redirect("/users/" + userId);
+        		//else response.redirect("/");
+        	}
+        	else {
+	        	String site = request.scheme() + "://" + request.host();
+	        	String relative = referrer.substring(site.length()); //TODO: Watch for errors!
+//	        	System.out.println("Referrer: " + referrer);
+//	        	System.out.println(site);
+//	        	System.out.println(relative);
+	        	
+	        	if (isLoggedIn && relative.equals("/users/" + userId)) isLoggedIn = false;
+	        	else if (isLoggedIn) response.redirect("/users/" + userId);
+        	}
+        	//if (isLoggedIn) response.redirect("/users/" + userId);
         });
 
         // Show "Home (Logged out)" page
@@ -289,9 +312,7 @@ public class ClientController {
         });
 
         // Update a stored account
-        post("/users/:userid/accounts/:accountid", (request, response) -> {
-            System.out.println("TRYING TO SHOW ACCOUNT...");
-        	
+        post("/users/:userid/accounts/:accountid", (request, response) -> {        	
             int userId, accountId;
             try {
                 userId = Integer.parseInt(request.params("userid"));

@@ -86,18 +86,23 @@ public class CentralServerController implements ServerController {
         int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
 		byte[] userSalt = crypto.getNewSalt();
 		String hashedMaster = crypto.genSaltedHash(master, userSalt);
+		
+		//TESTING
+		System.out.println("Master REG: " + hashedMaster);
+		System.out.println("Salt REG: " + new String(userSalt));
+		
         User newUser = new User(username, userSalt, hashedMaster, newUserId);
         PasswordStorageEntry newUserEntry =
             new PasswordStorageEntry(newUser); // TODO: password should be hashed here
         passwordFile.put(newUserEntry);
 
-        UserStorageFile userFile = new UserStorageFile(newUserId);
-
+        //UserStorageFile userFile = new UserStorageFile(newUserId);
 		
         store.writeFileToDisk(passwordFile);
 		
-		// Create new user vault file
+		// Create new user vault file //TODO: CHECK!!!
 		store.createFileForUserOnStream(newUserId);
+		
 		//UserStorageFile userFile = new UserStorageFile(newUserId);
 		//store.writeFileToDisk(userFile, newUserId);
 		

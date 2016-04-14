@@ -1,4 +1,7 @@
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 //Imported for logging by default logging (java.util.logging)
 import java.util.logging.FileHandler;
@@ -43,7 +46,6 @@ public class XMLStorageController implements StorageController {
         writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
     }
     
-    //TODO: Where used??
     public void createPasswordsFileOnStream() {
         //Instantiates and prepares the DOM to be saved to disk
         createMainDOM();
@@ -135,6 +137,8 @@ public class XMLStorageController implements StorageController {
 
     // Populate a Document with the contents of a PasswordStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
+	// NOTE: Due to issues with certain characters being disallowed in XML with the Unicode encoding, we opt to store the salted-hashed master and the salt
+	// in their own files. This method is reponsible, therefore, for also saving those fields to their own files.
     private Document fileToDOM(PasswordStorageFile file) {
     	    	
     	Document initialDOM, DOM = null;
@@ -149,24 +153,40 @@ public class XMLStorageController implements StorageController {
 		Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
 		Element nextIDElement = getTagElement("nextID", DOM);
-		nextIDElement.setTextContent(file.readNextID());
+		nextIDElement.setTextContent(file.getNextID());
 		
 		// Make user data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
 		uElement.setTextContent(""); //CHECK!
 		
 		PasswordStorageEntry pEntry;
+		int userId;
 		for (StorageEntry entry : file.entries) {
 			pEntry = (PasswordStorageEntry) entry;
+			userId = pEntry.getUserId();
+			
 			Element newUser = DOM.createElement("user");
-			newUser.setAttribute("ID", Integer.toString(pEntry.getUserId()));
+			newUser.setAttribute("ID", Integer.toString(userId));
+			
 			Element usrnm = DOM.createElement("username");
 			usrnm.setTextContent(pEntry.getUsername());
 			newUser.appendChild(usrnm);
 
-	        Element master = DOM.createElement("password");
-			master.setTextContent(pEntry.getMaster());
-	        newUser.appendChild(master);
+			//Overwrite the files "<userid>_master" and "<userid>_salt"
+			try {
+				writeFile(Integer.toString(userId) + "_master", pEntry.getMaster());
+				writeFile(Integer.toString(userId) + "_salt", new String(pEntry.getSalt()));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        //Element master = DOM.createElement("password");
+			//master.setTextContent(pEntry.getMaster());
+	        //newUser.appendChild(master);
+			
+	        //Element salt = DOM.createElement("salt");
+			//salt.setTextContent(new String(pEntry.getSalt()));
+	        //newUser.appendChild(salt);
 
 	        uElement.appendChild(newUser);
 		}
@@ -317,6 +337,7 @@ public class XMLStorageController implements StorageController {
 	 * @return
 	 */
 	private Element getTagElement(String tagname, Document doc) {
+		//System.out.println("DOC NULL: " + doc==null); //TESTING
 	    NodeList nlist = doc.getElementsByTagName(tagname); //TODO: Is it better to get what you want directly by
 	    Node n = nlist.item(0);
 		Element elt = (Element) n;
@@ -334,7 +355,7 @@ public class XMLStorageController implements StorageController {
 
 		//Attributes of each user
 		String username;
-		String password;
+		String master; //TODO: Will this need to be byte[] due to wrong default encoding??
 		byte[] salt;
 		int id;
 
@@ -350,9 +371,16 @@ public class XMLStorageController implements StorageController {
             	id = Integer.parseInt(uElt.getAttribute("ID"));
 
             	username = uElt.getElementsByTagName("username").item(0).getTextContent();
-            	password = uElt.getElementsByTagName("password").item(0).getTextContent();
-            	salt = uElt.getElementsByTagName("salt").item(0).getTextContent().getBytes();
-            	User u = new User(username, salt, password, id);
+            	master = readSaltedHashedMaster(id);
+            	salt = readSalt(id);
+            	
+            	//TESTING
+            	System.out.println("Master: " + master);
+            	System.out.println("Salt: " + new String(salt)); //CHECK
+            	
+            	//password = uElt.getElementsByTagName("password").item(0).getTextContent();
+            	//salt = uElt.getElementsByTagName("salt").item(0).getTextContent().getBytes();
+            	User u = new User(username, salt, master, id);
 
             	users.add(u);
             }
@@ -361,6 +389,61 @@ public class XMLStorageController implements StorageController {
         return users;
 	}
 	
+	//TODO: Use something better if available!
+	// From http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file
+	private byte[] readFile(String path) throws IOException 
+	//private byte[] readFile(String path, Charset encoding) throws IOException 
+	{
+		return Files.readAllBytes(Paths.get(path));
+		//byte[] encoded = Files.readAllBytes(Paths.get(path));
+		//return new String(encoded, encoding);
+	}
+
+	//TODO: Check exceptions
+	// From https://docs.oracle.com/javase/tutorial/essential/io/bytestreams.html
+	private void writeFile(String outPath, String content) throws IOException {
+	    FileOutputStream out = null;
+	    
+	    try {
+	        out = new FileOutputStream(outPath);
+		    out.write(content.getBytes());  //TODO: Does this OVERWRITE the file?
+	    } finally {
+	        if (out != null) {
+	            out.close();
+	        }
+	    }
+	}
+
+	/**
+	 * Return String containing whatever characters are in the file corresponding to the given
+	 * user's salted, hashed master password on disk.
+	 */
+	private String readSaltedHashedMaster(int id) {
+		String master = null;
+		try {
+			master = new String(readFile(Integer.toString(id) + "_master"), Charset.defaultCharset());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return master;
+	}
+	
+	/**
+	 * Return String containing whatever characters are in the file corresponding to the given
+	 * user's salt on disk.
+	 */
+	private byte[] readSalt(int id) {
+		byte[] salt = null;
+		try {
+			salt = readFile(Integer.toString(id) + "_salt");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return salt; //TODO: Check what happens when salt is null!
+	}
+
 	/**
 	 * Return ArrayList of accounts from a specified user's DOM. //Or null if no accounts yet?
 	 * TODO: Exception handling
@@ -421,7 +504,8 @@ public class XMLStorageController implements StorageController {
 		//xmlStringBuilder.append("<?xml version=\"1.0\"?>\n<class>\nCAN YOU READ THIS?\n</class>");
 
 		String basicText =
-			            "<?xml version=\"1.0\"?>\n"
+			            //"<?xml version=\"1.0\"?>\n"
+	            		"<?xml version=\"1.1\"?>\n"
 			            + "<usersXML>\n"
 			            + 	"<metadata>\n"
 			            + 		"<nextID>0</nextID>\n"
@@ -442,7 +526,8 @@ public class XMLStorageController implements StorageController {
 		String newID = Integer.toString(ID);
 
 		String basicText =
-			            "<?xml version=\"1.0\"?>\n"
+			            //"<?xml version=\"1.0\"?>\n"
+	            		"<?xml version=\"1.1\"?>\n"
 			            + "<user ID=\"" + newID + "\">\n"
 			            + 	"<vault></vault>\n" //ADD RECORDS HERE!
 			            + "</user>"
