@@ -12,17 +12,17 @@ public class CryptoServiceProviderTest {
 			assertEquals(salted, salted_new);
 		}
 
-	@Test
-		public void testEncryption() {
-			CryptoServiceProvider csp = new CryptoServiceProvider();
-			byte[] salt = csp.getNewSalt();
+    @Test
+    public void testEncryption() {
+        CryptoServiceProvider csp = new CryptoServiceProvider();
+        byte[] salt = csp.getNewSalt();
 
-			String data = "Secret Data";
-			String encrypted = csp.encrypt(data, "supersecretpassword", salt);
-			byte[] iv = csp.getIV();
+        String data = "Secret Data";
+        String encrypted = csp.encrypt(data, "supersecretpassword", salt);
+        byte[] iv = csp.getIV();
 
-			String decrypted = csp.decrypt(encrypted, "supersecretpassword", salt, iv);
+        String decrypted = csp.decrypt(encrypted, "supersecretpassword", salt, iv);
 
-			assertEquals(data, decrypted);
-		}
+        assertEquals(data, decrypted);
+    }
 }

@@ -69,10 +69,14 @@ public class PasswordStorageFile extends StorageFile {
     	return Integer.toString(nextID);
     }
 
+    public void incrementNextID() {
+        nextID++;
+    }
+
     public String getNumUsers() {
     	return Integer.toString(numUsers);
     }
-    
+
     // Setting metadata (for use ONLY when converting DOM to PasswordStorageFile)
 //    public void setMetadata(int nextId, int nUsers) {
 //    	this.nextID = nextId;

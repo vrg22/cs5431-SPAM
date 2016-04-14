@@ -151,7 +151,7 @@ public class XMLStorageController implements StorageController {
 		Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
 		Element nextIDElement = getTagElement("nextID", DOM);
-		nextIDElement.setTextContent(file.readNextID());
+		nextIDElement.setTextContent(file.getNextID());
 
 		// Make user data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);

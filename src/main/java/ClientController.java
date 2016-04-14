@@ -13,9 +13,11 @@ import spark.ModelAndView;
 
 public class ClientController {
 
+    private PasswordStorageFile passwordFile;
+
     public ClientController(ServerController server) {
         if (System.getenv("PORT") != null) {
-            port(Integer.valueOf(System.getenv("PORT")));
+            port(Integer.parseInt(System.getenv("PORT")));
         }
 
         staticFileLocation("/public");
@@ -24,16 +26,22 @@ public class ClientController {
         // Initialize instance variables
         Gson gson = new Gson();
         XMLStorageController store = new XMLStorageController(server.getPasswordsFilename());
-        FileInputStream passwordStream;
         try {
-            passwordStream = new FileInputStream(store.getPasswordsFilename());
-        } catch (FileNotFoundException e) {
+            FileInputStream passwordStream = null;
+            try {
+                passwordStream = new FileInputStream(store.getPasswordsFilename());
+                passwordFile = store.readPasswordsFile(passwordStream);
+                store.writeFileToDisk(passwordFile);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return;
+            } finally {
+                if (passwordStream != null) passwordStream.close();
+            }
+        } catch (IOException e) {
             e.printStackTrace();
             return;
         }
-
-        PasswordStorageFile passwordFile = store.readPasswordsFile(passwordStream);
-        store.writeFileToDisk(passwordFile);
 
         // Log in user
         post("/login", (request, response) -> {

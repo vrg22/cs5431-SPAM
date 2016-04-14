@@ -47,37 +47,6 @@ public class CentralServerController implements ServerController {
     }
 
     /**
-     * Checks whether the specified username/password combination
-     * matches an existing user.
-     * @return user ID of matching user (-1 if invalid combination)
-     */
-    // public int login(String username, String master, String clientIp,
-    //         PasswordStorageFile passwordFile) {
-    //     PasswordStorageEntry entry = passwordFile.getWithUsername(username);
-    //
-    //     if (entry == null) {
-    //         // No user with that username exists
-    //         logger.warning("[IP=" + clientIp + "] Attempt was made to log "
-    //             + "into nonexistent username " + username + ".");
-    //         return -1;
-    //     }
-    //
-	// 	byte[] userSalt = entry.getSalt();
-    //     String hashedMaster = crypto.genSaltedHash(master, userSalt);
-    //     if (!hashedMaster.equals(entry.getMaster())) {
-    //         // Incorrect password
-    //         logger.warning("[IP=" + clientIp + "] Attempt was made to log into "
-    //             + "username " + username + " with incorrect password.");
-    //         return -1;
-    //     }
-    //
-    //     logger.info("[IP=" + clientIp + "] User " + entry.getUserId()
-    //         + " successfully logged in.");
-    //
-    //     return entry.getUserId();
-    // }
-
-    /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
      */
@@ -93,15 +62,14 @@ public class CentralServerController implements ServerController {
         }
 
         // Add user to main password file
-        int newUserId = Integer.parseInt(passwordFile.getNextID());  // TODO: pick unique user ID (Q: Need to be random?)
+        int newUserId = Integer.parseInt(passwordFile.getNextID());
+        passwordFile.incrementNextID();
 
         User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
             saltedHash, newUserId, CryptoServiceProvider.b64decode(iv));
 
         PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);
-
-        UserStorageFile userFile = new UserStorageFile(newUserId);
 
         store.writeFileToDisk(passwordFile);
 
@@ -149,10 +117,10 @@ public class CentralServerController implements ServerController {
     public boolean updateUser(User user, String clientIp,
             PasswordStorageFile passwordFile) {
 
-        if (!passwordFile.removeWithUserId(""+user.getID())) {
+        if (!passwordFile.removeWithUserId(""+user.getId())) {
             // No such user
             logger.warning("[IP=" + clientIp + "] Attempt was made to update "
-                + "nonexistent user " + user.getID() + ".");
+                + "nonexistent user " + user.getId() + ".");
             return false;
         }
 
@@ -161,7 +129,7 @@ public class CentralServerController implements ServerController {
         store.writeFileToDisk(passwordFile);
         //store.writeFileToStream(passwordFile, store.getPasswordsOutput());
 
-        logger.info("[IP=" + clientIp + "] User " + user.getID()
+        logger.info("[IP=" + clientIp + "] User " + user.getId()
             + " successfully updated.");
 
         return true;

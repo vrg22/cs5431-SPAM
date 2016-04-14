@@ -76,6 +76,7 @@ public class CryptoServiceProvider {
             e.printStackTrace();
 		}
 
+        if (decrypted == null) return null;
 		return new String(decrypted);
 	}
 
@@ -95,9 +96,6 @@ public class CryptoServiceProvider {
 	private SecretKey genKey(String password, byte[] salt) {
 		byte[] key = saltedHash(password, salt, KEYGENITERATIONS);
 		SecretKey skey = new SecretKeySpec(key, "AES");
-		if (skey == null) {
-			System.out.println("skey null");
-		}
 		return skey;
 	}
 

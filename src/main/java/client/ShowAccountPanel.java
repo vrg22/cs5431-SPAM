@@ -58,8 +58,10 @@ public class ShowAccountPanel extends JPanel {
                 Account updated = new Account(id, name, username, password);
                 boolean success = frame.getApp().updateAccount(updated);
 
-                Account.Header[] accounts = frame.getApp().getAccounts();
-                frame.setPanel(new ShowAccountsPanel(accounts));
+                if (success) {
+                    Account.Header[] accounts = frame.getApp().getAccounts();
+                    frame.setPanel(new ShowAccountsPanel(accounts));
+                }
             }
         });
 

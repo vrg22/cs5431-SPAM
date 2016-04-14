@@ -24,7 +24,7 @@ public class CentralServerControllerTest {
             "0.0.0.0", passwordFile);
         assertNotNull(registered);
 
-        int registeredId = registered.getID();
+        int registeredId = registered.getId();
         assertFalse(registeredId == -1);
 
         assertTrue(passwordFile.containsUsername("Bob"));
@@ -40,7 +40,7 @@ public class CentralServerControllerTest {
             "0.0.0.0", passwordFile);
         assertNotNull(registered);
 
-        registeredId = registered.getID();
+        registeredId = registered.getId();
         assertFalse(registeredId == -1);
 
         assertTrue(passwordFile.containsUsername("Bob"));

@@ -1,6 +1,6 @@
 public class User {
 
-	public static int MAX_USERS = 300;
+	public static final int MAX_USERS = 300;
 
 	// Private fields
 	private String username;
@@ -12,13 +12,13 @@ public class User {
 
 	public User(String uname, byte[] salt, String pword, int ID, byte[] IV) {
 		this.username = uname;
-		this.salt = salt;
+		this.salt = salt.clone();
 		this.master = pword;
 		this.id = ID;
-        this.iv = IV;
+        this.iv = IV.clone();
 	}
 
-	public int getID() {
+	public int getId() {
 		return id;
 	}
 
@@ -38,18 +38,10 @@ public class User {
 	}
 
 	public byte[] getSalt() {
-		return salt;
+		return salt.clone();
 	}
 
 	public byte[] getIV() {
-		return iv;
+		return iv.clone();
 	}
-
-//	public String getPassword() {
-//		return password;
-//	}
-
-//	public void setPassword(String password) {
-//		this.password = password;
-//	}
 }

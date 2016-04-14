@@ -59,13 +59,21 @@ public class ClientApplication
             String userVaultStr = crypto.decrypt(encVault, password, salt, iv);
 
             try {
-                PrintWriter tmpWriter = new PrintWriter(".tmpvault");
-                tmpWriter.println(userVaultStr);
-                tmpWriter.close();
-                FileInputStream tmpStream = new FileInputStream(".tmpvault");
-                userVault = store.readFileForUser(tmpStream);
-            } catch (FileNotFoundException e) {
-                return false;
+                FileInputStream tmpStream = null;
+                try {
+                    PrintWriter tmpWriter = new PrintWriter(".tmpvault");
+                    tmpWriter.println(userVaultStr);
+                    tmpWriter.close();
+                    tmpStream = new FileInputStream(".tmpvault");
+                    userVault = store.readFileForUser(tmpStream);
+                    tmpStream.close();
+                } catch (IOException e) {
+                    return false;
+                } finally {
+                    if (tmpStream != null) tmpStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             userId = response.getId();
@@ -143,7 +151,7 @@ public class ClientApplication
      * @return Array of account headers for user's accounts
      */
     public Account.Header[] getAccounts() {
-        if (userVault == null) return null;
+        if (userVault == null) return new Account.Header[]{};
 
         return userVault.getAccountHeaders();
     }
@@ -209,19 +217,29 @@ public class ClientApplication
     private boolean saveVault() {
         String decryptedVault;
         try {
-            FileOutputStream tmpOut = new FileOutputStream(new File(".tmpvault"));
-            store.writeFileToStream(userVault, tmpOut);
-            tmpOut.close();
+            FileOutputStream out = null;
+            FileInputStream in = null;
+            try {
+                out = new FileOutputStream(new File(".tmpvault"));
+                store.writeFileToStream(userVault, out);
+                out.close();
 
-            FileInputStream in = new FileInputStream(new File(".tmpvault"));
-            StringBuilder builder = new StringBuilder();
-            int ch;
-            while((ch = in.read()) != -1){
-                builder.append((char)ch);
+                in = new FileInputStream(new File(".tmpvault"));
+                StringBuilder builder = new StringBuilder();
+                int ch;
+                while((ch = in.read()) != -1){
+                    builder.append((char)ch);
+                }
+                in.close();
+                decryptedVault = builder.toString();
+            } catch (IOException e) {
+                return false;
+            } finally {
+                if (out != null) out.close();
+                if (in != null) in.close();
             }
-            in.close();
-            decryptedVault = builder.toString();
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
 

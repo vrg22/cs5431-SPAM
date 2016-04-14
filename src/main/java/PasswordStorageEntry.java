@@ -4,7 +4,7 @@ public class PasswordStorageEntry extends StorageEntry {
     public PasswordStorageEntry(User user) {
         super();
 
-        put("userid", ""+user.getID());
+        put("userid", ""+user.getId());
         put("username", user.getUsername());
 		put("iv", CryptoServiceProvider.b64encode(user.getIV()));
 		put("salt", CryptoServiceProvider.b64encode(user.getSalt()));

@@ -8,8 +8,8 @@ public class LoginResponse {
 
     public LoginResponse(int userId, String vault, String saltedHash, byte[] salt, byte[] iv) {
         this.userId = userId;
-        this.salt = salt;
-        this.iv = iv;
+        this.salt = salt.clone();
+        this.iv = iv.clone();
         this.saltedHash = saltedHash;
         this.vault = vault;
     }
@@ -19,11 +19,11 @@ public class LoginResponse {
     }
 
     public byte[] getSalt() {
-        return salt;
+        return salt.clone();
     }
 
     public byte[] getIV() {
-        return iv;
+        return iv.clone();
     }
 
     public String getSaltedHash() {
