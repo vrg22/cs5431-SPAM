@@ -6,7 +6,7 @@ public class PasswordStorageEntry extends StorageEntry {
 
         put("userid", ""+user.getID());
         put("username", user.getUsername());
-		put("iv", new String(user.getIV()));
+		put("iv", CryptoServiceProvider.b64encode(user.getIV()));
 		put("salt", CryptoServiceProvider.b64encode(user.getSalt()));
         put("master", user.getMaster());
     }
@@ -28,6 +28,10 @@ public class PasswordStorageEntry extends StorageEntry {
 	}
 
 	public byte[] getIV() {
-		return get("iv").getBytes();
+		return CryptoServiceProvider.b64decode(get("iv"));
 	}
+
+    public void setIV(String iv) {
+        update("iv", iv);
+    }
 }

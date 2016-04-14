@@ -2,11 +2,11 @@ public class LoginResponse {
 
     private int userId;
     private byte[] salt;
-    private String iv;
+    private byte[] iv;
     private String saltedHash;
     private String vault;
 
-    public LoginResponse(int userId, String vault, String saltedHash, byte[] salt, String iv) {
+    public LoginResponse(int userId, String vault, String saltedHash, byte[] salt, byte[] iv) {
         this.userId = userId;
         this.salt = salt;
         this.iv = iv;
@@ -22,7 +22,7 @@ public class LoginResponse {
         return salt;
     }
 
-    public String getIV() {
+    public byte[] getIV() {
         return iv;
     }
 

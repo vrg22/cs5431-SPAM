@@ -41,13 +41,26 @@ public class UserStorageFile extends StorageFile {
 
     public void putAccount(Account account) {
         UserStorageEntry newEntry = new UserStorageEntry(account.getId(),
-            /*account.getUserID(),*/ account.getName(), account.getUsername(),
+            account.getName(), account.getUsername(),
             account.getPassword());
 
-        nextAccountID++; //TODO: Update to next AVAILABLE ID
+        nextAccountID++;
         numRecords++;
 
         put(newEntry);
+    }
+
+    public boolean updateAccount(Account account) {
+        if (!remove("accountid", ""+account.getId())) {
+            return false;
+        }
+
+        UserStorageEntry updatedEntry = new UserStorageEntry(account.getId(),
+            account.getName(), account.getUsername(), account.getPassword());
+
+        put(updatedEntry);
+
+        return true;
     }
 
     public boolean deleteAccountWithId(int accountId) {

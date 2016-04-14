@@ -44,8 +44,7 @@ public class StoreNewAccountPanel extends JPanel {
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ClientFrame frame = ClientFrame.getFrameForComponent(back);
-                Account.Header[] accounts = frame.getApp().getAccounts();
-                frame.setPanel(new ShowAccountsPanel(accounts));
+                frame.setPanel(new VaultPanel());
             }
         });
 

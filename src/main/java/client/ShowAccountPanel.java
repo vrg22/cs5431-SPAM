@@ -30,7 +30,10 @@ public class ShowAccountPanel extends JPanel {
                 String username = emailField.getText();
                 String password = passwordField.getText();
                 Account updated = new Account(id, name, username, password);
-                boolean success = frame.getApp().updateAccount(account);
+                boolean success = frame.getApp().updateAccount(updated);
+
+                Account.Header[] accounts = frame.getApp().getAccounts();
+                frame.setPanel(new ShowAccountsPanel(accounts));
             }
         });
 

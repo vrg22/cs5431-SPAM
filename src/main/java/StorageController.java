@@ -13,9 +13,6 @@ public interface StorageController {
      */
     public UserStorageFile readFileForUser(FileInputStream in);
 
-
-
-
     /**
      * Create a new passwords file, write to designated output stream
      */
@@ -34,8 +31,6 @@ public interface StorageController {
      * Create a new user file, write to designated output stream
      */
     public void createFileForUserOnStream(int userId);
-
-
 
     //THE BELOW 4 ARE UNUSED
     /**
