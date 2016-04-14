@@ -77,11 +77,11 @@ public class ClientApplication
         try {
             FileInputStream tmpStream = null;
             try {
-                System.out.println("uservaultenc: '"+encVault+"'");
-                System.out.println("uservaultdec: '"+userVaultStr+"'");
-                System.out.println("password: '"+password+"'");
-                System.out.println("salt: '"+crypto.b64encode(salt)+"'");
-                System.out.println("iv: '"+crypto.b64encode(iv)+"'");
+//                System.out.println("uservaultenc: '"+encVault+"'");
+//                System.out.println("uservaultdec: '"+userVaultStr+"'");
+//                System.out.println("password: '"+password+"'");
+//                System.out.println("salt: '"+crypto.b64encode(salt)+"'");
+//                System.out.println("iv: '"+crypto.b64encode(iv)+"'");
                 PrintWriter tmpWriter = new PrintWriter(".tmpvault");
                 tmpWriter.println(userVaultStr);
                 tmpWriter.close();
