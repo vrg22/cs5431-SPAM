@@ -48,10 +48,16 @@ public class ClientController {
             String email = request.queryParams("email");
 
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
-            if (entry == null) return "";
+            if (entry == null) {
+                server.getLogger().warning("[IP=" + request.ip() + "] Attempt "
+                    + "was made to get salt for non-existent user with "
+                    + "username " + email + ".");
+                return "";
+            }
 
             byte[] salt = entry.getSalt();
             SaltResponse body = new SaltResponse(salt);
+
             return gson.toJson(body);
         });
 
@@ -62,16 +68,27 @@ public class ClientController {
             String saltedHash = request.queryParams("master");
 
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
-            if (entry == null) return "";
+            if (entry == null) {
+                server.getLogger().warning("[IP=" + request.ip() + "] Attempt "
+                    + "was made to authenticate as non-existent user with "
+                    + "username " + email + ".");
+                return "";
+            }
 
             String correctSaltedHash = entry.getMaster();
-            if (!saltedHash.equals(correctSaltedHash)) return "";
+            if (!saltedHash.equals(correctSaltedHash)) {
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Incorrect password while attempting to authenticate "
+                    + "as user with username " + email + ".");
+                return "";
+            }
 
             int id = entry.getUserId();
             String vault = new String(Files.readAllBytes(Paths.get(
                 store.getFilenameForUser(id))));
             byte[] iv = entry.getIV();
             AuthResponse body = new AuthResponse(id, vault, iv);
+
             return gson.toJson(body);
         });
 

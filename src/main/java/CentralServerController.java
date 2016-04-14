@@ -6,7 +6,7 @@ import java.io.*;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
-	public Logger logger;
+	private Logger logger;
     private StorageController store;
 	private CryptoServiceProvider crypto;
     private String passwordFilename;
@@ -17,7 +17,6 @@ public class CentralServerController implements ServerController {
         try {
             String loggerName = CentralServerController.class.getName();
             logger = Logger.getLogger(loggerName);
-            //logger = SimpleLogger.getLogger(loggerName);   //TODO: This didn't work, do we want SimpleLogger?
 
             FileHandler fh = new FileHandler(logLocation, true);
             logger.addHandler(fh);
@@ -44,6 +43,10 @@ public class CentralServerController implements ServerController {
 
     public String getPasswordsFilename() {
         return passwordFilename;
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     /**

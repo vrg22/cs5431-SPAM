@@ -66,6 +66,7 @@ public class ClientApplication
         try {
             FileInputStream tmpStream = null;
             try {
+                System.out.println("decrypted: "+userVaultStr);
                 PrintWriter tmpWriter = new PrintWriter(".tmpvault");
                 tmpWriter.println(userVaultStr);
                 tmpWriter.close();
@@ -109,7 +110,9 @@ public class ClientApplication
         store.setupUserXML(xmlStringBuilder, 0); // TODO: set user ID (or get rid of in user XML files?)
         String decryptedVault = xmlStringBuilder.toString();
         String encVault = crypto.encrypt(decryptedVault, password, salt);
+        System.out.println("registering with vault: "+decryptedVault);
         byte[] iv = crypto.getIV();
+        System.out.println("immediate decrypt: "+crypto.decrypt(encVault, password, salt, iv));
 
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
