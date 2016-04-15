@@ -88,6 +88,10 @@ public class ClientApplication
                 return false;
             } finally {
                 if (tmpStream != null) tmpStream.close();
+                File f = new File(".tmpvault");
+                if (f.exists() && !f.isDirectory()) {
+                    f.delete();
+                }
             }
         } catch (IOException e) {
             System.err.println("Problem logging in");
@@ -264,6 +268,10 @@ public class ClientApplication
             } finally {
                 if (out != null) out.close();
                 if (in != null) in.close();
+                File f = new File(".tmpvault");
+                if (f.exists() && !f.isDirectory()) {
+                    f.delete();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
