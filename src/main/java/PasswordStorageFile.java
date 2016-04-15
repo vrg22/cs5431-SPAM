@@ -29,9 +29,11 @@ public class PasswordStorageFile extends StorageFile {
     		numUsers++;
             put(new PasswordStorageEntry(user));
     	}
+    	/*
     	else {
     		// TODO: RAISE SOME EXCEPTION
     	}
+    	*/
     }
 
     public boolean removeWithUserId(String userId) {
@@ -54,29 +56,20 @@ public class PasswordStorageFile extends StorageFile {
 
 
     // Retrieving metadata
-    public String readNextID() {
-    	return Integer.toString(nextID);
-    }
 
+    //Obtains AN unused ID for a user, assuming User.MAX_USERS is not reached.
     public String getNextID() {
-    	//TODO: Could add logic to auto-find the next valid ID from users!
+    	while(containsUserId(Integer.toString(nextID)) && numUsers < User.MAX_USERS) {
+    		nextID++;
+    	}
     	return Integer.toString(nextID);
-    }
-
-    public void incrementNextID() {
-        nextID++;
     }
 
     public String getNumUsers() {
     	return Integer.toString(numUsers);
     }
 
-    // Setting metadata (for use ONLY when converting DOM to PasswordStorageFile)
-//    public void setMetadata(int nextId, int nUsers) {
-//    	this.nextID = nextId;
-//    	this.numUsers = nUsers;
-//    }
-
+    // For use ONLY when converting DOM to PasswordStorageFile
     public void setUsers(ArrayList<User> users) {
     	//Assumption: file on disk is valid, so we can simply set these variables
     	for (User u : users) {
