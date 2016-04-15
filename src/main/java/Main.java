@@ -96,18 +96,18 @@ public class Main {
     public static void main(String[] args) {
         String logFileName = new SimpleDateFormat("yyyyMMddhhmm'.log'").
             format(new Date());
-        logLocation = (args != null && args.length > 0)
+        adminpassphrase = (args != null && args.length > 0)
             ? args[0]
-            : logFileName;
+            : "defaultadminpassforencryption";
         String passwordsLocation = (args != null && args.length > 1)
             ? args[1]
             : "users";
-        adminpassphrase = (args != null && args.length > 0)
+        systemConfigFile = (args != null && args.length > 2)
             ? args[2]
-            : "defaultadminpassforencryption";
-        systemConfigFile = (args != null && args.length > 0)
-            ? args[3]
             : "systemconfig.txt";
+        logLocation = (args != null && args.length > 3)
+            ? args[3]
+            : logFileName;
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
