@@ -19,6 +19,37 @@ public class Main {
     private static String logLocation;
     private static String systemConfigFile;
     private static byte[] salt = new byte[16];
+    private static byte[] iv = new byte[16];
+
+    public static String b64ToFilename(String b64) {
+        b64 = b64.replace('/', '_');
+        b64 = b64.replace('+', '-');
+
+        return b64;
+    }
+
+	public static String getAdminPassword() {
+		return adminpassphrase;
+	}
+
+    public static String filenameToB64(String fname){
+        fname = fname.replace('_', '/');
+        fname = fname.replace('-', '+');
+
+        return fname;
+    }
+
+    public static byte[] getSystemSalt() {
+        return salt;
+    }
+
+    public static byte[] getSystemIV() {
+        return iv;
+    }
+
+    public static void setSystemIV(byte[] newIV) {
+        iv = newIV;
+    }
 
     private static Boolean startupRoutine() {
         // Retreive admin salt from a file, if absent generate and write to file
@@ -30,6 +61,14 @@ public class Main {
             String sa = br.readLine();
             System.out.println("Read system salt:" +sa);
             salt = CryptoServiceProvider.b64decode(sa);
+            String ivString = br.readLine();
+
+            if (ivString != null) {
+                System.out.println("Read System IV:" + ivString);
+            } else {
+                System.err.println("IV is not present in file");
+            }
+
             br.close();
             fr.close();
             ret = true;
@@ -91,8 +130,7 @@ public class Main {
                                     getIV());
 
                     // Escape / with _ and + with - to generate valid file names
-                    curIV = curIV.replace('/', '_');
-                    curIV = curIV.replace('+', '-');
+                    curIV = b64ToFilename(curIV);
 
                     // Save the log file with the IV used to encrypt as its name
                     File enclog = new File(curIV + ".enclog");
@@ -105,7 +143,7 @@ public class Main {
                     //if (file.delete()) {
                         System.out.println("Deleted log file:" + logLocation);
                     } else {
-                        System.err.println("Error deleting log file" +logLocation);
+                        System.err.println("Error deleting log file:" + logLocation);
                     }
                 } catch (FileNotFoundException fne) {
                     System.err.println("FileNotFoundException raised" + fne.getMessage());
@@ -122,7 +160,7 @@ public class Main {
                 ServerController server = new CentralServerController(logLocation,
                     passwordsLocation);
                 new ClientController(server);
-        }
+            }
         } catch (SecurityException | IOException e) {
             e.printStackTrace();
             return;
