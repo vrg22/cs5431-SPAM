@@ -43,6 +43,10 @@ public class ClientController {
             return;
         }
 
+        get("/", (request, response) -> {
+            return "";
+        });
+
         // Send client salt for user with specified username
         post("/salt", (request, response) -> {
             String email = request.queryParams("email");

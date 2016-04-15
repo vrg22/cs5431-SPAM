@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import javax.net.ssl.*;
 import java.util.*;
+import java.security.cert.Certificate;
 
 public class SendHttpsRequest {
     public static String get(String urlStr) throws IOException {
@@ -78,6 +79,15 @@ public class SendHttpsRequest {
         in.close();
 
         return response.toString();
+    }
+
+    public static Certificate[] getServerCertificates(String urlStr)
+            throws IOException {
+        URL url = new URL(urlStr);
+        HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+        con.setRequestMethod("GET");
+        con.getInputStream();
+        return con.getServerCertificates();
     }
 
     public static String formatParams(Map<String, String> params) {

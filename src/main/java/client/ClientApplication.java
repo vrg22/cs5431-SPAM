@@ -77,11 +77,6 @@ public class ClientApplication
         try {
             FileInputStream tmpStream = null;
             try {
-                System.out.println("uservaultenc: '"+encVault+"'");
-                System.out.println("uservaultdec: '"+userVaultStr+"'");
-                System.out.println("password: '"+password+"'");
-                System.out.println("salt: '"+CryptoServiceProvider.b64encode(salt)+"'");
-                System.out.println("iv: '"+CryptoServiceProvider.b64encode(iv)+"'");
                 PrintWriter tmpWriter = new PrintWriter(".tmpvault");
                 tmpWriter.println(userVaultStr);
                 tmpWriter.close();
