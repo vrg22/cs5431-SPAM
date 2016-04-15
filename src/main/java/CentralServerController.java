@@ -29,6 +29,7 @@ public class CentralServerController implements ServerController {
         }
 
         // Set up storage
+        // TODO: Protect createPasswordsFileOnStream by synchronization OR ensure this method only ever gets called once
         this.passwordFilename = passwordFilename;
         store = new XMLStorageController(passwordFilename);
         if (!(new File(store.getPasswordsFilename()).exists())) {
@@ -96,6 +97,7 @@ public class CentralServerController implements ServerController {
         store.writeFileToDisk(passwordFile);
 
         // Delete user's vault file
+        // TODO: Delete lock for that file here as well? (But need to ensure no conflicts first)
         try {
             Files.delete(FileSystems.getDefault().getPath(
                 store.getFilenameForUser(userId)));

@@ -1,5 +1,9 @@
 import java.io.*;
 import java.util.ArrayList;
+
+//Imported for synchronization of files
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 //Imported for logging by default logging (java.util.logging)
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -22,13 +26,36 @@ public class XMLStorageController implements StorageController {
     private String passwordFilename;
     //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
+    
+    private ReentrantReadWriteLock   pwd_lock; //Used to manage reads and writes to users.xml
+    private ReentrantReadWriteLock[] user_locks; //Used to manage reads and writes to individual vaults //TODO: Is this necessary?
 
     public XMLStorageController(String passwordFilename) {
         this.passwordFilename = passwordFilename;
+        
+        pwd_lock = new ReentrantReadWriteLock(); //Initialize main RRWL
+        user_locks = new ReentrantReadWriteLock[User.MAX_USERS];
+      //TODO: Only initialize a particular RRWL for a user when we KNOW that user exists??
+        /*
+        for (ReentrantReadWriteLock lock : user_locks) {
+        	lock = new ReentrantReadWriteLock();
+        }
+        */
+        for (int i=0; i<user_locks.length; i++) {
+        	user_locks[i] = new ReentrantReadWriteLock();
+        }
     }
 
+    //TODO: Verify Synchronization!
+    //TODO: Remove unused methods
+
+    // Read file from disk operations
     public PasswordStorageFile readPasswordsFile(FileInputStream in) {
-        return DOMtoPasswordsFile(streamToDOM(in));
+    	PasswordStorageFile passwordFile;
+    	pwd_lock.readLock().lock();
+    	passwordFile = DOMtoPasswordsFile(streamToDOM(in));
+    	pwd_lock.readLock().unlock();
+    	return passwordFile;
     }
 
     public UserStorageFile readFileForUser(FileInputStream in) {
@@ -39,13 +66,19 @@ public class XMLStorageController implements StorageController {
         return ".xml";
     }
 
-    //TESTING: Make sure getPasswordsOutput() gets executed AFTER fileToDOM
+    //Write file to disk operations
+    //TODO: Ensure getPasswordsOutput() gets executed AFTER fileToDOM
     public void writeFileToDisk(PasswordStorageFile file) {
+    	pwd_lock.writeLock().lock();
     	writeDOMtoStream(fileToDOM(file), getPasswordsOutput());
+    	pwd_lock.writeLock().unlock();
     }
 
+    //TODO: Remove if unused
     public void writeFileToDisk(UserStorageFile file, int userId) {
+    	user_locks[userId].writeLock().lock();
         writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
+    	user_locks[userId].writeLock().unlock();
     }
 
     public void createPasswordsFileOnStream(FileOutputStream out) {
@@ -69,11 +102,15 @@ public class XMLStorageController implements StorageController {
 
     public void writeEncryptedUserFileToDisk(int userId, String contents) {
         try {
+        	user_locks[userId].writeLock().lock();
             PrintWriter out = new PrintWriter(getFilenameForUser(userId));
             out.println(contents);
             out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } finally {
+        	//System.out.println("Writelock for " + userId + ": " + user_locks[userId]==null);
+        	user_locks[userId].writeLock().unlock();
         }
     }
 
@@ -263,8 +300,6 @@ public class XMLStorageController implements StorageController {
 		Document doc = null;
 
 		try {
-//			System.out.println("AVAILABLE: " + in.available());
-
 			//Load XML from disk and set DOM
 			//File inputFile = new File(fileLoc);
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -274,8 +309,7 @@ public class XMLStorageController implements StorageController {
 			//StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
 
 			in.close();
-//			System.out.println("NULL: " + in==null);
-
+			
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
