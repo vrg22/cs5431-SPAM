@@ -61,7 +61,6 @@ public class CentralServerController implements ServerController {
 
         // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextID());
-        passwordFile.incrementNextID();
 
         User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
             saltedHash, newUserId, CryptoServiceProvider.b64decode(iv));
