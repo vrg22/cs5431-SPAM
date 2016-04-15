@@ -91,8 +91,8 @@ public class Main {
                                     getIV());
 
                     // Escape / with _ and + with - to generate valid file names
-                    curIV.replace('/', '_');
-                    curIV.replace('+', '-');
+                    curIV = curIV.replace('/', '_');
+                    curIV = curIV.replace('+', '-');
 
                     // Save the log file with the IV used to encrypt as its name
                     File enclog = new File(curIV + ".enclog");
