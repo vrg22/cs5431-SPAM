@@ -14,7 +14,6 @@ public class ClientFrame extends JFrame
     {
         setPanel(new LoginPanel());
         setLayout(new FlowLayout());
-        setSize(600,600);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
