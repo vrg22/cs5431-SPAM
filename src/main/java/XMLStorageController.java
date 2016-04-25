@@ -13,6 +13,7 @@ import java.util.logging.SimpleFormatter;
 //Imported for XML parsing by the DOM method
 //Adapted from http://www.tutorialspoint.com/java_xml/java_dom_parse_document.htm
 import org.w3c.dom.*;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
@@ -337,7 +338,7 @@ public class XMLStorageController implements StorageController {
 		try {
 			transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(theDOM);
-			StreamResult streamResult =  new StreamResult(out);
+			StreamResult streamResult = new StreamResult(out);
 			transformer.transform(source, streamResult);
 			out.close(); //CHECK
 		} catch (TransformerConfigurationException e) {
@@ -354,6 +355,63 @@ public class XMLStorageController implements StorageController {
     }
 
 
+    // Convert the provided String (assumed to be well-formed XML) to a Document object
+    // Adapted from http://www.java2s.com/Code/Java/XML/ParseanXMLstringUsingDOMandaStringReader.htm
+    private Document stringToDOM(String in_XML) {
+    	
+		Document doc = null;
+		
+		try {
+	    	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(in_XML));
+
+			doc = dBuilder.parse(is);
+		
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		return doc;
+    }
+    
+    // Convert the provided Document object to a well-formed XML String
+    // Adapted from http://www.java2s.com/Code/Java/XML/ExtractinganXMLformattedstringoutofaDOMobject.htm
+    private String writeDOMtoString(Document theDOM) {
+    	String resultString = null;
+    	
+    	TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer;
+    	try{
+    		StringWriter writer = new StringWriter();
+	        DOMSource source = new DOMSource(theDOM.getDocumentElement());
+	        StreamResult result = new StreamResult(writer);
+	        transformer = transformerFactory.newTransformer();
+	        transformer.transform(source, result);
+	        
+	        StringBuffer strBuf = writer.getBuffer();
+	        resultString = strBuf.toString();
+	        
+	    } catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+    	return resultString;
+    }
+    
     //XML File parsing methods
 	//At all times, have entirety of the password file in memory???
 	//Or is the event-based triggering in SAX more secure?
