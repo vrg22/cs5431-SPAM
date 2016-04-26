@@ -8,7 +8,7 @@ import java.net.*;
 
 public class ClientApplication
 {
-	public static final String HTTPS_ROOT = "https://spam3.kevinmbeaulieu.com:5000";
+	public static final String HTTPS_ROOT = "https://ec2-52-91-199-182.compute-1.amazonaws.com:4567";
 
 	private static final int PASSWORD_LENGTH = 12;
     private Gson gson;

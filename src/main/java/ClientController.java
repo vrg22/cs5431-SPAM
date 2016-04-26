@@ -16,9 +16,7 @@ public class ClientController {
     private PasswordStorageFile passwordFile;
 
     public ClientController(ServerController server) {
-        if (System.getenv("PORT") != null) {
-            port(Integer.parseInt(System.getenv("PORT")));
-        }
+        port(4567);
 
         staticFileLocation("/public");
         secure("keystore.jks", "cs5431spamisthebest", null, null);
