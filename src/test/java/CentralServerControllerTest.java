@@ -25,11 +25,11 @@ public class CentralServerControllerTest {
         int registeredId = registered.getId();
         assertFalse(registeredId == -1);
 
-        assertTrue(passwordFile.containsUsername("Bob"));
+        assertTrue(passwordFile.containsUsername("user", "Bob"));
 
         // Obliterate registered user
         assertTrue(server.obliterateUser(registeredId, "0.0.0.0", passwordFile));
-        assertFalse(passwordFile.containsUsername("Bob"));
+        assertFalse(passwordFile.containsUsername("user", "Bob"));
 
         // Register new user with same username as obliterated username
         registered = server.registerNewUser("Bob",
@@ -41,7 +41,7 @@ public class CentralServerControllerTest {
         registeredId = registered.getId();
         assertFalse(registeredId == -1);
 
-        assertTrue(passwordFile.containsUsername("Bob"));
+        assertTrue(passwordFile.containsUsername("user", "Bob"));
 
         // TODO: test updateUser(), getAccountsForUser(),
         //      getDetailsForAccount(), storeNewAccountForUser(),

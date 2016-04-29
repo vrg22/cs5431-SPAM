@@ -186,40 +186,73 @@ public class XMLStorageController implements StorageController {
     	DOM = initialDOM;
 
     	// Set metadata to match
-		Element numUElement = getTagElement("numUsers", DOM);
+		Element numAElement = getTagElement("numAdmins", DOM);
+		numAElement.setTextContent(file.getNumAdmins());
+		Element nextAdminIDElement = getTagElement("nextAdminID", DOM);
+		nextAdminIDElement.setTextContent(file.getNextAdminID());
+		
+    	Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
-		Element nextIDElement = getTagElement("nextID", DOM);
-		nextIDElement.setTextContent(file.getNextID());
+		Element nextUserIDElement = getTagElement("nextUserID", DOM);
+		nextUserIDElement.setTextContent(file.getNextUserID());
 
-		// Make user data match by simply overwriting content
+		// Make user and admin data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
 		uElement.setTextContent(""); //CHECK!
 
+		Element aElement = getTagElement("admins", DOM);
+		aElement.setTextContent(""); //CHECK!
+		
 		PasswordStorageEntry pEntry;
-		for (StorageEntry entry : file.entries) {
+		for (StorageEntry entry : file.entries) {			
 			pEntry = (PasswordStorageEntry) entry;
-			Element newUser = DOM.createElement("user");
-			newUser.setAttribute("ID", Integer.toString(pEntry.getUserId()));
+			String type = pEntry.getType();
+			if (type.equals("user")) {
+				Element newUser = DOM.createElement("user");
+				newUser.setAttribute("ID", Integer.toString(pEntry.getId()));
+	
+	            Element usrnm = DOM.createElement("username");
+				usrnm.setTextContent(pEntry.getUsername());
+				newUser.appendChild(usrnm);
+	
+		        Element master = DOM.createElement("password");
+				master.setTextContent(pEntry.getMaster());
+		        newUser.appendChild(master);
+	
+	            Element salt = DOM.createElement("salt");
+	            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
+	            newUser.appendChild(salt);
+	
+	            Element iv = DOM.createElement("iv");
+	            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
+	            newUser.appendChild(iv);
+	
+		        uElement.appendChild(newUser);
+			}
+			else if (type.equals("admin")) {
+				Element newAdmin = DOM.createElement("admin");
+				newAdmin.setAttribute("ID", Integer.toString(pEntry.getId()));
+				
+	            Element usrnm = DOM.createElement("username");
+				usrnm.setTextContent(pEntry.getUsername());
+				newAdmin.appendChild(usrnm);
 
-            Element usrnm = DOM.createElement("username");
-			usrnm.setTextContent(pEntry.getUsername());
-			newUser.appendChild(usrnm);
+		        Element master = DOM.createElement("password");
+				master.setTextContent(pEntry.getMaster());
+				newAdmin.appendChild(master);
 
-	        Element master = DOM.createElement("password");
-			master.setTextContent(pEntry.getMaster());
-	        newUser.appendChild(master);
+	            Element salt = DOM.createElement("salt");
+	            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
+	            newAdmin.appendChild(salt);
 
-            Element salt = DOM.createElement("salt");
-            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
-            newUser.appendChild(salt);
+	            Element iv = DOM.createElement("iv");
+	            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
+	            newAdmin.appendChild(iv);
 
-            Element iv = DOM.createElement("iv");
-            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
-            newUser.appendChild(iv);
-
-	        uElement.appendChild(newUser);
+	            aElement.appendChild(newAdmin);
+			}
 		}
-
+		
     	return DOM;
     }
 
@@ -534,11 +567,15 @@ public class XMLStorageController implements StorageController {
 			            "<?xml version=\"1.0\"?>\n"
 			            + "<usersXML>\n"
 			            + 	"<metadata>\n"
-			            + 		"<nextID>0</nextID>\n"
+			            + 		"<nextAdminID>0</nextAdminID>\n"
+			            + 		"<numAdmins>0</numAdmins>\n"
+			            + 		"<nextUserID>0</nextUserID>\n"
 			            + 		"<numUsers>0</numUsers>\n"
 			            + 	"</metadata>\n"
 			            + 	"<users>\n" //EMPTY RN!
 			            + 	"</users>\n"
+			            + 	"<admins>\n" //EMPTY RN!
+			            + 	"</admins>\n"
 			            + "</usersXML>"
 			            ;
 

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><usersXML>
 <metadata>
-<nextID>2</nextID>
+<nextAdminID>0</nextAdminID>
+<numAdmins>0</numAdmins>
+<nextUserID>2</nextUserID>
 <numUsers>-1</numUsers>
 </metadata>
 <users><user ID="1"><username>Bob</username><password>newsaltedhash</password><salt>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</salt><iv>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</iv></user></users>
+<admins/>
 </usersXML>
