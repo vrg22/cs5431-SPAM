@@ -54,6 +54,40 @@ public class CentralServerController implements ServerController {
         return logger;
     }
 
+    //ADMIN METHODS
+    //TODO: Test all of these!!
+    /**
+     * Attempts to register a new admin with the system.
+     * @return the admin created (null if unsuccessful)
+     */
+    public Admin registerNewAdmin(String username, String adminSalt,
+            String saltedHash, String iv, String adminIp,
+            PasswordStorageFile passwordFile) {
+    	
+    	if (passwordFile.containsWithType("admin", "username", username)) {
+            // Admin with that username already exists
+            logger.warning("[IP=" + adminIp + "] Attempt was made to "
+                + "register a new admin with existing username " + username + ".");
+            return null;
+        }
+
+        // Add admin to main password file
+        int newAdminId = Integer.parseInt(passwordFile.getNextAdminID());
+
+        Admin newAdmin = new Admin(username, CryptoServiceProvider.b64decode(adminSalt),
+            saltedHash, newAdminId, CryptoServiceProvider.b64decode(iv));
+
+        PasswordStorageEntry newAdminEntry = new PasswordStorageEntry(newAdmin);
+        passwordFile.put(newAdminEntry);
+
+        store.writeFileToDisk(passwordFile);
+
+        logger.info("[IP=" + adminIp + "] New admin " + newAdminId
+            + " successfully registered.");
+        return newAdmin;
+    }
+    
+    
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
@@ -63,7 +97,8 @@ public class CentralServerController implements ServerController {
             PasswordStorageFile passwordFile, String encPass, String reciv,
 			String recoveryHash, String twoFactorSecret) {
 
-        if (passwordFile.contains("username", username)) {
+        //if (passwordFile.contains("username", username)) {
+    	if (passwordFile.containsWithType("user", "username", username)) {
             // User with that username already exists
             logger.warning("[IP=" + clientIp + "] Attempt was made to "
                 + "register a new user with existing username " + username + ".");
@@ -71,8 +106,8 @@ public class CentralServerController implements ServerController {
         }
 
         // Add user to main password file
-        int newUserId = Integer.parseInt(passwordFile.getNextID());
-
+        int newUserId = Integer.parseInt(passwordFile.getNextUserID());
+        
         User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
             saltedHash, newUserId, CryptoServiceProvider.b64decode(iv), encPass,
 			CryptoServiceProvider.b64decode(reciv), recoveryHash, twoFactorSecret);
@@ -99,7 +134,7 @@ public class CentralServerController implements ServerController {
             PasswordStorageFile passwordFile) {
 
         // Delete user from passwords file
-        if (!passwordFile.removeWithUserId(""+userId)) {
+        if (!passwordFile.removeWithId("user", ""+userId)) {
             // No such user
             logger.warning("[IP=" + clientIp + "] Attempt was made to "
                 + "obliterate nonexistent user " + userId + ".");
@@ -137,7 +172,7 @@ public class CentralServerController implements ServerController {
     public boolean updateUser1(User user, String clientIp,
             PasswordStorageFile passwordFile) {
 
-        if (!passwordFile.removeWithUserId(""+user.getId())) {
+        if (!passwordFile.removeWithId("user", ""+user.getId())) {
             // No such user
             logger.warning("[IP=" + clientIp + "] Attempt was made to update "
                 + "nonexistent user " + user.getId() + ".");
@@ -158,7 +193,7 @@ public class CentralServerController implements ServerController {
             PasswordStorageFile passwordFile) {
         store.writeEncryptedUserFileToDisk(userId, vault);
 
-        PasswordStorageEntry entry = passwordFile.getWithUserId(""+userId);
+        PasswordStorageEntry entry = passwordFile.getWithId("user", ""+userId);
         entry.setIV(iv);
 
         store.writeFileToDisk(passwordFile);

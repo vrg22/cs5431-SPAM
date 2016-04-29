@@ -1,12 +1,22 @@
 import java.util.logging.*;
 
-// Provides public methods to complete user-level actions
+// Provides public methods to complete client-level actions
 public interface ServerController {
 
     public String getPasswordsFilename();
 
     public Logger getLogger();
 
+    //ADMIN METHODS
+    /**
+     * Attempts to register a new admin with the system.
+     * @return the admin created (null if unsuccessful)
+     */
+    public Admin registerNewAdmin(String username, String adminSalt,
+            String saltedHash, String iv, String adminIp,
+            PasswordStorageFile passwordFile);
+    
+    //USER METHODS
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)

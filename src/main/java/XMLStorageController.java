@@ -204,50 +204,96 @@ public class XMLStorageController implements StorageController {
     	DOM = initialDOM;
 
     	// Set metadata to match
-		Element numUElement = getTagElement("numUsers", DOM);
-		numUElement.setTextContent(file.getNumUsers());
-		Element nextIDElement = getTagElement("nextID", DOM);
-		nextIDElement.setTextContent(file.getNextID());
+		Element numAElement = getTagElement("numAdmins", DOM);
+		numAElement.setTextContent(file.getNumAdmins());
+		Element nextAdminIDElement = getTagElement("nextAdminID", DOM);
+		nextAdminIDElement.setTextContent(file.getNextAdminID());
 
-		// Make user data match by simply overwriting content
+    	Element numUElement = getTagElement("numUsers", DOM);
+		numUElement.setTextContent(file.getNumUsers());
+		Element nextUserIDElement = getTagElement("nextUserID", DOM);
+		nextUserIDElement.setTextContent(file.getNextUserID());
+
+		// Make user and admin data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
 		uElement.setTextContent(""); //CHECK!
+
+		Element aElement = getTagElement("admins", DOM);
+		aElement.setTextContent(""); //CHECK!
 
 		PasswordStorageEntry pEntry;
 		for (StorageEntry entry : file.entries) {
 			pEntry = (PasswordStorageEntry) entry;
-			Element newUser = DOM.createElement("user");
-			newUser.setAttribute("ID", Integer.toString(pEntry.getUserId()));
 
-            Element usrnm = DOM.createElement("username");
-			usrnm.setTextContent(pEntry.getUsername());
-			newUser.appendChild(usrnm);
+			String type = pEntry.getType();
+			if (type.equals("user")) {
+				Element newUser = DOM.createElement("user");
+				newUser.setAttribute("ID", Integer.toString(pEntry.getId()));
 
-	        Element master = DOM.createElement("password");
-			master.setTextContent(pEntry.getMaster());
-	        newUser.appendChild(master);
+	            Element usrnm = DOM.createElement("username");
+				usrnm.setTextContent(pEntry.getUsername());
+				newUser.appendChild(usrnm);
 
-            Element salt = DOM.createElement("salt");
-            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
-            newUser.appendChild(salt);
+		        Element master = DOM.createElement("password");
+				master.setTextContent(pEntry.getMaster());
+		        newUser.appendChild(master);
 
-            Element iv = DOM.createElement("iv");
-            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
-            newUser.appendChild(iv);
+	            Element salt = DOM.createElement("salt");
+	            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
+	            newUser.appendChild(salt);
 
-			Element encpass = DOM.createElement("encpass");
-			encpass.setTextContent(pEntry.getEncPass());
-			newUser.appendChild(encpass);
+	            Element iv = DOM.createElement("iv");
+	            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
+	            newUser.appendChild(iv);
 
-            Element reciv = DOM.createElement("reciv");
-            reciv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getRecIV()));
-            newUser.appendChild(reciv);
+                Element encpass = DOM.createElement("encpass");
+    			encpass.setTextContent(pEntry.getEncPass());
+    			newUser.appendChild(encpass);
 
-            Element recovery = DOM.createElement("recovery");
-            recovery.setTextContent(pEntry.getRecovery());
-            newUser.appendChild(recovery);
+                Element reciv = DOM.createElement("reciv");
+                reciv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getRecIV()));
+                newUser.appendChild(reciv);
 
-	        uElement.appendChild(newUser);
+                Element recovery = DOM.createElement("recovery");
+                recovery.setTextContent(pEntry.getRecovery());
+                newUser.appendChild(recovery);
+
+		        uElement.appendChild(newUser);
+			}
+			else if (type.equals("admin")) {
+				Element newAdmin = DOM.createElement("admin");
+				newAdmin.setAttribute("ID", Integer.toString(pEntry.getId()));
+
+	            Element usrnm = DOM.createElement("username");
+				usrnm.setTextContent(pEntry.getUsername());
+				newAdmin.appendChild(usrnm);
+
+		        Element master = DOM.createElement("password");
+				master.setTextContent(pEntry.getMaster());
+				newAdmin.appendChild(master);
+
+	            Element salt = DOM.createElement("salt");
+	            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
+	            newAdmin.appendChild(salt);
+
+	            Element iv = DOM.createElement("iv");
+	            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
+	            newAdmin.appendChild(iv);
+
+                Element encpass = DOM.createElement("encpass");
+    			encpass.setTextContent(pEntry.getEncPass());
+    			newUser.appendChild(encpass);
+
+                Element reciv = DOM.createElement("reciv");
+                reciv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getRecIV()));
+                newUser.appendChild(reciv);
+
+                Element recovery = DOM.createElement("recovery");
+                recovery.setTextContent(pEntry.getRecovery());
+                newUser.appendChild(recovery);
+
+	            aElement.appendChild(newAdmin);
+			}
 		}
 
     	return DOM;
@@ -575,11 +621,15 @@ public class XMLStorageController implements StorageController {
 			            "<?xml version=\"1.0\"?>\n"
 			            + "<usersXML>\n"
 			            + 	"<metadata>\n"
-			            + 		"<nextID>0</nextID>\n"
+			            + 		"<nextAdminID>0</nextAdminID>\n"
+			            + 		"<numAdmins>0</numAdmins>\n"
+			            + 		"<nextUserID>0</nextUserID>\n"
 			            + 		"<numUsers>0</numUsers>\n"
 			            + 	"</metadata>\n"
 			            + 	"<users>\n" //EMPTY RN!
 			            + 	"</users>\n"
+			            + 	"<admins>\n" //EMPTY RN!
+			            + 	"</admins>\n"
 			            + "</usersXML>"
 			            ;
 

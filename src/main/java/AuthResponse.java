@@ -1,17 +1,17 @@
 public class AuthResponse {
 
-    private int userId;
+    private int id;
     private byte[] iv;
-    private String vault;
+    private String vault; //null if not a user
 
-    public AuthResponse(int userId, String vault, byte[] iv) {
-        this.userId = userId;
+    public AuthResponse(int id, String vault, byte[] iv) {
+        this.id = id;
         this.iv = iv.clone();
         this.vault = vault;
     }
 
     public int getId() {
-        return userId;
+        return id;
     }
 
     public byte[] getIV() {

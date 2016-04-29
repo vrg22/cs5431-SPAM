@@ -1,22 +1,29 @@
-// Keys: user ID, username, hashed-salted master password
+// Keys: ID, username, hashed-salted master password
 public class PasswordStorageEntry extends StorageEntry {
     // Note: master password here should already be hashed
-    public PasswordStorageEntry(User user) {
+    public PasswordStorageEntry(Client client) {
         super();
 
-        put("userid", ""+user.getId());
-        put("username", user.getUsername());
-		put("iv", CryptoServiceProvider.b64encode(user.getIV()));
-		put("salt", CryptoServiceProvider.b64encode(user.getSalt()));
-        put("master", user.getMaster());
-        put("encpass", user.getEncPass());
-        put("reciv", CryptoServiceProvider.b64encode(user.getRecIV()));
-        put("recovery", user.getRecovery());
-        put("twoFactorSecret", user.getTwoFactorSecret());
+        String type = (client instanceof User) ? "user" :
+        			  (client instanceof Admin) ? "admin" : "other";
+        put("type", type);
+        put("id", ""+client.getId());
+        put("username", client.getUsername());
+		put("iv", CryptoServiceProvider.b64encode(client.getIV()));
+		put("salt", CryptoServiceProvider.b64encode(client.getSalt()));
+        put("master", client.getMaster());
+        put("encpass", client.getEncPass());
+        put("reciv", CryptoServiceProvider.b64encode(client.getRecIV()));
+        put("recovery", client.getRecovery());
+        put("twoFactorSecret", client.getTwoFactorSecret());
     }
 
-    public int getUserId() {
-        return Integer.parseInt(get("userid"));
+    public String getType() {
+        return get("type");
+    }
+
+    public int getId() {
+        return Integer.parseInt(get("id"));
     }
 
     public String getUsername() {

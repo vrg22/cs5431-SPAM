@@ -3,23 +3,27 @@ import java.util.ArrayList;
 public class PasswordStorageFile extends StorageFile {
 
 	//Metadata for the main password file
-	int nextID;
+	int nextUserID;
+	int nextAdminID;
 	int numUsers;
+	int numAdmins;
 
 	//Constructor
 	public PasswordStorageFile() {
 		super();
 
-		int nextID = 0;
-		int numUsers = 0;
+		nextUserID = 0;
+		nextAdminID = 0;
+		numUsers = 0;
+		numAdmins = 0;
 	}
 
-    public PasswordStorageEntry getWithUserId(String userId) {
-        return (PasswordStorageEntry)get("userid", userId);
+    public PasswordStorageEntry getWithId(String type, String userId) {
+       	return (PasswordStorageEntry)getWithType(type, "id", userId);
     }
 
-    public PasswordStorageEntry getWithUsername(String username) {
-        return (PasswordStorageEntry)get("username", username);
+    public PasswordStorageEntry getWithUsername(String type, String username) {
+        return (PasswordStorageEntry)getWithType(type, "username", username);
     }
 
     public void putUser(User user) {
@@ -36,39 +40,88 @@ public class PasswordStorageFile extends StorageFile {
     	*/
     }
 
-    public boolean removeWithUserId(String userId) {
-    	numUsers--;
-        return remove("userid", userId);
+    public void putAdmin(Admin admin) {
+    	// TODO: Check all same concerns as for putUser
+    	if (numAdmins < Admin.MAX_ADMINS) {
+    		numAdmins++;
+            put(new PasswordStorageEntry(admin));
+    	}
+    	/*
+    	else {
+    		// TODO: RAISE SOME EXCEPTION
+    	}
+    	*/
+    }
+    
+    public void putClient(Client client) {
+    	if (client instanceof User){
+    		putUser((User) client);
+    	}
+    	else if (client instanceof Admin){
+    		putAdmin((Admin) client);
+    	}
+    	/*
+    	else {
+    		// TODO: RAISE SOME EXCEPTION
+    	}
+    	*/
+    }
+    
+    //Decrements either user or admin count, based on string
+    private void decrementByType(String type) {
+    	if (type.equals("user")) {
+    		numUsers--;
+    	}
+    	else if (type.equals("admin")) {
+    		numAdmins--;
+    	}
+    }
+    
+    public boolean removeWithId(String type, String id) {
+    	decrementByType(type);
+    	return removeWithType(type, "id", id);
     }
 
-    public boolean removeWithUsername(String username) {
-    	numUsers--;
-        return remove("username", username);
+    public boolean removeWithUsername(String type, String username) {
+    	decrementByType(type);
+        return removeWithType(type, "username", username);
     }
 
-    public boolean containsUserId(String userId) {
-        return contains("userid", userId);
+    public boolean containsWithId(String type, String id) {
+        return containsWithType(type, "id", id);
     }
 
-    public boolean containsUsername(String username) {
-        return contains("username", username);
+    public boolean containsUsername(String type, String username) {
+        return containsWithType(type, "username", username);
     }
 
 
     // Retrieving metadata
 
     //Obtains AN unused ID for a user, assuming User.MAX_USERS is not reached.
-    public String getNextID() {
-    	while(containsUserId(Integer.toString(nextID)) && numUsers < User.MAX_USERS) {
-    		nextID++;
+    public String getNextUserID() {
+    	while(containsWithId("user", Integer.toString(nextUserID)) && numUsers < User.MAX_USERS) {
+    		nextUserID++;
     	}
-    	return Integer.toString(nextID);
+    	return Integer.toString(nextUserID);
     }
-
+    
+    //Obtains AN unused ID for an admin, assuming Admin.MAX_ADMINS is not reached.
+    public String getNextAdminID() {
+    	while(containsWithId("admin", Integer.toString(nextAdminID)) && numAdmins < Admin.MAX_ADMINS) {
+    		nextAdminID++;
+    	}
+    	return Integer.toString(nextAdminID);
+    }
+    
     public String getNumUsers() {
     	return Integer.toString(numUsers);
     }
 
+    public String getNumAdmins() {
+    	return Integer.toString(numAdmins);
+    }
+    
     // For use ONLY when converting DOM to PasswordStorageFile
     public void setUsers(ArrayList<User> users) {
     	//Assumption: file on disk is valid, so we can simply set these variables
@@ -77,4 +130,12 @@ public class PasswordStorageFile extends StorageFile {
     	}
     }
 
+    // For use ONLY when converting DOM to PasswordStorageFile
+    public void setAdmins(ArrayList<Admin> admins) {
+    	//Assumption: file on disk is valid, so we can simply set these variables
+    	for (Admin a : admins) {
+    		putAdmin(a);
+    	}
+    }
+    
 }

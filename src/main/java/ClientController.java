@@ -53,14 +53,15 @@ public class ClientController {
             return "";
         });
 
-        // Send client salt for user with specified username
+        // Send salt for user with specified username
         post("/salt", (request, response) -> {
             String email = request.queryParams("email");
+            String type = request.queryParams("type");
 
-            PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+            PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
             if (entry == null) {
                 server.getLogger().warning("[IP=" + request.ip() + "] Attempt "
-                    + "was made to get salt for non-existent user with "
+                    + "was made to get salt for non-existent " + type + " with "
                     + "username " + email + ".");
                 return "";
             }
@@ -103,17 +104,18 @@ public class ClientController {
         });
 
         // If correct master password & two-factor code, send client user's ID,
-        // IV, and encrypted vault
+        // IV, and encrypted vault (null if admin)
         post("/auth", (request, response) -> {
             String email = request.queryParams("email");
+            String type = request.queryParams("type");
             String saltedHash = request.queryParams("master");
             String initialAuthKey = request.queryParams("nextAuthKey");
             String twoFactorCode = request.queryParams("twoFactorCode");
 
-            PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+            PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
             if (entry == null) {
                 server.getLogger().warning("[IP=" + request.ip() + "] Attempt "
-                    + "was made to authenticate as non-existent user with "
+                    + "was made to authenticate as non-existent " + type + " with "
                     + "username " + email + ".");
                 return "";
             }
@@ -123,7 +125,7 @@ public class ClientController {
                     !isValidTwoFactorCodeForUser(entry.getUserId(), twoFactorCode)) {
                 server.getLogger().warning("[IP=" + request.ip() + "] "
                     + "Incorrect credentials while attempting to authenticate "
-                    + "as user with username " + email + ".");
+                    + "as " + type + " with username " + email + ".");
 
                 int id = entry.getUserId();
                 int attempts = 0;
@@ -137,24 +139,31 @@ public class ClientController {
                 return "";
             }
 
-            int id = entry.getUserId();
-            String vault = new String(Files.readAllBytes(Paths.get(
-                store.getFilenameForUser(id))));
-            byte[] iv = entry.getIV();
+            AuthResponse body;
+            int id = entry.getId();
             addInitialAuthKeyForUser(id, initialAuthKey);
+            failedAuthAttempts.put(id, 0); // Reset faield attempts counter
 
-            failedAuthAttempts.put(id, 0); // Reset failed attempts counter
+	        byte[] iv = entry.getIV();
+	        String vault = null;
 
-            AuthResponse body = new AuthResponse(id, vault, iv);
+            if (type.equals("user")) {
+	            vault = new String(Files.readAllBytes(Paths.get(
+	                store.getFilenameForUser(id))));
+            }
+
+            body = new AuthResponse(id, vault, iv);
+
             return gson.toJson(body);
         });
 
-        // Register new user
+        // Register new client (user or admin)
         post("/register", (request, response) -> {
             String email = request.queryParams("email");
+            String type = request.queryParams("type");
             String salt = request.queryParams("salt");
             String saltedHash = request.queryParams("saltedHash");
-            String vault = request.queryParams("vault");
+            String vault = request.queryParams("vault"); //CHECK: null for admins
             String iv = request.queryParams("iv");
 			String encPass = request.queryParams("encryptedPass");
 			String reciv = request.queryParams("reciv");
@@ -167,17 +176,34 @@ public class ClientController {
                 return gson.toJson(body);
             }
 
-            User newUser = server.registerNewUser(email, salt, saltedHash,
-                vault, iv, request.ip(), passwordFile, encPass, reciv,
-                recoveryHash, twoFactorSecret);
-            if (newUser == null) {
-                // User already exists, or other problem creating the user
-                RegisterResponse body = new RegisterResponse(false);
-                return gson.toJson(body);
+            if (type.equals("user")) {
+            	User newUser = server.registerNewUser(email, salt, saltedHash,
+            			vault, iv, request.ip(), passwordFile, encPass, reciv,
+                        recoveryHash, twoFactorSecret);
+	            if (newUser == null) {
+	                // User already exists, or other problem creating the user
+	                RegisterResponse body = new RegisterResponse(false);
+	                return gson.toJson(body);
+	            }
+
+	            RegisterResponse body = new RegisterResponse(true);
+	            return gson.toJson(body);
+            }
+            else { //CHECK: Assume type=admin?
+            	Admin newAdmin = server.registerNewAdmin(email, salt,
+            			saltedHash, iv, request.ip(), passwordFile, encPass,
+                        reciv, recoveryHash, twoFactorSecret);
+
+            	if (newAdmin == null) {
+	                // Admin already exists, or other problem creating the admin
+	                RegisterResponse body = new RegisterResponse(false);
+	                return gson.toJson(body);
+	            }
+
+	            RegisterResponse body = new RegisterResponse(true);
+	            return gson.toJson(body);
             }
 
-            RegisterResponse body = new RegisterResponse(true);
-            return gson.toJson(body);
         });
 
         // Update user vault

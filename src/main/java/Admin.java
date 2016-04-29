@@ -1,8 +1,8 @@
-public class User extends Client {
+public class Admin extends Client {
 
-	public static final int MAX_USERS = 300;
+	public static final int MAX_ADMINS = 5;
 
-	public User(String uname, byte[] salt, String pword, int ID, byte[] IV,
+	public Admin(String uname, byte[] salt, String pword, int ID, byte[] IV,
             String encPass, byte[] recIV, String recovery,
             String twoFactorSecret) {
 		super(uname, salt, pword, ID, IV, encPass, recIV, recovery, twoFactorSecret);
