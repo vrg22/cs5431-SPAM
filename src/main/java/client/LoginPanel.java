@@ -33,7 +33,7 @@ public class LoginPanel extends JPanel {
         });
 
         JButton register = new JButton();
-        register.setText("Register");
+        register.setText("New User?");
 
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
