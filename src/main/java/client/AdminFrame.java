@@ -2,17 +2,17 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 
-public abstract class ClientFrame extends JFrame
+public class AdminFrame extends JFrame
 {
-    protected ClientApplication app;
+    private AdminApplication app;
 
-    public ClientFrame(ClientApplication app) {
+    public AdminFrame(AdminApplication app) {
         this.app = app;
     }
 
     public void start()
     {
-        setPanel(new LoginPanel(false));
+        setPanel(new AdminLoginPanel());
         setLayout(new FlowLayout());
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -24,14 +24,11 @@ public abstract class ClientFrame extends JFrame
         pack();
     }
 
-    public ClientApplication getApp() {
-      if (app == null) {
-        System.err.println("*#*# app is null");
-      }
+    public AdminApplication getApp() {
         return app;
     }
 
-    public static ClientFrame getFrameForComponent(Component c) {
-        return (ClientFrame)SwingUtilities.getWindowAncestor(c);
+    public static AdminFrame getFrameForComponent(Component c) {
+        return (AdminFrame)SwingUtilities.getWindowAncestor(c);
     }
 }

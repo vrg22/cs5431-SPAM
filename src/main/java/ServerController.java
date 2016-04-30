@@ -16,6 +16,15 @@ public interface ServerController {
             String saltedHash, String iv, String adminIp,
             PasswordStorageFile passwordFile);
     
+    /**
+     * Attempts to obliterate an admin from the system.
+     * @param adminId ID of admin to obliterate
+     * @return "Was admin successfully obliterated?"
+     */
+    public boolean obliterateAdmin(int adminId, String clientIp,
+            PasswordStorageFile passwordFile);
+    //TODO: Need to add master-password updating methods?
+    
     //USER METHODS
     /**
      * Attempts to register a new user with the system.

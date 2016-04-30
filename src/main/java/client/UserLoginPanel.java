@@ -3,8 +3,9 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 
-public class LoginPanel extends JPanel {
-    public LoginPanel(boolean expired) {
+//Modified to handle both user and admin login attempts
+public class UserLoginPanel extends JPanel {
+    public UserLoginPanel(boolean expired) {
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
         JTextField emailField = new JTextField();
@@ -26,11 +27,11 @@ public class LoginPanel extends JPanel {
                 String email = emailField.getText();
                 String password = passwordField.getText();
                 String twoFactorCode = twoFactorField.getText();
-                ClientFrame frame = ClientFrame.getFrameForComponent(login);
+                UserFrame frame = UserFrame.getFrameForComponent(login);
                 boolean success = frame.getApp().login(email, password, twoFactorCode);
 
                 if (success) {
-                    frame.setPanel(new VaultPanel());
+                	frame.setPanel(new VaultPanel());
                 } else {
                     errorLabel.setText("Invalid email and/or password.");
                 }
@@ -42,8 +43,8 @@ public class LoginPanel extends JPanel {
 
         register.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientFrame frame = ClientFrame.getFrameForComponent(register);
-                frame.setPanel(new RegisterPanel());
+            	UserFrame frame = UserFrame.getFrameForComponent(register);
+                frame.setPanel(new UserRegisterPanel());
             }
         });
 

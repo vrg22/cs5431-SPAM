@@ -63,7 +63,7 @@ public class CentralServerController implements ServerController {
     public Admin registerNewAdmin(String username, String adminSalt,
             String saltedHash, String iv, String adminIp,
             PasswordStorageFile passwordFile) {
-    	
+
     	if (passwordFile.containsWithType("admin", "username", username)) {
             // Admin with that username already exists
             logger.warning("[IP=" + adminIp + "] Attempt was made to "
@@ -86,8 +86,8 @@ public class CentralServerController implements ServerController {
             + " successfully registered.");
         return newAdmin;
     }
-    
-    
+
+
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
@@ -107,7 +107,7 @@ public class CentralServerController implements ServerController {
 
         // Add user to main password file
         int newUserId = Integer.parseInt(passwordFile.getNextUserID());
-        
+
         User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
             saltedHash, newUserId, CryptoServiceProvider.b64decode(iv), encPass,
 			CryptoServiceProvider.b64decode(reciv), recoveryHash, twoFactorSecret);
@@ -209,4 +209,29 @@ public class CentralServerController implements ServerController {
 		System.out.println("updateUser wrote to disk: " +hashpass);
         store.writeFileToDisk(passwordFile);
 	}
+
+
+    //ADMIN-SPECIFIC METHODS
+    /**
+     * Attempts to obliterate an admin from the system.
+     * @param adminId ID of admin to obliterate
+     * @return "Was admin successfully obliterated?"
+     */
+    public boolean obliterateAdmin(int adminId, String clientIp,
+            PasswordStorageFile passwordFile) {
+
+        // Delete user from passwords file
+        if (!passwordFile.removeWithId("admin", ""+adminId)) {
+            // No such admin
+            logger.warning("[IP=" + clientIp + "] Attempt was made to "
+                + "obliterate nonexistent admin " + adminId + ".");
+            return false;
+        }
+        store.writeFileToDisk(passwordFile);
+
+        logger.info("[IP=" + clientIp + "] Admin " + adminId
+            + " successfully obliterated.");
+
+        return true;
+    }
 }

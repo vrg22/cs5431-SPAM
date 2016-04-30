@@ -9,7 +9,7 @@ public class ShowAccountsPanel extends JPanel {
         add(back);
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                UserFrame frame = UserFrame.getFrameForComponent(back);
                 frame.setPanel(new VaultPanel());
             }
         });
@@ -26,7 +26,7 @@ public class ShowAccountsPanel extends JPanel {
 
             view.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e){
-                    ClientFrame frame = ClientFrame.getFrameForComponent(view);
+                	UserFrame frame = UserFrame.getFrameForComponent(view);
                     Account fullAccount = frame.getApp().getAccount(account.getId());
                     frame.setPanel(new ShowAccountPanel(fullAccount));
                 }

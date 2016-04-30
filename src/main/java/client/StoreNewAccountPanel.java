@@ -25,7 +25,7 @@ public class StoreNewAccountPanel extends JPanel {
                 String name = nameField.getText();
                 String username = emailField.getText();
                 String password = passwordField.getText();
-                ClientFrame frame = ClientFrame.getFrameForComponent(save);
+                UserFrame frame = UserFrame.getFrameForComponent(save);
                 boolean success = frame.getApp().storeNewAccount(name,
                     username, password);
 
@@ -42,7 +42,7 @@ public class StoreNewAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+            	UserFrame frame = UserFrame.getFrameForComponent(back);
                 frame.setPanel(new VaultPanel());
             }
         });
