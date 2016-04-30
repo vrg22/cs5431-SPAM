@@ -3,14 +3,105 @@ import java.net.*;
 import javax.net.ssl.*;
 import java.util.*;
 import java.security.cert.Certificate;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
+import java.security.KeyManagementException;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+class SSLSocketFactoryWrapper extends SSLSocketFactory
+{
+    private final SSLSocketFactory wrappedFactory;
+    private final String[] enabledProtocols;
+    private final String[] enabledSuites;
+
+    public SSLSocketFactoryWrapper(SSLSocketFactory factory, String[] protocols, String[] suites) {
+        wrappedFactory = factory;
+        enabledProtocols = protocols;
+        enabledSuites = suites;
+    }
+
+    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+        SSLSocket socket = (SSLSocket)wrappedFactory.createSocket(host, port);
+        setParameters(socket);
+        return socket;
+    }
+
+    public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException,
+        UnknownHostException {
+        SSLSocket socket = (SSLSocket)wrappedFactory.createSocket(host, port, localHost, localPort);
+        setParameters(socket);
+        return socket;
+    }
+
+    public Socket createSocket(InetAddress host, int port) throws IOException {
+        SSLSocket socket = (SSLSocket)wrappedFactory.createSocket(host, port);
+        setParameters(socket);
+        return socket;
+    }
+
+    public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
+        throws IOException {
+        SSLSocket socket = (SSLSocket)wrappedFactory.createSocket(address, port, localAddress, localPort);
+        setParameters(socket);
+        return socket;
+    }
+
+    public Socket createSocket() throws IOException {
+        SSLSocket socket = (SSLSocket)wrappedFactory.createSocket();
+        setParameters(socket);
+        return socket;
+    }
+
+    public String[] getDefaultCipherSuites() {
+        return wrappedFactory.getDefaultCipherSuites();
+    }
+
+    public String[] getSupportedCipherSuites() {
+        return enabledSuites == null ? wrappedFactory.getSupportedCipherSuites() : enabledSuites;
+    }
+
+    public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
+        SSLSocket socket = (SSLSocket)wrappedFactory.createSocket(s, host, port, autoClose);
+        setParameters(socket);
+        return socket;
+    }
+
+    private void setParameters(SSLSocket socket) {
+        if (enabledProtocols != null) {
+            socket.setEnabledProtocols(enabledProtocols);
+        }
+        if (enabledSuites != null) {
+            socket.setEnabledCipherSuites(enabledSuites);
+        }
+    }
+}
+
 
 public class SendHttpsRequest {
-    public static String get(String urlStr) throws IOException {
+    public static String get(String urlStr) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         InputStream ins = null;
         URL url = new URL(urlStr);
         HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
 
+        // configure SSL connection to use specific TLS version and cipher suite
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(null, null, null);
+        SSLSocketFactory factory = context.getSocketFactory();
+        SSLSocketFactoryWrapper wrapper = new SSLSocketFactoryWrapper(factory, new String[] { "TLSv1.2" },
+            new String[] { "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384" });
+        ((HttpsURLConnection)con).setSSLSocketFactory(wrapper);
+
+        // open connection to the server
         con.setRequestMethod("GET");
+        con.connect();
+
+        String cs = con.getCipherSuite();
+        System.out.println("CipherSuite get:" +cs);
+
         ins = con.getInputStream();
         InputStreamReader isr = new InputStreamReader(ins);
         BufferedReader in = new BufferedReader(isr);
@@ -27,15 +118,34 @@ public class SendHttpsRequest {
         return response.toString();
     }
 
-    public static String post(String urlStr, Map<String, String> params)
-             throws IOException {
+    public static String post(String urlStr, Map<String, String> params) throws IOException {
         DataOutputStream wr = null;
         InputStream ins = null;
         URL url = new URL(urlStr);
         HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
 
+        // configure SSL connection to use specific TLS version and cipher suite
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, null, null);
+            SSLSocketFactory factory = context.getSocketFactory();
+            SSLSocketFactoryWrapper wrapper = new SSLSocketFactoryWrapper(factory, new String[] { "TLSv1.2" },
+                new String[] { "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384" });
+            ((HttpsURLConnection)con).setSSLSocketFactory(wrapper);
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println("NoSuchAlgorithmException raised");
+        } catch (KeyManagementException e) {
+            System.err.println("KeyManagementException raised");
+        }
+
+        // open connection to the server
         con.setRequestMethod("POST");
         con.setDoOutput(true);
+        con.connect();
+
+        String cs = con.getCipherSuite();
+        System.out.println("CipherSuite post:" +cs);
+
         wr = new DataOutputStream(con.getOutputStream());
         String paramsStr = SendHttpsRequest.formatParams(params);
 		wr.writeBytes(paramsStr);
