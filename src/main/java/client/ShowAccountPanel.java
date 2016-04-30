@@ -51,7 +51,7 @@ public class ShowAccountPanel extends JPanel {
         JLabel errorLabel = new JLabel();
         save.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientFrame frame = ClientFrame.getFrameForComponent(save);
+            	UserFrame frame = UserFrame.getFrameForComponent(save);
                 int id = account.getId();
                 String name = nameField.getText();
                 String username = emailField.getText();
@@ -72,7 +72,7 @@ public class ShowAccountPanel extends JPanel {
         back.setText("Back");
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+            	UserFrame frame = UserFrame.getFrameForComponent(back);
                 Account.Header[] accounts = frame.getApp().getAccounts();
                 frame.setPanel(new ShowAccountsPanel(accounts));
             }

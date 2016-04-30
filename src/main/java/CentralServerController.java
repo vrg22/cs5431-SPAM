@@ -187,4 +187,30 @@ public class CentralServerController implements ServerController {
 
         store.writeFileToDisk(passwordFile);
     }
+    
+    
+    //ADMIN-SPECIFIC METHODS
+    /**
+     * Attempts to obliterate an admin from the system.
+     * @param adminId ID of admin to obliterate
+     * @return "Was admin successfully obliterated?"
+     */
+    public boolean obliterateAdmin(int adminId, String clientIp,
+            PasswordStorageFile passwordFile) {
+
+        // Delete user from passwords file
+        if (!passwordFile.removeWithId("admin", ""+adminId)) {
+            // No such admin
+            logger.warning("[IP=" + clientIp + "] Attempt was made to "
+                + "obliterate nonexistent admin " + adminId + ".");
+            return false;
+        }
+        store.writeFileToDisk(passwordFile);
+
+        logger.info("[IP=" + clientIp + "] Admin " + adminId
+            + " successfully obliterated.");
+
+        return true;
+    }
+    
 }

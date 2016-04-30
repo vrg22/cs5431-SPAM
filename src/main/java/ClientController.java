@@ -184,6 +184,26 @@ public class ClientController {
             RegisterResponse body = new RegisterResponse(result);
             return gson.toJson(body);
         });
+        
+        // - ADMIN-SPECIFIC OPERATIONS - 
+        // Obliterate entire admin account
+        delete("/admins/:adminid", (request, response) -> {
+            int adminId = -1;
+            try {
+                adminId = Integer.parseInt(request.params("adminid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                RegisterResponse body = new RegisterResponse(false);
+                return gson.toJson(body);
+            }
+
+            boolean result = server.obliterateAdmin(adminId, request.ip(),
+                passwordFile);
+
+            RegisterResponse body = new RegisterResponse(result);
+            return gson.toJson(body);
+        });
     }
 
     // Check that `email` is a valid email address (e.g., some@email.com)
