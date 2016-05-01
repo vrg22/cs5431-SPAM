@@ -108,6 +108,15 @@ public class CryptoServiceProvider {
 		return b64encode(hash);
 	}
 
+    /**
+     * Generate a single-request authentication key
+     */
+    public static String genRequestAuthKey() {
+        byte[] temp = new byte[16]; // TODO: determine what size this should be
+        secure.nextBytes(temp);
+        return b64encode(temp);
+    }
+
 	private static byte[] saltedHash(String password, byte[] salt, int iter) {
 		byte[] temp = null;
 		try {

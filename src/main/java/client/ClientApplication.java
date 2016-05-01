@@ -18,6 +18,7 @@ public class ClientApplication
     private UserStorageFile userVault; // Vault of currently logged-in user
     private byte[] userSalt;
     private String master;
+    private String authKey;
 
 	public ClientApplication() {
         gson = new Gson();
@@ -54,10 +55,13 @@ public class ClientApplication
 
         String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
 
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+
         // Request user for user's ID, IV, and encrypted vault
         Map<String, String> authParams = new HashMap<>();
         authParams.put("email", email);
         authParams.put("master", saltedHash);
+        authParams.put("nextAuthKey", nextAuthKey);
         String authResponseJson;
         try {
             authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/auth",
@@ -68,7 +72,8 @@ public class ClientApplication
         }
         AuthResponse authResponse = gson.fromJson(authResponseJson,
             AuthResponse.class);
-        if (authResponse == null) return false;
+        if (authResponse == null) return false; // Failed login
+
         int id = authResponse.getId();
         String encVault = authResponse.getVault();
         byte[] iv = authResponse.getIV();
@@ -102,6 +107,7 @@ public class ClientApplication
         userId = authResponse.getId();
         userSalt = salt;
         master = password;
+        authKey = nextAuthKey;
 
         return true;
 	}
@@ -157,6 +163,11 @@ public class ClientApplication
      * @return Was user successfully obliterated
      */
     public boolean obliterateUser() {
+        Map<String, String> params = new HashMap<>();
+        params.put("authKey", authKey);
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        params.put("nextAuthKey", nextAuthKey);
+
         String responseJson;
         try {
             responseJson = SendHttpsRequest.delete(HTTPS_ROOT
@@ -168,6 +179,7 @@ public class ClientApplication
         ObliterateResponse response = gson.fromJson(responseJson, ObliterateResponse.class);
 
         if (response.success()) {
+            authKey = nextAuthKey;
             logout();
 
             return true;
@@ -284,6 +296,9 @@ public class ClientApplication
         Map<String, String> params = new HashMap<>();
         params.put("vault", encVault);
         params.put("iv", CryptoServiceProvider.b64encode(iv));
+        params.put("authKey", authKey);
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        params.put("nextAuthKey", nextAuthKey);
 
         String responseJson;
         try {
@@ -295,6 +310,11 @@ public class ClientApplication
         }
         SaveResponse response = gson.fromJson(responseJson, SaveResponse.class);
 
-        return response.success();
+        if (response.success()) {
+            authKey = nextAuthKey;
+            return true;
+        } else {
+            return false;
+        }
     }
 }

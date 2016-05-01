@@ -15,6 +15,9 @@ public class ClientController {
 
     private PasswordStorageFile passwordFile;
 
+    // <user id> -> [<session 1 auth key>, <session 2 auth key>, ...]
+    private HashMap<Integer, ArrayList<AuthenticationKey>> authKeys;
+
     public ClientController(ServerController server) {
         port(4567);
 
@@ -23,6 +26,7 @@ public class ClientController {
 
         // Initialize instance variables
         Gson gson = new Gson();
+        authKeys = new HashMap<>();
         XMLStorageController store = new XMLStorageController(server.getPasswordsFilename());
         try {
             FileInputStream passwordStream = null;
@@ -68,6 +72,7 @@ public class ClientController {
         post("/auth", (request, response) -> {
             String email = request.queryParams("email");
             String saltedHash = request.queryParams("master");
+            String initialAuthKey = request.queryParams("nextAuthKey");
 
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
             if (entry == null) {
@@ -89,6 +94,7 @@ public class ClientController {
             String vault = new String(Files.readAllBytes(Paths.get(
                 store.getFilenameForUser(id))));
             byte[] iv = entry.getIV();
+            addInitialAuthKeyForUser(id, initialAuthKey);
 
             AuthResponse body = new AuthResponse(id, vault, iv);
             return gson.toJson(body);
@@ -121,6 +127,7 @@ public class ClientController {
         });
 
         // Update user vault
+        // *Authorization required
         post("/users/:userid/save", (request, response) -> {
             int userId = -1;
             try {
@@ -134,14 +141,23 @@ public class ClientController {
 
             String vault = request.queryParams("vault");
             String iv = request.queryParams("iv");
+            String authKey = request.queryParams("authKey");
+            String nextAuthKey = request.queryParams("nextAuthKey");
 
-            server.updateUserVault(userId, vault, iv, passwordFile);
+            if (isValidAuthKeyForUser(userId, authKey)) {
+                server.updateUserVault(userId, vault, iv, passwordFile);
 
-            SaveResponse body = new SaveResponse(true);
-            return gson.toJson(body);
+                SaveResponse body = new SaveResponse(true);
+                return gson.toJson(body);
+            } else {
+                // Invalid authentication key -> Authorization failed
+                SaveResponse body = new SaveResponse(false);
+                return gson.toJson(body);
+            }
         });
 
         // Obliterate entire user account
+        // *Authorization required
         delete("/users/:userid", (request, response) -> {
             int userId = -1;
             try {
@@ -153,11 +169,20 @@ public class ClientController {
                 return gson.toJson(body);
             }
 
-            boolean result = server.obliterateUser(userId, request.ip(),
-                passwordFile);
+            String authKey = request.queryParams("authKey");
+            String nextAuthKey = request.queryParams("nextAuthKey");
 
-            RegisterResponse body = new RegisterResponse(result);
-            return gson.toJson(body);
+            if (isValidAuthKeyForUser(userId, authKey)) {
+                boolean result = server.obliterateUser(userId, request.ip(),
+                    passwordFile);
+
+                RegisterResponse body = new RegisterResponse(result);
+                return gson.toJson(body);
+            } else {
+                // Invalid authentication key -> Authorization failed
+                RegisterResponse body = new RegisterResponse(false);
+                return gson.toJson(body);
+            }
         });
     }
 
@@ -171,5 +196,35 @@ public class ClientController {
     // TODO: Decide/implement requirements
     private static boolean isPasswordValid(String password) {
         return password != null && password.length() > 0;
+    }
+
+    private boolean isValidAuthKeyForUser(int userId, String key) {
+        ArrayList<AuthenticationKey> userKeys = authKeys.get(userId);
+        if (userKeys == null) {
+            return false;
+        }
+
+        for (int i = 0; i < userKeys.size(); i++) {
+            AuthenticationKey aKey = userKeys.get(i);
+            if (aKey.hasExpired()) {
+                userKeys.remove(i);
+                i--;
+            } else if (aKey.isValid(key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void addInitialAuthKeyForUser(int userId, String key) {
+        ArrayList<AuthenticationKey> userKeys = authKeys.get(userId);
+        if (userKeys == null) {
+            userKeys = new ArrayList<>();
+            userKeys.add(new AuthenticationKey(key));
+            authKeys.put(userId, userKeys);
+        } else {
+            userKeys.add(new AuthenticationKey(key));
+        }
     }
 }
