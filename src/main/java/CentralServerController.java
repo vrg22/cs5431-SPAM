@@ -123,7 +123,7 @@ public class CentralServerController implements ServerController {
      * @param user updated version of the user
      * @return "Was user successfully updated?"
      */
-    public boolean updateUser(User user, String clientIp,
+    public boolean updateUser1(User user, String clientIp,
             PasswordStorageFile passwordFile) {
 
         if (!passwordFile.removeWithUserId(""+user.getId())) {
@@ -152,4 +152,12 @@ public class CentralServerController implements ServerController {
 
         store.writeFileToDisk(passwordFile);
     }
+
+	public void updateUser(int userId, String hashpass, PasswordStorageFile passwordFile) {
+        PasswordStorageEntry entry = passwordFile.getWithUserId(""+userId);
+        entry.setMaster(hashpass);
+
+		System.out.println("updateUser wrote to disk: " +hashpass);
+        store.writeFileToDisk(passwordFile);
+	}
 }

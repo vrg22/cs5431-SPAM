@@ -34,4 +34,8 @@ public class PasswordStorageEntry extends StorageEntry {
     public void setIV(String iv) {
         update("iv", iv);
     }
+
+	public void setMaster(String hashPass) {
+	  update("master", hashPass);
+	}
 }

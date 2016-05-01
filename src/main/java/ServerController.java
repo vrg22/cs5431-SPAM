@@ -30,7 +30,7 @@ public interface ServerController {
      * @param user updated version of the user
      * @return "Was user successfully updated?"
      */
-    public boolean updateUser(User user, String clientIp,
+    public boolean updateUser1(User user, String clientIp,
             PasswordStorageFile passwordFile);
 
     /**
@@ -38,4 +38,10 @@ public interface ServerController {
      */
     public void updateUserVault(int userId, String vault, String iv,
             PasswordStorageFile passwordFile);
+
+	/**
+	 * Updates the master password field for existing user.
+	 */
+	public void updateUser(int userId, String hashpass,
+			PasswordStorageFile passwordFile);
 }

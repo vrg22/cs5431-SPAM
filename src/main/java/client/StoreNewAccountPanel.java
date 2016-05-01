@@ -13,7 +13,7 @@ public class StoreNewAccountPanel extends JPanel {
         JTextField emailField = new JTextField();
 
         JLabel passwordLabel = new JLabel();
-        passwordLabel.setText("Master Password:");
+        passwordLabel.setText("Password:");
         JPasswordField passwordField = new JPasswordField(10);
 
         JButton save = new JButton();

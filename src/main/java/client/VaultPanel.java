@@ -53,9 +53,21 @@ public class VaultPanel extends JPanel {
             }
         });
 
+        JButton resetPass = new JButton();
+        resetPass.setText("Reset Master Password");
+
+        resetPass.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Trying to reset master password");
+                ClientFrame frame = ClientFrame.getFrameForComponent(resetPass);
+                frame.setPanel(new ResetPasswordPanel());
+            }
+        });
+
         add(view);
         add(create);
         add(showCert);
+        add(resetPass);
         // add(certLabel);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }

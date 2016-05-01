@@ -159,6 +159,7 @@ public class ClientController {
             String iv = request.queryParams("iv");
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
+            addInitialAuthKeyForUser(userId, nextAuthKey);
 
             if (isValidAuthKeyForUser(userId, authKey)) {
                 server.updateUserVault(userId, vault, iv, passwordFile);
@@ -171,6 +172,35 @@ public class ClientController {
                 return gson.toJson(body);
             }
         });
+
+        post("/users/:userid/resetpass", (request, response) -> {
+            int userId = -1;
+            try {
+                userId = Integer.parseInt(request.params("userid"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                SaveResponse body = new SaveResponse(false);
+                return gson.toJson(body);
+            }
+
+            String saltedHash = request.queryParams("saltedHash");
+            String authKey = request.queryParams("authKey");
+            String nextAuthKey = request.queryParams("nextAuthKey");
+            addInitialAuthKeyForUser(userId, nextAuthKey);
+
+            if (isValidAuthKeyForUser(userId, authKey)) {
+                server.updateUser(userId, saltedHash, passwordFile);
+
+                SaveResponse body = new SaveResponse(true);
+                return gson.toJson(body);
+            } else {
+                // Invalid authentication key -> Authorization failed
+				System.out.println("Authorization failed for resetpass");
+                SaveResponse body = new SaveResponse(false);
+                return gson.toJson(body);
+            }
+		});
 
         // Obliterate entire user account
         // *Authorization required
@@ -216,7 +246,9 @@ public class ClientController {
 
     private boolean isValidAuthKeyForUser(int userId, String key) {
         ArrayList<AuthenticationKey> userKeys = authKeys.get(userId);
+		System.out.println("isValidAuthKeyForUser key:" +key);
         if (userKeys == null) {
+			System.err.println("isValidAuthKeyForUser userKeys is null");
             return false;
         }
 
@@ -230,6 +262,7 @@ public class ClientController {
             }
         }
 
+		System.err.println("isValidAuthKeyForUser is false");
         return false;
     }
 

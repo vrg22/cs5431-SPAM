@@ -317,4 +317,42 @@ public class ClientApplication
             return false;
         }
     }
+
+	public boolean resetPass(String email, String curPass, String newPass) {
+	  //if (login(email, curPass)) {
+	  if (curPass.equals(master)) {
+		// re-encrypt with new master pass
+		master = newPass;
+		if (saveVault()) {
+		  String saltedHash = CryptoServiceProvider.genSaltedHash(newPass, userSalt);
+		  Map<String, String> params = new HashMap<>();
+		  params.put("saltedHash", saltedHash);
+		  params.put("authKey", authKey);
+		  String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+		  params.put("nextAuthKey", nextAuthKey);
+		  System.err.println("resetPass authKey:" +authKey);
+
+		  String responseJson;
+		  try {
+			responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/users/"
+				+ userId + "/resetpass", params);
+		  } catch (IOException e) {
+			System.out.println("Problem connecting to server.");
+			return false;
+		  }
+		  SaveResponse response = gson.fromJson(responseJson, SaveResponse.class);
+
+		  if (response.success()) {
+			authKey = nextAuthKey;
+			System.out.println("resetPass responded true");
+			return true;
+		  } else {
+			System.out.println("resetPass responded false");
+			return false;
+		  }
+		}
+	  }
+	  System.out.println("resetPass login failed");
+	  return false;
+	}
 }
