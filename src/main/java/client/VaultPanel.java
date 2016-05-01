@@ -64,10 +64,25 @@ public class VaultPanel extends JPanel {
             }
         });
 
+
+        JButton logout = new JButton();
+        logout.setText("Logout");
+
+        logout.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Logging out");
+                ClientFrame frame = ClientFrame.getFrameForComponent(logout);
+                // TODO: Have to clean up contents in memory before leaving
+                // Possibly send command to server to clear all auth keys it holds?
+                frame.setPanel(new LoginPanel());
+            }
+        });
+
         add(view);
         add(create);
         add(showCert);
         add(resetPass);
+        add(logout);
         // add(certLabel);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }

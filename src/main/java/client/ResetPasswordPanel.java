@@ -46,6 +46,16 @@ public class ResetPasswordPanel extends JPanel {
             }
         });
 
+        JButton back = new JButton();
+        back.setText("back");
+
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                frame.setPanel(new VaultPanel());
+            }
+        });
+
         add(emailLabel);
         add(emailField);
         add(passwordLabel);
@@ -55,6 +65,7 @@ public class ResetPasswordPanel extends JPanel {
         add(newPasswordLabel2);
         add(newPasswordField2);
         add(reset);
+        add(back);
         add(errorLabel);
         add(new JPanel());
         setLayout(new GridLayout(6, 2));

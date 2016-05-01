@@ -30,14 +30,25 @@ public class RegisterPanel extends JPanel {
             }
         });
 
+		JButton back = new JButton();
+        back.setText("Back");
+
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientFrame frame = ClientFrame.getFrameForComponent(back);
+                frame.setPanel(new LoginPanel());
+            }
+        });
+
         add(emailLabel);
         add(emailField);
         add(passwordLabel);
         add(passwordField);
         add(register);
+        add(back);
         add(new JPanel());
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(4, 2));
+        setLayout(new GridLayout(6, 2));
     }
 }
