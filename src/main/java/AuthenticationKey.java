@@ -16,10 +16,10 @@ public class AuthenticationKey {
     }
 
     /**
-     * @return "This key is valid (not expired) and matches the specified authentication key"
+     * @return "This key matches the specified authentication key"
      */
-    public boolean isValid(String keyToCheck) {
-        return !hasExpired() && key.equals(keyToCheck);
+    public boolean matches(String keyToCheck) {
+        return key.equals(keyToCheck);
     }
 
     /**

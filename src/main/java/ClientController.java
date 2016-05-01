@@ -159,9 +159,9 @@ public class ClientController {
             String iv = request.queryParams("iv");
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
-            addInitialAuthKeyForUser(userId, nextAuthKey);
 
             if (isValidAuthKeyForUser(userId, authKey)) {
+                updateAuthKeyForUser(userId, authKey, nextAuthKey);
                 server.updateUserVault(userId, vault, iv, passwordFile);
 
                 SaveResponse body = new SaveResponse(true);
@@ -187,9 +187,9 @@ public class ClientController {
             String saltedHash = request.queryParams("saltedHash");
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
-            addInitialAuthKeyForUser(userId, nextAuthKey);
 
             if (isValidAuthKeyForUser(userId, authKey)) {
+                updateAuthKeyForUser(userId, authKey, nextAuthKey);
                 server.updateUser(userId, saltedHash, passwordFile);
 
                 SaveResponse body = new SaveResponse(true);
@@ -219,6 +219,7 @@ public class ClientController {
             String nextAuthKey = request.queryParams("nextAuthKey");
 
             if (isValidAuthKeyForUser(userId, authKey)) {
+                updateAuthKeyForUser(userId, authKey, nextAuthKey);
                 boolean result = server.obliterateUser(userId, request.ip(),
                     passwordFile);
 
@@ -257,7 +258,7 @@ public class ClientController {
             if (aKey.hasExpired()) {
                 userKeys.remove(i);
                 i--;
-            } else if (aKey.isValid(key)) {
+            } else if (aKey.matches(key)) {
                 return true;
             }
         }
@@ -274,6 +275,20 @@ public class ClientController {
             authKeys.put(userId, userKeys);
         } else {
             userKeys.add(new AuthenticationKey(key));
+        }
+    }
+
+    private void updateAuthKeyForUser(int userId, String oldKey, String newKey) {
+        ArrayList<AuthenticationKey> userKeys = authKeys.get(userId);
+        if (userKeys == null) return;
+
+        for (int i = 0; i < userKeys.size(); i++) {
+            AuthenticationKey aKey = userKeys.get(i);
+
+            if (aKey.matches(oldKey)) {
+                userKeys.set(i, new AuthenticationKey(newKey));
+                return;
+            }
         }
     }
 
