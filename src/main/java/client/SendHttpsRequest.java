@@ -12,7 +12,7 @@ import java.security.KeyManagementException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-class SSLSocketFactoryWrapper extends SSLSocketFactory
+class SSLSocketFactoryWrapper
 {
     private final SSLSocketFactory wrappedFactory;
     private final String[] enabledProtocols;
@@ -70,6 +70,10 @@ class SSLSocketFactoryWrapper extends SSLSocketFactory
         return socket;
     }
 
+    public SSLSocketFactory getFactory() {
+        return wrappedFactory;
+    }
+
     private void setParameters(SSLSocket socket) {
         if (enabledProtocols != null) {
             socket.setEnabledProtocols(enabledProtocols);
@@ -93,7 +97,7 @@ public class SendHttpsRequest {
         SSLSocketFactory factory = context.getSocketFactory();
         SSLSocketFactoryWrapper wrapper = new SSLSocketFactoryWrapper(factory, new String[] { "TLSv1.2" },
             new String[] { "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384" });
-        ((HttpsURLConnection)con).setSSLSocketFactory(wrapper);
+        ((HttpsURLConnection)con).setSSLSocketFactory(wrapper.getFactory());
 
         // open connection to the server
         con.setRequestMethod("GET");
@@ -131,7 +135,7 @@ public class SendHttpsRequest {
             SSLSocketFactory factory = context.getSocketFactory();
             SSLSocketFactoryWrapper wrapper = new SSLSocketFactoryWrapper(factory, new String[] { "TLSv1.2" },
                 new String[] { "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384" });
-            ((HttpsURLConnection)con).setSSLSocketFactory(wrapper);
+            ((HttpsURLConnection)con).setSSLSocketFactory(wrapper.getFactory());
         } catch (NoSuchAlgorithmException e) {
             System.err.println("NoSuchAlgorithmException raised");
         } catch (KeyManagementException e) {
