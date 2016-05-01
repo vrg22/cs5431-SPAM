@@ -18,6 +18,9 @@ public class ClientController {
     // <user id> -> [<session 1 auth key>, <session 2 auth key>, ...]
     private HashMap<Integer, ArrayList<AuthenticationKey>> authKeys;
 
+    // <user id> -> # consecutive failed login attempts
+    private HashMap<Integer, Integer> failedAuthAttempts;
+
     public ClientController(ServerController server) {
         port(4567);
 
@@ -27,6 +30,7 @@ public class ClientController {
         // Initialize instance variables
         Gson gson = new Gson();
         authKeys = new HashMap<>();
+        failedAuthAttempts = new HashMap<>();
         XMLStorageController store = new XMLStorageController(server.getPasswordsFilename());
         try {
             FileInputStream passwordStream = null;
@@ -87,6 +91,16 @@ public class ClientController {
                 server.getLogger().warning("[IP=" + request.ip() + "] "
                     + "Incorrect password while attempting to authenticate "
                     + "as user with username " + email + ".");
+
+                int id = entry.getUserId();
+                int attempts = 0;
+                if (failedAuthAttempts.containsKey(id)) {
+                    attempts = failedAuthAttempts.get(id);
+                }
+                attempts++;
+                failedAuthAttempts.put(id, attempts);
+                rateLimit(attempts);
+
                 return "";
             }
 
@@ -95,6 +109,8 @@ public class ClientController {
                 store.getFilenameForUser(id))));
             byte[] iv = entry.getIV();
             addInitialAuthKeyForUser(id, initialAuthKey);
+
+            failedAuthAttempts.put(id, 0); // Reset failed attempts counter
 
             AuthResponse body = new AuthResponse(id, vault, iv);
             return gson.toJson(body);
@@ -225,6 +241,14 @@ public class ClientController {
             authKeys.put(userId, userKeys);
         } else {
             userKeys.add(new AuthenticationKey(key));
+        }
+    }
+
+    private void rateLimit(int numAttempts) {
+        int delaySeconds = numAttempts * numAttempts;
+        try {
+            Thread.sleep(delaySeconds * 1000);
+        } catch (InterruptedException e) {
         }
     }
 }
