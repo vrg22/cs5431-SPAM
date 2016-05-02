@@ -41,14 +41,16 @@ public class ClientController {
             return;
         }
 
+        //TODO: Add explicit checks that the received type is what we expect for all pathways!
+        
         get("/", (request, response) -> {
             return "";
         });
 
-        // Send salt for user with specified username
+        // Send salt for client with specified username
         post("/salt", (request, response) -> {
-            String email = request.queryParams("email");
             String type = request.queryParams("type");
+            String email = request.queryParams("email");
             
             PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
             if (entry == null) {
@@ -89,9 +91,9 @@ public class ClientController {
 
             AuthResponse body;
             int id = entry.getId();
-	        byte[] iv = entry.getIV();
-	        String vault = null;
+	        byte[] iv = entry.getIV();  //TODO: explicitly set null if admin doesn't use, and only set if user type!
 	        
+	        String vault = null;
             if (type.equals("user")) {
 	            vault = new String(Files.readAllBytes(Paths.get(
 	                store.getFilenameForUser(id))));
@@ -186,8 +188,42 @@ public class ClientController {
         });
         
         // - ADMIN-SPECIFIC OPERATIONS - 
+        
+        // Return system salt for admin management  //TODO: SHOULD this be same as system salt at startup?
+        post("/admin/salt", (request, response) -> {
+            String type = request.queryParams("type");
+            
+            byte[] sysSalt = server.getSysSalt();
+            SaltResponse body = new SaltResponse(sysSalt);
+
+            return gson.toJson(body);
+        });
+        
+        // Authorize for admin-management privileges
+        post("/admin", (request, response) -> {
+            String type = request.queryParams("type");
+            String saltedHash = request.queryParams("saltedHash");
+            
+            //If salted hash matches, return list of admins
+            String correctSaltedHash = server.getSaltedHashedAdminPhrase();
+            if (!server.authManageAdmin(saltedHash, request.ip())) {
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Incorrect password while attempting to gain "
+                    + "admin management access.");
+                return "";
+            }
+
+            //Would take to management pane (mimic the "get account info" pane)
+
+            AdminManageAuthResponse body;
+            AdminManagementFile amFile = passwordFile.getAdminFile();
+            body = new AdminManageAuthResponse(amFile);
+
+            return gson.toJson(body);
+        });
+        
         // Obliterate entire admin account
-        delete("/admins/:adminid", (request, response) -> {
+        delete("/admin/:adminid", (request, response) -> {
             int adminId = -1;
             try {
                 adminId = Integer.parseInt(request.params("adminid"));

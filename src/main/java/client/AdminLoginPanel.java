@@ -3,7 +3,7 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 
-//Modified to handle both user and admin login attempts
+//Allow to escalate to admin-management mode, or log in as an admin to view logs
 public class AdminLoginPanel extends JPanel {
     public AdminLoginPanel() {
         JLabel emailLabel = new JLabel();
@@ -33,21 +33,37 @@ public class AdminLoginPanel extends JPanel {
             }
         });
 
-        JButton register = new JButton();
-        register.setText("Register");
-
-        register.addActionListener(new ActionListener(){
+        JLabel superAdminLabel = new JLabel();
+        superAdminLabel.setText("Admin Management Passphrase:");
+        JTextField adminField = new JTextField();
+        
+        JButton superAdminMode = new JButton();
+        superAdminMode.setText("Authenticate");
+        
+        superAdminMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
-            	AdminFrame frame = AdminFrame.getFrameForComponent(register);
-                frame.setPanel(new AdminRegisterPanel());
+                String adminPassphrase = adminField.getText();
+            	AdminFrame frame = AdminFrame.getFrameForComponent(superAdminMode);
+                boolean success = frame.getApp().authManageAdmin(adminPassphrase);
+
+                if (success) {
+                	Admin.Header[] admins = frame.getApp().getAdmins();
+                	frame.setPanel(new ShowAdminsPanel(admins));
+                } else {
+                    //TODO: Implement some sort of timeout for failure?
+                    errorLabel.setText("Invalid admin passphrase.");
+                }
             }
         });
+            
 
         add(emailLabel);
         add(emailField);
         add(passwordLabel);
         add(passwordField);
-        add(register);
+        add(superAdminLabel);
+        add(adminField);
+        add(superAdminMode);
         add(login);
         add(errorLabel);
         add(new JPanel());

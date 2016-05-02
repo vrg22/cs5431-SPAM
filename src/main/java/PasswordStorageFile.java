@@ -138,4 +138,20 @@ public class PasswordStorageFile extends StorageFile {
     	}
     }
     
+    /**
+     * Extracts admins as file prepared for Admin management.
+     * @return the produced file abstraction
+     */
+    public AdminManagementFile getAdminFile() {
+    	AdminManagementFile amFile = new AdminManagementFile();
+    	for (StorageEntry entry : entries) {
+            if (entry.get("type").equals("admin")) {
+                amFile.putAdmin(new Admin(entry.get("username"), CryptoServiceProvider.b64decode(entry.get("salt")),
+                		entry.get("master"), Integer.parseInt(entry.get("id")), CryptoServiceProvider.b64decode(entry.get("iv"))));
+            }
+        }
+    	
+    	return amFile;
+    }
+    
 }

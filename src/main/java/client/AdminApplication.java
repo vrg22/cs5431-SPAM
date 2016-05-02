@@ -12,6 +12,8 @@ public class AdminApplication extends ClientApplication
 	public static final String ADMIN_TYPE = "admin";
 	
     private int adminId; // ID of currently logged-in admin
+    private boolean superAdmin; // True IFF authorized to perform admin management
+    private AdminManagementFile adminFile;
     //private byte[] adminSalt;
     //private String master;
 
@@ -123,7 +125,7 @@ public class AdminApplication extends ClientApplication
         String responseJson;
         try {
             responseJson = SendHttpsRequest.delete(HTTPS_ROOT
-                + "/admins/" + adminId);
+                + "/admin/" + adminId);
         } catch (IOException e) {
             System.out.println("Problem connecting to server.");
             return false;
@@ -138,6 +140,72 @@ public class AdminApplication extends ClientApplication
             return false;
         }
     }
-	
+    
+    
+    // Admin management functions
+	// Model: Any time a change is made, persist it to (the server), revert? if failed
+	// Do we want to only allow one "logged in guy" at a time?
+    /**
+     * Log in with admin management privileges.
+     *
+     * @return Was attempt successful
+     */
+    public boolean authManageAdmin(String adminPassword) {
+    	// Request server for salt for admin Password //TODO: Should/can this be the same salt as for the startup adminpassphrase?
+        Map<String, String> saltParams = new HashMap<>();
+        saltParams.put("type", ADMIN_TYPE);
+        String saltResponseJson;
+        try {
+            saltResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/admin/salt",
+                saltParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
+        SaltResponse saltResponse = gson.fromJson(saltResponseJson,
+            SaltResponse.class);
+        if (saltResponse == null) return false;
+        byte[] salt = saltResponse.getSalt();
+
+        String saltedHash = CryptoServiceProvider.genSaltedHash(adminPassword, salt);
+
+        // Request server for admin list
+        Map<String, String> authParams = new HashMap<>();
+        authParams.put("type", ADMIN_TYPE);
+        authParams.put("saltedHash", saltedHash);
+        String authResponseJson;
+        try {
+            authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/admin",
+                authParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
+        AdminManageAuthResponse authResponse = gson.fromJson(authResponseJson,
+        		AdminManageAuthResponse.class);
+        if (authResponse == null) return false;
+
+        // Successful login
+        adminFile = authResponse.getAMFile();
+
+        return true;
+    }
+    
+    /**
+     * Get list of accounts associated with logged-in user
+     *
+     * @return Array of account headers for user's accounts
+     */
+    public Admin.Header[] getAdmins() {
+        if (adminFile == null) return new Admin.Header[]{};
+
+        return adminFile.getAdmins();
+    }
+    
+    //Delete admin from "Authorized" position
+    
+    //Add admin from "Authorized" position
+    
+    //
 	
 }

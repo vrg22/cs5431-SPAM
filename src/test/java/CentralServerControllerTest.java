@@ -8,7 +8,7 @@ public class CentralServerControllerTest {
     public void testSingleUser() {
         ServerController server = null;
         try {
-            server = new CentralServerController("tests.log", "testusers");
+            server = new CentralServerController("tests.log", "testusers", "DUMMY", "".getBytes()); //CHECK
         } catch (IOException e) {
             fail("IOException opening log file");
             return;
