@@ -13,7 +13,8 @@ public interface ServerController {
      */
     public User registerNewUser(String username, String userSalt,
             String saltedHash, String vault, String iv, String clientIp,
-            PasswordStorageFile passwordFile);
+            PasswordStorageFile passwordFile, String encPass, String recIV,
+			String recovery);
 
     /**
      * Attempts to obliterate a user's entire account.

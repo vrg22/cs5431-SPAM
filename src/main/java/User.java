@@ -8,14 +8,21 @@ public class User {
 	private byte[] iv;
 	private String master; //salted hash of master pwd
 	private int id;
+	private String encPass;
+	private String recovery;
+	private byte[] reciv;
 	// ETC.
 
-	public User(String uname, byte[] salt, String pword, int ID, byte[] IV) {
+	public User(String uname, byte[] salt, String pword, int ID, byte[] IV,
+				String encPass, byte[] recIV, String recovery) {
 		this.username = uname;
 		this.salt = salt.clone();
 		this.master = pword;
 		this.id = ID;
         this.iv = IV.clone();
+		this.reciv = recIV.clone();
+		this.encPass = encPass;
+		this.recovery = recovery;
 	}
 
 	public int getId() {
@@ -43,5 +50,17 @@ public class User {
 
 	public byte[] getIV() {
 		return iv.clone();
+	}
+
+	public byte[] getRecIV() {
+	  return reciv.clone();
+	}
+
+	public String getRecovery() {
+	  return recovery;
+	}
+
+	public String getEncPass() {
+	  return encPass;
 	}
 }

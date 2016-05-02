@@ -125,9 +125,10 @@ public class ClientApplication
      *
      * @return Was user successfully registered
      */
-    public boolean register(String email, String password) {
+    public boolean register(String email, String password, String recovery) {
         byte[] salt = CryptoServiceProvider.getNewSalt();
         String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
+        String recoveryHash = CryptoServiceProvider.genSaltedHash(recovery, salt);
 
         StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
         store.setupUserXML(xmlStringBuilder, 0); // TODO: set user ID (or get rid of in user XML files?)
@@ -135,12 +136,18 @@ public class ClientApplication
         String encVault = CryptoServiceProvider.encrypt(decryptedVault, password, salt);
         byte[] iv = CryptoServiceProvider.getIV();
 
+		String encPass = CryptoServiceProvider.encrypt(password, recovery, salt);
+        byte[] recoverIV = CryptoServiceProvider.getIV();
+
         Map<String, String> params = new HashMap<>();
         params.put("email", email);
         params.put("salt", CryptoServiceProvider.b64encode(salt));
         params.put("saltedHash", saltedHash);
         params.put("vault", encVault);
         params.put("iv", CryptoServiceProvider.b64encode(iv));
+        params.put("encryptedPass", encPass); 
+        params.put("reciv", CryptoServiceProvider.b64encode(recoverIV));
+        params.put("recoveryHash", recoveryHash);
 
         String responseJson;
         try {
@@ -323,9 +330,57 @@ public class ClientApplication
         }
     }
 
+	public boolean recoverPass(String email, String recovery, String newPass) {
+        Map<String, String> saltParams = new HashMap<>();
+        saltParams.put("email", email);
+        String saltResponseJson;
+        try {
+            saltResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/salt",
+                saltParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
+        SaltResponse saltResponse = gson.fromJson(saltResponseJson,
+            SaltResponse.class);
+        if (saltResponse == null) return false;
+        byte[] salt = saltResponse.getSalt();
+
+        String saltedRecovery = CryptoServiceProvider.genSaltedHash(recovery, salt);
+
+        // Request user for user's ID, IV, and encrypted vault
+        Map<String, String> recoParams = new HashMap<>();
+        recoParams.put("email", email);
+        recoParams.put("recovery", saltedRecovery);
+
+        String recoResponseJson;
+        try {
+            recoResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/recover",
+                recoParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
+
+        RecoResponse recoResponse = gson.fromJson(recoResponseJson,
+            RecoResponse.class);
+        if (recoResponse == null) return false; // Failed recovery
+
+        String encPass = recoResponse.getEncPass();
+        byte[] iv = recoResponse.getIV();
+
+        String password = CryptoServiceProvider.decrypt(encPass, recovery, salt, iv);
+
+        if (resetPass(email, password, newPass)) {
+          System.err.println("Password recovery successful");
+        }
+
+        return true;
+	}
+
 	public boolean resetPass(String email, String curPass, String newPass) {
-	  //if (login(email, curPass)) {
-	  if (curPass.equals(master)) {
+	  if (login(email, curPass)) {
+	  //if (curPass.equals(master)) {
 		// re-encrypt with new master pass
 		master = newPass;
 		if (saveVault()) {

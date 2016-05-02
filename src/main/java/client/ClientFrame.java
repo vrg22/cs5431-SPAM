@@ -25,6 +25,9 @@ public class ClientFrame extends JFrame
     }
 
     public ClientApplication getApp() {
+      if (app == null) {
+        System.err.println("*#*# app is null");
+      }
         return app;
     }
 

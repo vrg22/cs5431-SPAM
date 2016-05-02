@@ -19,7 +19,8 @@ public class CentralServerControllerTest {
         User registered = server.registerNewUser("Bob",
             CryptoServiceProvider.b64encode(new byte[64]), "saltedhash",
             "encryptedvault", CryptoServiceProvider.b64encode(new byte[64]),
-            "0.0.0.0", passwordFile);
+            "0.0.0.0", passwordFile, "encryptedpass", CryptoServiceProvider.
+            b64encode(new byte[64]), "recoverypass");
         assertNotNull(registered);
 
         int registeredId = registered.getId();
@@ -35,7 +36,8 @@ public class CentralServerControllerTest {
         registered = server.registerNewUser("Bob",
             CryptoServiceProvider.b64encode(new byte[64]), "newsaltedhash",
             "newencryptedvault", CryptoServiceProvider.b64encode(new byte[64]),
-            "0.0.0.0", passwordFile);
+            "0.0.0.0", passwordFile, "encryptedpass", CryptoServiceProvider.
+            b64encode(new byte[64]), "recoverypass");
         assertNotNull(registered);
 
         registeredId = registered.getId();
