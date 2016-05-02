@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.event.*;
+import java.awt.datatransfer.*;
 import java.awt.*;
 
 public class ShowAccountPanel extends JPanel {
@@ -32,18 +33,31 @@ public class ShowAccountPanel extends JPanel {
             }
         });
 
+        JButton copyPassword = new JButton();
+        copyPassword.setText("Copy Password to Clipboard");
+        copyPassword.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                StringSelection selection = new StringSelection(account.getPassword());
+                final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(selection, selection);
+
+                // Clear clipboard after 30 seconds
+                Timer timer = new Timer(30000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        StringSelection cleared = new StringSelection("");
+                        clipboard.setContents(cleared, cleared);
+                    }
+                });
+                timer.setRepeats(false);
+                timer.start();
+            }
+        });
+
         JLabel changePasswordLabel = new JLabel();
         changePasswordLabel.setText("Change Password:");
         JPasswordField passwordField = new JPasswordField(10);
         passwordField.setText(account.getPassword());
-
-        JButton generatePassword = new JButton();
-        generatePassword.setText("Generate Secure Password");
-        generatePassword.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                passwordField.setText(new ComplexPasswordGenerator().next(12));
-            }
-        });
 
         JButton save = new JButton();
         save.setText("Save Changes");
@@ -68,6 +82,28 @@ public class ShowAccountPanel extends JPanel {
             }
         });
 
+        JButton generatePassword = new JButton();
+        generatePassword.setText("Generate Secure Password");
+        generatePassword.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                passwordField.setText(new ComplexPasswordGenerator().next(12));
+
+                ClientFrame frame = ClientFrame.getFrameForComponent(generatePassword);
+                int id = account.getId();
+                String name = nameField.getText();
+                String username = emailField.getText();
+                String password = passwordField.getText();
+                Account updated = new Account(id, name, username, password);
+                boolean success = frame.getApp().updateAccount(updated);
+
+                if (success) {
+                    frame.setPanel(new ShowAccountPanel(updated));
+                } else {
+                    errorLabel.setText("Sorry there was a problem saving.");
+                }
+            }
+        });
+
         JButton back = new JButton();
         back.setText("Back");
         back.addActionListener(new ActionListener() {
@@ -86,12 +122,14 @@ public class ShowAccountPanel extends JPanel {
         add(emailField);
         add(showPassword);
         add(passwordLabel);
+        add(copyPassword);
+        add(new JPanel());
         add(changePasswordLabel);
         add(passwordField);
         add(generatePassword);
         add(save);
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(7, 2));
+        setLayout(new GridLayout(8, 2));
     }
 }
