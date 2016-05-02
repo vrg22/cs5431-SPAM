@@ -12,7 +12,7 @@ public class ClientFrame extends JFrame
 
     public void start()
     {
-        setPanel(new LoginPanel());
+        setPanel(new LoginPanel(false));
         setLayout(new FlowLayout());
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);

@@ -74,7 +74,7 @@ public class VaultPanel extends JPanel {
                 ClientFrame frame = ClientFrame.getFrameForComponent(logout);
                 // TODO: Have to clean up contents in memory before leaving
                 // Possibly send command to server to clear all auth keys it holds?
-                frame.setPanel(new LoginPanel());
+                frame.setPanel(new LoginPanel(false));
             }
         });
 

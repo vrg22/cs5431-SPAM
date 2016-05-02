@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.*;
 
 public class LoginPanel extends JPanel {
-    public LoginPanel() {
+    public LoginPanel(boolean expired) {
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
         JTextField emailField = new JTextField();
@@ -42,6 +42,13 @@ public class LoginPanel extends JPanel {
             }
         });
 
+        if (expired) {
+            System.out.println("expired");
+            JLabel expiredLabel = new JLabel();
+            expiredLabel.setText("Your session has expired. Please log in again.");
+            add(expiredLabel);
+            add(new JPanel());
+        }
         add(emailLabel);
         add(emailField);
         add(passwordLabel);
@@ -50,6 +57,6 @@ public class LoginPanel extends JPanel {
         add(login);
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(4, 2));
+        setLayout(new GridLayout(4 + (expired ? 1 : 0), 2));
     }
 }

@@ -36,7 +36,7 @@ public class RegisterPanel extends JPanel {
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ClientFrame frame = ClientFrame.getFrameForComponent(back);
-                frame.setPanel(new LoginPanel());
+                frame.setPanel(new LoginPanel(false));
             }
         });
 

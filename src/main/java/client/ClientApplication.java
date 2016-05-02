@@ -13,6 +13,7 @@ public class ClientApplication
 	private static final int PASSWORD_LENGTH = 12;
     private Gson gson;
     private XMLStorageController store;
+    private ClientFrame frame;
 
     private int userId; // User ID of currently logged-in user
     private UserStorageFile userVault; // Vault of currently logged-in user
@@ -23,7 +24,8 @@ public class ClientApplication
 	public ClientApplication() {
         gson = new Gson();
         store = new XMLStorageController("users");
-		new ClientFrame(this).start();
+        frame = new ClientFrame(this);
+		frame.start();
 	}
 
 	public static void main(String args[])
@@ -112,9 +114,10 @@ public class ClientApplication
         return true;
 	}
 
-    public void logout() {
+    public void logout(boolean expired) {
         userId = -1;
         userVault = null;
+        frame.setPanel(new LoginPanel(expired));
     }
 
     /**
@@ -180,10 +183,11 @@ public class ClientApplication
 
         if (response.success()) {
             authKey = nextAuthKey;
-            logout();
+            logout(false);
 
             return true;
         } else {
+            logout(true);
             return false;
         }
     }
@@ -314,6 +318,7 @@ public class ClientApplication
             authKey = nextAuthKey;
             return true;
         } else {
+            logout(true);
             return false;
         }
     }
@@ -348,6 +353,7 @@ public class ClientApplication
 			return true;
 		  } else {
 			System.out.println("resetPass responded false");
+            logout(true);
 			return false;
 		  }
 		}
