@@ -72,19 +72,48 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>ClientApplication</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>UserApplication</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <artifactItems>
+                                <artifactItem>
+                                    <destFileName>UserApp</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <finalName>user</finalName>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>make-assembly-2</id>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>AdminApplication</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <artifactItems>
+                                <artifactItem>
+                                    <destFileName>AdminApp</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <finalName>admin</finalName>
+                        </configuration>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
