@@ -13,7 +13,8 @@ public interface ServerController {
      */
     public User registerNewUser(String username, String userSalt,
             String saltedHash, String vault, String iv, String clientIp,
-            PasswordStorageFile passwordFile);
+            PasswordStorageFile passwordFile, String encPass, String recIV,
+			String recovery);
 
     /**
      * Attempts to obliterate a user's entire account.
@@ -42,6 +43,6 @@ public interface ServerController {
 	/**
 	 * Updates the master password field for existing user.
 	 */
-	public void updateUser(int userId, String hashpass,
+	public void updateUser(int userId, String hashpass, String encPass, String reciv,
 			PasswordStorageFile passwordFile);
 }

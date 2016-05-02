@@ -217,6 +217,18 @@ public class XMLStorageController implements StorageController {
             iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
             newUser.appendChild(iv);
 
+			Element encpass = DOM.createElement("encpass");
+			encpass.setTextContent(pEntry.getEncPass());
+			newUser.appendChild(encpass);
+
+            Element reciv = DOM.createElement("reciv");
+            reciv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getRecIV()));
+            newUser.appendChild(reciv);
+
+            Element recovery = DOM.createElement("recovery");
+            recovery.setTextContent(pEntry.getRecovery());
+            newUser.appendChild(recovery);
+
 	        uElement.appendChild(newUser);
 		}
 
@@ -444,6 +456,9 @@ public class XMLStorageController implements StorageController {
 		byte[] salt;
         byte[] iv;
 		int id;
+        String encPass;
+        String recovery;
+        byte[] reciv;
 
 		//Get the "users" element
 		Element usersElement = getTagElement("users", DOM);
@@ -462,7 +477,12 @@ public class XMLStorageController implements StorageController {
                     uElt.getElementsByTagName("salt").item(0).getTextContent());
                 iv = CryptoServiceProvider.b64decode(
                     uElt.getElementsByTagName("iv").item(0).getTextContent());
-            	User u = new User(username, salt, password, id, iv);
+            	encPass = uElt.getElementsByTagName("encpass").item(0).getTextContent();
+            	recovery = uElt.getElementsByTagName("recovery").item(0).getTextContent();
+                reciv = CryptoServiceProvider.b64decode(
+                    uElt.getElementsByTagName("reciv").item(0).getTextContent());
+                
+            	User u = new User(username, salt, password, id, iv, encPass, reciv, recovery);
 
             	users.add(u);
             }

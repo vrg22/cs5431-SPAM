@@ -71,6 +71,35 @@ public class ClientController {
             return gson.toJson(body);
         });
 
+        // If correct recovery password, send client's encrypted pass
+        // recovery IV
+        
+        post("/recover", (request, response) -> {
+          String email = request.queryParams("email");
+          String saltedRecovery = request.queryParams("recovery");
+
+          PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+          if (entry == null) {
+            server.getLogger().warning("[IP=" + request.ip() + "] Attempt "
+              + "was made to recover a non-existent user with "
+              + "username " + email + ".");
+            return "";
+          }
+
+          String correctSaltedRecovery = entry.getRecovery();
+          if (!saltedRecovery.equals(correctSaltedRecovery)) {
+            server.getLogger().warning("[IP=" + request.ip() + "] "
+              + "Incorrect recovery password while attempting to recover "
+              + "as user with username " + email + ".");
+          }
+
+          String encPass = entry.getEncPass();
+          byte[] reciv = entry.getRecIV();
+
+          RecoResponse body = new RecoResponse(encPass, reciv);
+          return gson.toJson(body);
+        });
+
         // If correct master password, send client user's ID,
         // IV, and encrypted vault
         post("/auth", (request, response) -> {
@@ -123,6 +152,9 @@ public class ClientController {
             String saltedHash = request.queryParams("saltedHash");
             String vault = request.queryParams("vault");
             String iv = request.queryParams("iv");
+			String encPass = request.queryParams("encryptedPass");
+			String reciv = request.queryParams("reciv");
+			String recoveryHash = request.queryParams("recoveryHash");
 
             if (!isEmailValid(email)) {
                 // Invalid email
@@ -131,7 +163,7 @@ public class ClientController {
             }
 
             User newUser = server.registerNewUser(email, salt, saltedHash,
-                vault, iv, request.ip(), passwordFile);
+                vault, iv, request.ip(), passwordFile, encPass, reciv, recoveryHash);
             if (newUser == null) {
                 // User already exists, or other problem creating the user
                 RegisterResponse body = new RegisterResponse(false);
@@ -187,10 +219,12 @@ public class ClientController {
             String saltedHash = request.queryParams("saltedHash");
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
+			String encPass = request.queryParams("encryptedPass");
+			String reciv = request.queryParams("reciv");
 
             if (isValidAuthKeyForUser(userId, authKey)) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
-                server.updateUser(userId, saltedHash, passwordFile);
+                server.updateUser(userId, saltedHash, encPass, reciv, passwordFile);
 
                 SaveResponse body = new SaveResponse(true);
                 return gson.toJson(body);

@@ -51,7 +51,8 @@ public class CentralServerController implements ServerController {
      */
     public User registerNewUser(String username, String userSalt,
             String saltedHash, String vault, String iv, String clientIp,
-            PasswordStorageFile passwordFile) {
+            PasswordStorageFile passwordFile, String encPass, String reciv,
+			String recoveryHash) {
 
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
@@ -64,7 +65,8 @@ public class CentralServerController implements ServerController {
         int newUserId = Integer.parseInt(passwordFile.getNextID());
 
         User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
-            saltedHash, newUserId, CryptoServiceProvider.b64decode(iv));
+            saltedHash, newUserId, CryptoServiceProvider.b64decode(iv), encPass,
+			CryptoServiceProvider.b64decode(reciv), recoveryHash);
 
         PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);
@@ -153,9 +155,12 @@ public class CentralServerController implements ServerController {
         store.writeFileToDisk(passwordFile);
     }
 
-	public void updateUser(int userId, String hashpass, PasswordStorageFile passwordFile) {
+	public void updateUser(int userId, String hashpass, String encPass,
+			String reciv, PasswordStorageFile passwordFile) {
         PasswordStorageEntry entry = passwordFile.getWithUserId(""+userId);
         entry.setMaster(hashpass);
+		entry.setEncPass(encPass);
+		entry.setRecIV(reciv);
 
 		System.out.println("updateUser wrote to disk: " +hashpass);
         store.writeFileToDisk(passwordFile);

@@ -49,14 +49,26 @@ public class LoginPanel extends JPanel {
             add(expiredLabel);
             add(new JPanel());
         }
+
+        JButton forgot = new JButton();
+        forgot.setText("Forgot password");
+
+        forgot.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                ClientFrame frame = ClientFrame.getFrameForComponent(forgot);
+                frame.setPanel(new ForgotPasswordPanel());
+            }
+        });
+
         add(emailLabel);
         add(emailField);
         add(passwordLabel);
         add(passwordField);
         add(register);
         add(login);
+        add(forgot);
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(4 + (expired ? 1 : 0), 2));
+        setLayout(new GridLayout(5 + (expired ? 1 : 0), 2));
     }
 }

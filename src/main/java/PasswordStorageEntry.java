@@ -9,6 +9,9 @@ public class PasswordStorageEntry extends StorageEntry {
 		put("iv", CryptoServiceProvider.b64encode(user.getIV()));
 		put("salt", CryptoServiceProvider.b64encode(user.getSalt()));
         put("master", user.getMaster());
+        put("encpass", user.getEncPass());
+        put("reciv", CryptoServiceProvider.b64encode(user.getRecIV()));
+        put("recovery", user.getRecovery());
     }
 
     public int getUserId() {
@@ -31,11 +34,31 @@ public class PasswordStorageEntry extends StorageEntry {
 		return CryptoServiceProvider.b64decode(get("iv"));
 	}
 
+	public byte[] getRecIV() {
+	  return CryptoServiceProvider.b64decode(get("reciv"));
+	}
+
+	public String getRecovery() {
+	  return get("recovery");
+	}
+
+	public String getEncPass() {
+	  return get("encpass");
+	}
+
     public void setIV(String iv) {
         update("iv", iv);
     }
 
+    public void setRecIV(String iv) {
+        update("reciv", iv);
+    }
+
 	public void setMaster(String hashPass) {
 	  update("master", hashPass);
+	}
+
+	public void setEncPass(String hashPass) {
+	  update("encpass", hashPass);
 	}
 }
