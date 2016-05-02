@@ -74,7 +74,7 @@ public class ForgotPasswordPanel extends JPanel {
             String twoFactorCode = twoFactorField.getText();
 			if (newPassword1.equals(newPassword2)) {
 
-			  ClientFrame frame = ClientFrame.getFrameForComponent(recover);
+			  UserFrame frame = UserFrame.getFrameForComponent(recover);
 			  boolean success = frame.getApp().recoverPass(email, recovery,
                 twoFactorCode, newPassword1);
 
@@ -93,8 +93,8 @@ public class ForgotPasswordPanel extends JPanel {
 
         back.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientFrame frame = ClientFrame.getFrameForComponent(back);
-                frame.setPanel(new LoginPanel(false));
+                UserFrame frame = UserFrame.getFrameForComponent(back);
+                frame.setPanel(new UserLoginPanel(false));
             }
         });
 

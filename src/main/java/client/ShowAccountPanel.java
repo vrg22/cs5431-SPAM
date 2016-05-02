@@ -88,7 +88,7 @@ public class ShowAccountPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 passwordField.setText(new ComplexPasswordGenerator().next(12));
 
-                ClientFrame frame = ClientFrame.getFrameForComponent(generatePassword);
+                UserFrame frame = UserFrame.getFrameForComponent(generatePassword);
                 int id = account.getId();
                 String name = nameField.getText();
                 String username = emailField.getText();

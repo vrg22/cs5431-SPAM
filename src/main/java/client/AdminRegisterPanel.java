@@ -1,12 +1,9 @@
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.net.*;
+import java.io.*;
 
 public class AdminRegisterPanel extends JPanel {
 	public AdminRegisterPanel() {
@@ -96,7 +93,7 @@ public class AdminRegisterPanel extends JPanel {
 
                 boolean success = frame.getApp().register(email, password, recovery, twoFactorSecret);
                 if (success) {
-                    frame.setPanel(new LoginPanel(false));
+                    frame.setPanel(new AdminLoginPanel(false));
                 } else {
                     errorLabel.setText("Sorry there was a problem registering.");
                 }

@@ -7,24 +7,6 @@ public interface ServerController {
 
     public Logger getLogger();
 
-    //ADMIN METHODS
-    /**
-     * Attempts to register a new admin with the system.
-     * @return the admin created (null if unsuccessful)
-     */
-    public Admin registerNewAdmin(String username, String adminSalt,
-            String saltedHash, String iv, String adminIp,
-            PasswordStorageFile passwordFile);
-    
-    /**
-     * Attempts to obliterate an admin from the system.
-     * @param adminId ID of admin to obliterate
-     * @return "Was admin successfully obliterated?"
-     */
-    public boolean obliterateAdmin(int adminId, String clientIp,
-            PasswordStorageFile passwordFile);
-    //TODO: Need to add master-password updating methods?
-    
     //USER METHODS
     /**
      * Attempts to register a new user with the system.
@@ -64,4 +46,40 @@ public interface ServerController {
 	 */
 	public void updateUser(int userId, String hashpass, String encPass, String reciv,
 			PasswordStorageFile passwordFile);
+
+    //ADMIN METHODS
+    /**
+     * Attempts to register a new admin with the system.
+     * @return the admin created (null if unsuccessful)
+     */
+     public Admin registerNewAdmin(String username, String adminSalt,
+            String saltedHash, String iv, String adminIp,
+            PasswordStorageFile passwordFile, String encPass, String reciv,
+ 			String recoveryHash, String twoFactorSecret);
+
+    /**
+     * Authorizes a request for admin-management privileges.
+     * @return "Was attempt successful?"
+     */
+    public boolean authManageAdmin(String saltedHash, String clientIp);
+
+    //TODO: Remove below two if not needed!
+    /**
+     * @return the system salt
+     */
+    public byte[] getSysSalt();
+
+    /**
+     * @return the salted hashed admin passphrase
+     */
+    public String getSaltedHashedAdminPhrase();
+
+    /**
+     * Attempts to obliterate an admin from the system.
+     * @param adminId ID of admin to obliterate
+     * @return "Was admin successfully obliterated?"
+     */
+    public boolean obliterateAdmin(int adminId, String clientIp,
+            PasswordStorageFile passwordFile);
+    //TODO: Need to add master-password updating methods?
 }

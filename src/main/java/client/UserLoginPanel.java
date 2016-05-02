@@ -61,7 +61,7 @@ public class UserLoginPanel extends JPanel {
 
         forgot.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                ClientFrame frame = ClientFrame.getFrameForComponent(forgot);
+                UserFrame frame = UserFrame.getFrameForComponent(forgot);
                 frame.setPanel(new ForgotPasswordPanel());
             }
         });

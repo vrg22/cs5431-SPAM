@@ -52,7 +52,7 @@ public class PasswordStorageFile extends StorageFile {
     	}
     	*/
     }
-    
+
     public void putClient(Client client) {
     	if (client instanceof User){
     		putUser((User) client);
@@ -66,7 +66,7 @@ public class PasswordStorageFile extends StorageFile {
     	}
     	*/
     }
-    
+
     //Decrements either user or admin count, based on string
     private void decrementByType(String type) {
     	if (type.equals("user")) {
@@ -76,7 +76,7 @@ public class PasswordStorageFile extends StorageFile {
     		numAdmins--;
     	}
     }
-    
+
     public boolean removeWithId(String type, String id) {
     	decrementByType(type);
     	return removeWithType(type, "id", id);
@@ -105,7 +105,7 @@ public class PasswordStorageFile extends StorageFile {
     	}
     	return Integer.toString(nextUserID);
     }
-    
+
     //Obtains AN unused ID for an admin, assuming Admin.MAX_ADMINS is not reached.
     public String getNextAdminID() {
     	while(containsWithId("admin", Integer.toString(nextAdminID)) && numAdmins < Admin.MAX_ADMINS) {
@@ -113,7 +113,7 @@ public class PasswordStorageFile extends StorageFile {
     	}
     	return Integer.toString(nextAdminID);
     }
-    
+
     public String getNumUsers() {
     	return Integer.toString(numUsers);
     }
@@ -121,7 +121,7 @@ public class PasswordStorageFile extends StorageFile {
     public String getNumAdmins() {
     	return Integer.toString(numAdmins);
     }
-    
+
     // For use ONLY when converting DOM to PasswordStorageFile
     public void setUsers(ArrayList<User> users) {
     	//Assumption: file on disk is valid, so we can simply set these variables
@@ -137,5 +137,24 @@ public class PasswordStorageFile extends StorageFile {
     		putAdmin(a);
     	}
     }
-    
+
+    /**
+     * Extracts admins as file prepared for Admin management.
+     * @return the produced file abstraction
+     */
+    public AdminManagementFile getAdminFile() {
+    	AdminManagementFile amFile = new AdminManagementFile();
+    	for (StorageEntry tmpEntry : entries) {
+            PasswordStorageEntry entry = (PasswordStorageEntry)tmpEntry;
+            if (entry.getType().equals("admin")) {
+                amFile.putAdmin(new Admin(entry.getUsername(),
+                    entry.getSalt(), entry.getMaster(), entry.getId(),
+                    entry.getIV(), entry.getEncPass(), entry.getRecIV(),
+                    entry.getRecovery(), entry.getTwoFactorSecret()));
+            }
+        }
+
+    	return amFile;
+    }
+
 }

@@ -5,7 +5,7 @@ import java.util.*;
 import javax.swing.event.*;
 
 public class ResetPasswordPanel extends JPanel {
-  public ResetPasswordPanel() {
+  public ResetPasswordPanel(String type) {
 	JLabel emailLabel = new JLabel();
 	emailLabel.setText("Email:");
 	JTextField emailField = new JTextField();
@@ -74,16 +74,29 @@ public class ResetPasswordPanel extends JPanel {
         String twoFactorCode = twoFactorField.getText();
 		if (newPassword1.equals(newPassword2)) {
 
-		  ClientFrame frame = ClientFrame.getFrameForComponent(recover);
-		  boolean success = frame.getApp().recoverPass(email, recovery,
-            twoFactorCode, newPassword1);
+          if (type.equals("user")) {
+              UserFrame frame = UserFrame.getFrameForComponent(recover);
+              boolean success = frame.getApp().recoverPass(email, recovery,
+                twoFactorCode, newPassword1);
 
-		  if (success) {
-			frame.setPanel(new VaultPanel());
-			errorLabel.setText("Successfully reset password");
-		  } else {
-			errorLabel.setText("Invalid email and/or password.");
-		  }
+    		  if (success) {
+    			frame.setPanel(new VaultPanel());
+    			errorLabel.setText("Successfully reset password");
+    		  } else {
+    			errorLabel.setText("Invalid email and/or password.");
+    		  }
+          } else {
+              AdminFrame frame = AdminFrame.getFrameForComponent(recover);
+              boolean success = frame.getApp().recoverPass(email, recovery,
+                twoFactorCode, newPassword1);
+
+    		  if (success) {
+    			frame.setPanel(new VaultPanel());
+    			errorLabel.setText("Successfully reset password");
+    		  } else {
+    			errorLabel.setText("Invalid email and/or password.");
+    		  }
+          }
 		}
 	  }
 	});
@@ -92,8 +105,14 @@ public class ResetPasswordPanel extends JPanel {
 	back.setText("Back");
 	back.addActionListener(new ActionListener() {
 	  public void actionPerformed(ActionEvent e) {
-		ClientFrame frame = ClientFrame.getFrameForComponent(back);
-		frame.setPanel(new VaultPanel());
+        if (type.equals("user")) {
+            UserFrame frame = UserFrame.getFrameForComponent(back);
+            frame.setPanel(new VaultPanel());
+        } else {
+            AdminFrame frame = AdminFrame.getFrameForComponent(back);
+            Admin.Header[] admins = frame.getApp().getAdmins();
+            frame.setPanel(new ShowAdminsPanel(admins));
+        }
 	  }
 	});
 

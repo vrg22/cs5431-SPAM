@@ -282,15 +282,15 @@ public class XMLStorageController implements StorageController {
 
                 Element encpass = DOM.createElement("encpass");
     			encpass.setTextContent(pEntry.getEncPass());
-    			newUser.appendChild(encpass);
+    			newAdmin.appendChild(encpass);
 
                 Element reciv = DOM.createElement("reciv");
                 reciv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getRecIV()));
-                newUser.appendChild(reciv);
+                newAdmin.appendChild(reciv);
 
                 Element recovery = DOM.createElement("recovery");
                 recovery.setTextContent(pEntry.getRecovery());
-                newUser.appendChild(recovery);
+                newAdmin.appendChild(recovery);
 
 	            aElement.appendChild(newAdmin);
 			}

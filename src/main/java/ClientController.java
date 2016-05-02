@@ -49,14 +49,16 @@ public class ClientController {
             return;
         }
 
+        //TODO: Add explicit checks that the received type is what we expect for all pathways!
+
         get("/", (request, response) -> {
             return "";
         });
 
-        // Send salt for user with specified username
+        // Send salt for client with specified username
         post("/salt", (request, response) -> {
-            String email = request.queryParams("email");
             String type = request.queryParams("type");
+            String email = request.queryParams("email");
 
             PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
             if (entry == null) {
@@ -75,11 +77,19 @@ public class ClientController {
         // If correct recovery password, send client's encrypted pass
         // and recovery IV
         post("/recover", (request, response) -> {
+          String type = request.queryParams("type");
           String email = request.queryParams("email");
           String saltedRecovery = request.queryParams("recovery");
           String twoFactorCode = request.queryParams("twoFactorCode");
+        //   int twoFactorCode;
+        //   try {
+        //       twoFactorCode = Integer.parseInt(request.queryParams("twoFactorCode"));
+        //   } catch (NumberFormatException e) {
+        //       return "";
+        //   }
 
-          PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+
+          PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
           if (entry == null) {
             server.getLogger().warning("[IP=" + request.ip() + "] Attempt "
               + "was made to recover a non-existent user with "
@@ -89,7 +99,7 @@ public class ClientController {
 
           String correctSaltedRecovery = entry.getRecovery();
           if (!saltedRecovery.equals(correctSaltedRecovery) ||
-                !isValidTwoFactorCodeForUser(email, twoFactorCode)) {
+                !isValidTwoFactorCodeForUser(type, email, twoFactorCode)) {
             server.getLogger().warning("[IP=" + request.ip() + "] "
               + "Incorrect recovery credentials while attempting to recover "
               + "as user with username " + email + ".");
@@ -122,12 +132,12 @@ public class ClientController {
 
             String correctSaltedHash = entry.getMaster();
             if (!saltedHash.equals(correctSaltedHash) ||
-                    !isValidTwoFactorCodeForUser(entry.getUserId(), twoFactorCode)) {
+                    !isValidTwoFactorCodeForUser(type, entry.getId(), twoFactorCode)) {
                 server.getLogger().warning("[IP=" + request.ip() + "] "
                     + "Incorrect credentials while attempting to authenticate "
                     + "as " + type + " with username " + email + ".");
 
-                int id = entry.getUserId();
+                int id = entry.getId();
                 int attempts = 0;
                 if (failedAuthAttempts.containsKey(id)) {
                     attempts = failedAuthAttempts.get(id);
@@ -144,7 +154,7 @@ public class ClientController {
             addInitialAuthKeyForUser(id, initialAuthKey);
             failedAuthAttempts.put(id, 0); // Reset faield attempts counter
 
-	        byte[] iv = entry.getIV();
+	        byte[] iv = entry.getIV();  //TODO: explicitly set null if admin doesn't use, and only set if user type!
 	        String vault = null;
 
             if (type.equals("user")) {
@@ -302,10 +312,44 @@ public class ClientController {
                 return gson.toJson(body);
             }
         });
-        
-        // - ADMIN-SPECIFIC OPERATIONS - 
+
+        // - ADMIN-SPECIFIC OPERATIONS -
+
+        // Return system salt for admin management  //TODO: SHOULD this be same as system salt at startup?
+        post("/admin/salt", (request, response) -> {
+            String type = request.queryParams("type");
+
+            byte[] sysSalt = server.getSysSalt();
+            SaltResponse body = new SaltResponse(sysSalt);
+
+            return gson.toJson(body);
+        });
+
+        // Authorize for admin-management privileges
+        post("/admin", (request, response) -> {
+            String type = request.queryParams("type");
+            String saltedHash = request.queryParams("saltedHash");
+
+            //If salted hash matches, return list of admins
+            String correctSaltedHash = server.getSaltedHashedAdminPhrase();
+            if (!server.authManageAdmin(saltedHash, request.ip())) {
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Incorrect password while attempting to gain "
+                    + "admin management access.");
+                return "";
+            }
+
+            //Would take to management pane (mimic the "get account info" pane)
+
+            AdminManageAuthResponse body;
+            AdminManagementFile amFile = passwordFile.getAdminFile();
+            body = new AdminManageAuthResponse(amFile);
+
+            return gson.toJson(body);
+        });
+
         // Obliterate entire admin account
-        delete("/admins/:adminid", (request, response) -> {
+        delete("/admin/:adminid", (request, response) -> {
             int adminId = -1;
             try {
                 adminId = Integer.parseInt(request.params("adminid"));
@@ -383,13 +427,13 @@ public class ClientController {
         }
     }
 
-    private boolean isValidTwoFactorCodeForUser(int userId, String code) {
-        PasswordStorageEntry entry = passwordFile.getWithUserId("" + userId);
+    private boolean isValidTwoFactorCodeForUser(String type, int userId, String code) {
+        PasswordStorageEntry entry = passwordFile.getWithId(type, "" + userId);
         return isValidTwoFactorCodeForUser(entry, code);
     }
 
-    private boolean isValidTwoFactorCodeForUser(String email, String code) {
-        PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+    private boolean isValidTwoFactorCodeForUser(String type, String email, String code) {
+        PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
         return isValidTwoFactorCodeForUser(entry, code);
     }
 

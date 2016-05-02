@@ -59,8 +59,8 @@ public class VaultPanel extends JPanel {
         resetPass.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Trying to reset master password");
-                ClientFrame frame = ClientFrame.getFrameForComponent(resetPass);
-                frame.setPanel(new ResetPasswordPanel());
+                UserFrame frame = UserFrame.getFrameForComponent(resetPass);
+                frame.setPanel(new ResetPasswordPanel("user"));
             }
         });
 
@@ -71,10 +71,10 @@ public class VaultPanel extends JPanel {
         logout.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Logging out");
-                ClientFrame frame = ClientFrame.getFrameForComponent(logout);
+                UserFrame frame = UserFrame.getFrameForComponent(logout);
                 // TODO: Have to clean up contents in memory before leaving
                 // Possibly send command to server to clear all auth keys it holds?
-                frame.setPanel(new LoginPanel(false));
+                frame.setPanel(new UserLoginPanel(false));
             }
         });
 

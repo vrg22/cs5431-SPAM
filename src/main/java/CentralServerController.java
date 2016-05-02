@@ -10,8 +10,10 @@ public class CentralServerController implements ServerController {
 	private Logger logger;
     private StorageController store;
     private String passwordFilename;
+    private String saltedAdminPassphrase;
+    private byte[] systemSalt;
 
-    public CentralServerController(String logLocation, String passwordFilename)
+    public CentralServerController(String logLocation, String passwordFilename, String saltedAdminPassphrase, byte[] sysSalt)
             throws SecurityException, IOException {
         //Set up logging
         try {
@@ -44,6 +46,10 @@ public class CentralServerController implements ServerController {
         if (!(new File(store.getPasswordsFilename()).exists())) {
             store.createPasswordsFileOnStream(store.getPasswordsOutput());
         }
+
+        // Store salted-hashed-adminphrase and salt
+        this.saltedAdminPassphrase = saltedAdminPassphrase;
+        this.systemSalt = sysSalt.clone();
     }
 
     public String getPasswordsFilename() {
@@ -54,40 +60,7 @@ public class CentralServerController implements ServerController {
         return logger;
     }
 
-    //ADMIN METHODS
-    //TODO: Test all of these!!
-    /**
-     * Attempts to register a new admin with the system.
-     * @return the admin created (null if unsuccessful)
-     */
-    public Admin registerNewAdmin(String username, String adminSalt,
-            String saltedHash, String iv, String adminIp,
-            PasswordStorageFile passwordFile) {
-
-    	if (passwordFile.containsWithType("admin", "username", username)) {
-            // Admin with that username already exists
-            logger.warning("[IP=" + adminIp + "] Attempt was made to "
-                + "register a new admin with existing username " + username + ".");
-            return null;
-        }
-
-        // Add admin to main password file
-        int newAdminId = Integer.parseInt(passwordFile.getNextAdminID());
-
-        Admin newAdmin = new Admin(username, CryptoServiceProvider.b64decode(adminSalt),
-            saltedHash, newAdminId, CryptoServiceProvider.b64decode(iv));
-
-        PasswordStorageEntry newAdminEntry = new PasswordStorageEntry(newAdmin);
-        passwordFile.put(newAdminEntry);
-
-        store.writeFileToDisk(passwordFile);
-
-        logger.info("[IP=" + adminIp + "] New admin " + newAdminId
-            + " successfully registered.");
-        return newAdmin;
-    }
-
-
+    //USER METHODS
     /**
      * Attempts to register a new user with the system.
      * @return the user created (null if unsuccessful)
@@ -201,7 +174,7 @@ public class CentralServerController implements ServerController {
 
 	public void updateUser(int userId, String hashpass, String encPass,
 			String reciv, PasswordStorageFile passwordFile) {
-        PasswordStorageEntry entry = passwordFile.getWithUserId(""+userId);
+        PasswordStorageEntry entry = passwordFile.getWithId("user", ""+userId);
         entry.setMaster(hashpass);
 		entry.setEncPass(encPass);
 		entry.setRecIV(reciv);
@@ -212,6 +185,70 @@ public class CentralServerController implements ServerController {
 
 
     //ADMIN-SPECIFIC METHODS
+    /**
+     * Authorizes a request for admin-management privileges.
+     * @return "Was attempt successful?"
+     */
+    public boolean authManageAdmin(String saltedHash, String clientIp) {
+        //If salted hash matches, return list of admins
+        if (!saltedHash.equals(saltedAdminPassphrase)) {
+            logger.warning("[IP=" + clientIp + "] "
+                + "Incorrect password while attempting to gain "
+                + "admin management access.");
+            return false;
+        }
+
+        return true;
+    }
+
+    //TODO: Remove the below two!
+    /**
+     * @return the system salt
+     */
+    public byte[] getSysSalt() {
+    	return systemSalt;
+    }
+
+    /**
+     * @return the salted hashed admin passphrase
+     */
+    public String getSaltedHashedAdminPhrase() {
+    	return saltedAdminPassphrase;
+    }
+
+    /**
+     * Attempts to register a new admin with the system.
+     * @return the admin created (null if unsuccessful)
+     */
+    public Admin registerNewAdmin(String username, String adminSalt,
+            String saltedHash, String iv, String adminIp,
+            PasswordStorageFile passwordFile, String encPass, String reciv,
+			String recoveryHash, String twoFactorSecret) {
+
+    	if (passwordFile.containsWithType("admin", "username", username)) {
+            // Admin with that username already exists
+            logger.warning("[IP=" + adminIp + "] Attempt was made to "
+                + "register a new admin with existing username " + username + ".");
+            return null;
+        }
+
+        // Add admin to main password file
+        int newAdminId = Integer.parseInt(passwordFile.getNextAdminID());
+
+        Admin newAdmin = new Admin(username, CryptoServiceProvider.b64decode(adminSalt),
+            saltedHash, newAdminId, CryptoServiceProvider.b64decode(iv), encPass,
+			CryptoServiceProvider.b64decode(reciv), recoveryHash, twoFactorSecret);
+
+        PasswordStorageEntry newAdminEntry = new PasswordStorageEntry(newAdmin);
+        passwordFile.put(newAdminEntry);
+
+        store.writeFileToDisk(passwordFile);
+
+        logger.info("[IP=" + adminIp + "] New admin " + newAdminId
+            + " successfully registered.");
+        return newAdmin;
+    }
+
     /**
      * Attempts to obliterate an admin from the system.
      * @param adminId ID of admin to obliterate
