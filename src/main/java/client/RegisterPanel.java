@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
+import javax.swing.event.*;
 
 public class RegisterPanel extends JPanel {
     public RegisterPanel() {
@@ -10,7 +11,19 @@ public class RegisterPanel extends JPanel {
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
+		passwordLabel.setForeground(Color.red);
         JPasswordField passwordField = new JPasswordField(10);
+
+		passwordField.addCaretListener(new CaretListener() {
+		  public void caretUpdate(CaretEvent ce) {
+			boolean labelColor = PasswordStrength.check(new String(passwordField.getPassword()));
+			if (labelColor) {
+			  passwordLabel.setForeground(Color.green);
+			} else {
+			  passwordLabel.setForeground(Color.red);
+			}
+		  }
+		});
 
         JLabel recoveryQuestion1 = new JLabel();
         recoveryQuestion1.setText("Recovery Question1:");
@@ -60,6 +73,7 @@ public class RegisterPanel extends JPanel {
         add(emailField);
         add(passwordLabel);
         add(passwordField);
+		//add(passwordStrengthLabel);
         add(recoveryQuestion1);
         add(recoveryAnswer1);
         add(recoveryQuestion2);
@@ -71,6 +85,6 @@ public class RegisterPanel extends JPanel {
         add(new JPanel());
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(8, 2));
+        setLayout(new GridLayout(8, 4));
     }
 }
