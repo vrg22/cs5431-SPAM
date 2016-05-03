@@ -167,7 +167,7 @@ public class AdminApplication extends ClientApplication
         	adminFile.putAdmin(new Admin(username, salt, saltedHash, Integer.parseInt(adminFile.getNextAdminID())));
             return true;
         } else {
-        	saltedAdminPassphrase = null;
+        	//saltedAdminPassphrase = null;
             return false;
         }
     }
