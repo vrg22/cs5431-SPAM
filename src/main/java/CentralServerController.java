@@ -199,7 +199,7 @@ public class CentralServerController implements ServerController {
      * @return the admin created (null if unsuccessful)
      */
     public Admin registerNewAdmin(String username, String adminSalt,
-            String saltedHash, String iv, String adminIp,
+            String saltedHash, String adminIp,
             PasswordStorageFile passwordFile) {
     	
     	if (passwordFile.containsWithType("admin", "username", username)) {
@@ -213,7 +213,7 @@ public class CentralServerController implements ServerController {
         int newAdminId = Integer.parseInt(passwordFile.getNextAdminID());
 
         Admin newAdmin = new Admin(username, CryptoServiceProvider.b64decode(adminSalt),
-            saltedHash, newAdminId, CryptoServiceProvider.b64decode(iv));
+            saltedHash, newAdminId);
 
         PasswordStorageEntry newAdminEntry = new PasswordStorageEntry(newAdmin);
         passwordFile.put(newAdminEntry);

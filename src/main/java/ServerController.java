@@ -46,7 +46,7 @@ public interface ServerController {
      * @return the admin created (null if unsuccessful)
      */
     public Admin registerNewAdmin(String username, String adminSalt,
-            String saltedHash, String iv, String adminIp,
+            String saltedHash, String adminIp,
             PasswordStorageFile passwordFile);
     
     /**

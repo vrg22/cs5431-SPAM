@@ -2,8 +2,9 @@ public class Admin extends Client {
 
 	public static final int MAX_ADMINS = 5;
 
-	public Admin(String uname, byte[] salt, String pword, int ID, byte[] IV) {
-		super(uname, salt, pword, ID, IV);
+	//public Admin(String uname, byte[] salt, String pword, int ID, byte[] IV) {
+	public Admin(String uname, byte[] salt, String pword, int ID) {
+		super(uname, salt, pword, ID, null);
 	}
 	
 	public static class Header {

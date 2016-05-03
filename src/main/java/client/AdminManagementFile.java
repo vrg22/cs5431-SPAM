@@ -4,15 +4,15 @@ import java.util.ArrayList;
 public class AdminManagementFile extends StorageFile {
 	
 	//Metadata for managing admins
+	int nextAdminID;
 	int numAdmins;
-	// ...
 	
 	//Constructor
 	public AdminManagementFile() {
 		super();
 		
+		nextAdminID = 0;
 		numAdmins = 0;
-		// ...
 	}
 
 	// Methods to add or delete Admins within the entries of this file
@@ -22,15 +22,16 @@ public class AdminManagementFile extends StorageFile {
 		return (AdminEntry)get("username", username);
 	}
     
-    public Admin.Header[] getAdmins() {
-        Admin.Header[] headers = new Admin.Header[entries.size()];
-
-        for (int i = 0; i < headers.length; i++) {
-            AdminEntry entry = (AdminEntry)entries.get(i);
-            headers[i] = entry.getHeader();
-        }
-
-        return headers;
+    public boolean containsWithId(String type, String id) {
+        return containsWithType(type, "id", id);
+    }
+    
+    //Obtains AN unused ID for an admin, assuming Admin.MAX_ADMINS is not reached.
+    public String getNextAdminID() {
+    	while(containsWithId("admin", Integer.toString(nextAdminID)) && numAdmins < Admin.MAX_ADMINS) {
+    		nextAdminID++;
+    	}
+    	return Integer.toString(nextAdminID);
     }
     
 	public void putAdmin(Admin admin) {
@@ -52,4 +53,15 @@ public class AdminManagementFile extends StorageFile {
 		}
 		return result;
 	}
+	
+    public Admin.Header[] getAdmins() {
+        Admin.Header[] headers = new Admin.Header[entries.size()];
+
+        for (int i = 0; i < headers.length; i++) {
+            AdminEntry entry = (AdminEntry)entries.get(i);
+            headers[i] = entry.getHeader();
+        }
+
+        return headers;
+    }
 }

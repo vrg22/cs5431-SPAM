@@ -11,6 +11,7 @@ public class ShowAdminsPanel extends JPanel {
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 AdminFrame frame = AdminFrame.getFrameForComponent(back);
+                frame.getApp().endAdminManagement();
                 frame.setPanel(new AdminLoginPanel());
             }
         });
@@ -39,7 +40,21 @@ public class ShowAdminsPanel extends JPanel {
             add(emptyLabel);
             add(new JPanel());
         }
+        
+        JButton add = new JButton();
+        add.setText("Add Admin");
+        add(add);
 
-        setLayout(new GridLayout(admins.length + 1, 2));
+        //TODO: Handle case where max admins already WHERE??
+        add.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+            	AdminFrame frame = AdminFrame.getFrameForComponent(add);
+                frame.setPanel(new AddAdminPanel());
+            }
+        });
+        
+        //setLayout(new GridLayout(admins.length + 1, 2));
+        //IF logic?
+        setLayout(new GridLayout(admins.length + 2, 2));
     }
 }

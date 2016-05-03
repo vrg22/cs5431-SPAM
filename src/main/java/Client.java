@@ -14,7 +14,7 @@ public class Client {
 		this.salt = salt.clone();
 		this.master = pword;
 		this.id = ID;
-        this.iv = IV.clone();
+        this.iv = (IV==null) ? null : IV.clone(); //Null if admin
 	}
 
 	public int getId() {
@@ -41,7 +41,7 @@ public class Client {
 	}
 
 	public byte[] getIV() {
-		return iv.clone();
+		return (iv==null) ? null : iv.clone();
 	}
 	
 }

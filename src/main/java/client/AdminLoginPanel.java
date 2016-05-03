@@ -6,9 +6,9 @@ import java.util.*;
 //Allow to escalate to admin-management mode, or log in as an admin to view logs
 public class AdminLoginPanel extends JPanel {
     public AdminLoginPanel() {
-        JLabel emailLabel = new JLabel();
-        emailLabel.setText("Email:");
-        JTextField emailField = new JTextField();
+        JLabel nameLabel = new JLabel();
+        nameLabel.setText("Username:");
+        JTextField nameField = new JTextField();
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
@@ -20,7 +20,7 @@ public class AdminLoginPanel extends JPanel {
         JLabel errorLabel = new JLabel();
         login.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String email = emailField.getText();
+                String email = nameField.getText();
                 String password = passwordField.getText();
                 AdminFrame frame = AdminFrame.getFrameForComponent(login);
                 boolean success = frame.getApp().login(email, password);
@@ -55,18 +55,22 @@ public class AdminLoginPanel extends JPanel {
                 }
             }
         });
-            
-
-        add(emailLabel);
-        add(emailField);
-        add(passwordLabel);
-        add(passwordField);
+        
         add(superAdminLabel);
+        add(nameLabel);
         add(adminField);
+        add(nameField);
         add(superAdminMode);
+        add(passwordLabel);
+        add(new JPanel());
+        add(passwordField);
+        add(new JPanel());
         add(login);
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(4, 2));
+        
+        GridLayout origLayout = new GridLayout(6, 2);
+        origLayout.setHgap(20);
+        setLayout(origLayout);
     }
 }

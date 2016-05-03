@@ -146,9 +146,11 @@ public class PasswordStorageFile extends StorageFile {
     	AdminManagementFile amFile = new AdminManagementFile();
     	for (StorageEntry entry : entries) {
             if (entry.get("type").equals("admin")) {
+                //amFile.putAdmin(new Admin(entry.get("username"), CryptoServiceProvider.b64decode(entry.get("salt")),
+                //		entry.get("master"), Integer.parseInt(entry.get("id")), CryptoServiceProvider.b64decode(entry.get("iv"))));
                 amFile.putAdmin(new Admin(entry.get("username"), CryptoServiceProvider.b64decode(entry.get("salt")),
-                		entry.get("master"), Integer.parseInt(entry.get("id")), CryptoServiceProvider.b64decode(entry.get("iv"))));
-            }
+                		entry.get("master"), Integer.parseInt(entry.get("id"))));            
+                }
         }
     	
     	return amFile;
