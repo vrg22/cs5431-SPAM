@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
+import javax.swing.event.*;
 
 public class ForgotPasswordPanel extends JPanel {
     public ForgotPasswordPanel() {
@@ -23,11 +24,35 @@ public class ForgotPasswordPanel extends JPanel {
 
         JLabel newPasswordLabel1 = new JLabel();
         newPasswordLabel1.setText("New Master Password:");
+		newPasswordLabel1.setForeground(Color.red);
         JPasswordField newPasswordField1 = new JPasswordField(10);
+
+		newPasswordField1.addCaretListener(new CaretListener() {
+		  public void caretUpdate(CaretEvent ce) {
+			if (PasswordStrength.check(new String(newPasswordField1.getPassword()))) {
+			  newPasswordLabel1.setForeground(Color.green);
+			} else {
+			  newPasswordLabel1.setForeground(Color.red);
+			}
+		  }
+		});
 
         JLabel newPasswordLabel2 = new JLabel();
         newPasswordLabel2.setText("Confirm New Master Password:");
+		newPasswordLabel2.setForeground(Color.red);
         JPasswordField newPasswordField2 = new JPasswordField(10);
+
+		newPasswordField2.addCaretListener(new CaretListener() {
+		  public void caretUpdate(CaretEvent ce) {
+			String rpwd = new String(newPasswordField2.getPassword());
+			String pwd = new String(newPasswordField1.getPassword());
+			if (pwd.equals(rpwd)) {
+			  newPasswordLabel2.setForeground(Color.green);
+			} else {
+			  newPasswordLabel2.setForeground(Color.red);
+			}
+		  }
+		});
 
         JButton recover = new JButton();
         recover.setText("Recover Password");

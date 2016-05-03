@@ -16,11 +16,27 @@ public class RegisterPanel extends JPanel {
 
 		passwordField.addCaretListener(new CaretListener() {
 		  public void caretUpdate(CaretEvent ce) {
-			boolean labelColor = PasswordStrength.check(new String(passwordField.getPassword()));
-			if (labelColor) {
+			if (PasswordStrength.check(new String(passwordField.getPassword()))) {
 			  passwordLabel.setForeground(Color.green);
 			} else {
 			  passwordLabel.setForeground(Color.red);
+			}
+		  }
+		});
+
+		JLabel rpasswordLabel = new JLabel();
+        rpasswordLabel.setText("Re-enter Master Password:");
+		rpasswordLabel.setForeground(Color.red);
+        JPasswordField rpasswordField = new JPasswordField(10);
+
+		rpasswordField.addCaretListener(new CaretListener() {
+		  public void caretUpdate(CaretEvent ce) {
+			String rpwd = new String(rpasswordField.getPassword());
+			String pwd = new String(passwordField.getPassword());
+			if (pwd.equals(rpwd)) {
+			  rpasswordLabel.setForeground(Color.green);
+			} else {
+			  rpasswordLabel.setForeground(Color.red);
 			}
 		  }
 		});
@@ -73,7 +89,8 @@ public class RegisterPanel extends JPanel {
         add(emailField);
         add(passwordLabel);
         add(passwordField);
-		//add(passwordStrengthLabel);
+        add(rpasswordLabel);
+        add(rpasswordField);
         add(recoveryQuestion1);
         add(recoveryAnswer1);
         add(recoveryQuestion2);
@@ -85,6 +102,6 @@ public class RegisterPanel extends JPanel {
         add(new JPanel());
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(8, 4));
+        setLayout(new GridLayout(10, 4));
     }
 }
