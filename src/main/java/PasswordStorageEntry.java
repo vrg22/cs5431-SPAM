@@ -39,7 +39,7 @@ public class PasswordStorageEntry extends StorageEntry {
 	}
 
 	public byte[] getIV() {
-		return CryptoServiceProvider.b64decode(get("iv"));
+		return (get("iv")!=null) ? CryptoServiceProvider.b64decode(get("iv")) : null;
 	}
 
 	public byte[] getRecIV() {

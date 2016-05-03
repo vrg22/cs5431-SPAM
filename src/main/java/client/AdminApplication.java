@@ -177,7 +177,7 @@ public class AdminApplication extends ClientApplication
                 recoveryHash, twoFactorSecret));
             return true;
         } else {
-        	saltedAdminPassphrase = null;
+        	//saltedAdminPassphrase = null;
             return false;
         }
     }
