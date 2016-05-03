@@ -52,7 +52,7 @@ public class CentralServerController implements ServerController {
     public User registerNewUser(String username, String userSalt,
             String saltedHash, String vault, String iv, String clientIp,
             PasswordStorageFile passwordFile, String encPass, String reciv,
-			String recoveryHash) {
+			String recoveryHash, String twoFactorSecret) {
 
         if (passwordFile.contains("username", username)) {
             // User with that username already exists
@@ -66,7 +66,7 @@ public class CentralServerController implements ServerController {
 
         User newUser = new User(username, CryptoServiceProvider.b64decode(userSalt),
             saltedHash, newUserId, CryptoServiceProvider.b64decode(iv), encPass,
-			CryptoServiceProvider.b64decode(reciv), recoveryHash);
+			CryptoServiceProvider.b64decode(reciv), recoveryHash, twoFactorSecret);
 
         PasswordStorageEntry newUserEntry = new PasswordStorageEntry(newUser);
         passwordFile.put(newUserEntry);

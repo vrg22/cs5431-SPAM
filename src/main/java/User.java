@@ -11,10 +11,11 @@ public class User {
 	private String encPass;
 	private String recovery;
 	private byte[] reciv;
-	// ETC.
+    private String twoFactorSecret;
 
 	public User(String uname, byte[] salt, String pword, int ID, byte[] IV,
-				String encPass, byte[] recIV, String recovery) {
+				String encPass, byte[] recIV, String recovery,
+                String twoFactorSecret) {
 		this.username = uname;
 		this.salt = salt.clone();
 		this.master = pword;
@@ -23,6 +24,7 @@ public class User {
 		this.reciv = recIV.clone();
 		this.encPass = encPass;
 		this.recovery = recovery;
+        this.twoFactorSecret = twoFactorSecret;
 	}
 
 	public int getId() {
@@ -63,4 +65,8 @@ public class User {
 	public String getEncPass() {
 	  return encPass;
 	}
+
+    public String getTwoFactorSecret() {
+        return twoFactorSecret;
+    }
 }

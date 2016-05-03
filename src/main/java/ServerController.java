@@ -14,7 +14,7 @@ public interface ServerController {
     public User registerNewUser(String username, String userSalt,
             String saltedHash, String vault, String iv, String clientIp,
             PasswordStorageFile passwordFile, String encPass, String recIV,
-			String recovery);
+			String recovery, String twoFactorSecret);
 
     /**
      * Attempts to obliterate a user's entire account.

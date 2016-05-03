@@ -22,6 +22,10 @@ public class ResetPasswordPanel extends JPanel {
 	recoveryQuestion3.setText("Recovery Question3:");
 	JPasswordField recoveryAnswer3 = new JPasswordField(10);
 
+    JLabel twoFactorLabel = new JLabel();
+    twoFactorLabel.setText("Two-Factor Code:");
+    JPasswordField twoFactorField = new JPasswordField(6);
+
 	JLabel newPasswordLabel1 = new JLabel();
 	newPasswordLabel1.setText("New Master Password:");
 	newPasswordLabel1.setForeground(Color.red);
@@ -67,10 +71,12 @@ public class ResetPasswordPanel extends JPanel {
 		String recovery = recovery1 + recovery2 + recovery3;
 		String newPassword1 = newPasswordField1.getText();
 		String newPassword2 = newPasswordField2.getText();
+        String twoFactorCode = twoFactorField.getText();
 		if (newPassword1.equals(newPassword2)) {
 
 		  ClientFrame frame = ClientFrame.getFrameForComponent(recover);
-		  boolean success = frame.getApp().recoverPass(email, recovery, newPassword1);
+		  boolean success = frame.getApp().recoverPass(email, recovery,
+            twoFactorCode, newPassword1);
 
 		  if (success) {
 			frame.setPanel(new VaultPanel());
@@ -99,6 +105,8 @@ public class ResetPasswordPanel extends JPanel {
 	add(recoveryAnswer2);
 	add(recoveryQuestion3);
 	add(recoveryAnswer3);
+    add(twoFactorLabel);
+    add(twoFactorField);
 	add(newPasswordLabel1);
 	add(newPasswordField1);
 	add(newPasswordLabel2);

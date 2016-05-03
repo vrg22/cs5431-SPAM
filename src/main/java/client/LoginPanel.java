@@ -13,6 +13,10 @@ public class LoginPanel extends JPanel {
         passwordLabel.setText("Master Password:");
         JPasswordField passwordField = new JPasswordField(10);
 
+        JLabel twoFactorLabel = new JLabel();
+        twoFactorLabel.setText("Two-Factor Code:");
+        JPasswordField twoFactorField = new JPasswordField(6);
+
         JButton login = new JButton();
         login.setText("Login");
 
@@ -21,8 +25,9 @@ public class LoginPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 String email = emailField.getText();
                 String password = passwordField.getText();
+                String twoFactorCode = twoFactorField.getText();
                 ClientFrame frame = ClientFrame.getFrameForComponent(login);
-                boolean success = frame.getApp().login(email, password);
+                boolean success = frame.getApp().login(email, password, twoFactorCode);
 
                 if (success) {
                     frame.setPanel(new VaultPanel());
@@ -64,11 +69,13 @@ public class LoginPanel extends JPanel {
         add(emailField);
         add(passwordLabel);
         add(passwordField);
+        add(twoFactorLabel);
+        add(twoFactorField);
         add(register);
         add(login);
         add(forgot);
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(5 + (expired ? 1 : 0), 2));
+        setLayout(new GridLayout(6 + (expired ? 1 : 0), 2));
     }
 }

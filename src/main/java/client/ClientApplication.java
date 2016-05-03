@@ -38,7 +38,7 @@ public class ClientApplication
 	 *
 	 * @return Was login successful
 	 */
-	public boolean login(String email, String password) {
+	public boolean login(String email, String password, String twoFactorCode) {
         // Request server for salt with user's email
         Map<String, String> saltParams = new HashMap<>();
         saltParams.put("email", email);
@@ -63,6 +63,7 @@ public class ClientApplication
         Map<String, String> authParams = new HashMap<>();
         authParams.put("email", email);
         authParams.put("master", saltedHash);
+        authParams.put("twoFactorCode", twoFactorCode);
         authParams.put("nextAuthKey", nextAuthKey);
         String authResponseJson;
         try {
@@ -125,7 +126,8 @@ public class ClientApplication
      *
      * @return Was user successfully registered
      */
-    public boolean register(String email, String password, String recovery) {
+    public boolean register(String email, String password, String recovery,
+            String twoFactorSecret) {
         byte[] salt = CryptoServiceProvider.getNewSalt();
         String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
         String recoveryHash = CryptoServiceProvider.genSaltedHash(recovery, salt);
@@ -145,9 +147,10 @@ public class ClientApplication
         params.put("saltedHash", saltedHash);
         params.put("vault", encVault);
         params.put("iv", CryptoServiceProvider.b64encode(iv));
-        params.put("encryptedPass", encPass); 
+        params.put("encryptedPass", encPass);
         params.put("reciv", CryptoServiceProvider.b64encode(recoverIV));
         params.put("recoveryHash", recoveryHash);
+        params.put("twoFactorSecret", twoFactorSecret);
 
         String responseJson;
         try {
@@ -158,13 +161,7 @@ public class ClientApplication
         }
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class);
 
-        if (response != null && response.success()) {
-            login(email, password);
-
-            return true;
-        } else {
-            return false;
-        }
+        return response != null && response.success();
     }
 
     /**
@@ -330,7 +327,8 @@ public class ClientApplication
         }
     }
 
-	public boolean recoverPass(String email, String recovery, String newPass) {
+	public boolean recoverPass(String email, String recovery, String twoFactorCode,
+            String newPass) {
         Map<String, String> saltParams = new HashMap<>();
         saltParams.put("email", email);
         String saltResponseJson;
@@ -352,6 +350,7 @@ public class ClientApplication
         Map<String, String> recoParams = new HashMap<>();
         recoParams.put("email", email);
         recoParams.put("recovery", saltedRecovery);
+        recoParams.put("twoFactorCode", twoFactorCode);
 
         String recoResponseJson;
         try {
@@ -371,15 +370,16 @@ public class ClientApplication
 
         String password = CryptoServiceProvider.decrypt(encPass, recovery, salt, iv);
 
-        if (resetPass(email, password, newPass, recovery)) {
-          System.err.println("Password recovery successful");
+        if (resetPass(email, password, twoFactorCode, newPass, recovery)) {
+            System.err.println("Password recovery successful");
         }
 
         return true;
 	}
 
-	public boolean resetPass(String email, String curPass, String newPass, String recovery) {
-	  if (login(email, curPass)) {
+	public boolean resetPass(String email, String curPass, String twoFactorCode,
+            String newPass, String recovery) {
+	  if (login(email, curPass, twoFactorCode)) {
 	  //if (curPass.equals(master)) {
 		// re-encrypt with new master pass
 		master = newPass;
@@ -390,7 +390,7 @@ public class ClientApplication
 
 		  Map<String, String> params = new HashMap<>();
 		  params.put("saltedHash", saltedHash);
-		  params.put("encryptedPass", encPass); 
+		  params.put("encryptedPass", encPass);
 		  params.put("reciv", CryptoServiceProvider.b64encode(recoverIV));
 		  params.put("authKey", authKey);
 		  String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();

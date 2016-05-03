@@ -2,6 +2,9 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.event.*;
+import java.beans.*;
+import java.net.*;
+import java.io.IOException;
 
 public class RegisterPanel extends JPanel {
     public RegisterPanel() {
@@ -58,17 +61,40 @@ public class RegisterPanel extends JPanel {
 
         JLabel errorLabel = new JLabel();
         register.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
+            public void actionPerformed(ActionEvent e) {
                 String email = emailField.getText();
                 String password = passwordField.getText();
 				String recovery1 = recoveryAnswer1.getText();
 				String recovery2 = recoveryAnswer2.getText();
 				String recovery3 = recoveryAnswer3.getText();
 				String recovery = recovery1 + recovery2 + recovery3;
+
+                String twoFactorSecret = CryptoServiceProvider.getNewTwoFactorSecretKey();
+                String qrUrl = getQRBarcodeURL(email, twoFactorSecret);
+
                 ClientFrame frame = ClientFrame.getFrameForComponent(register);
-                boolean success = frame.getApp().register(email, password, recovery);
+                try {
+                    URI uri = new URL(qrUrl).toURI();
+                    Object[] choices = {"Get QR Code"};
+                    Object defaultChoice = choices[0];
+                    JOptionPane.showOptionDialog(frame,
+                        "Please scan the following QR code in your Google Authenticator app.",
+                        "Two-Factor Auth Setup", JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.PLAIN_MESSAGE, null, choices, defaultChoice);
+                    Desktop.getDesktop().browse(uri);
+                } catch (IOException | URISyntaxException e1) {
+                    Object[] choices = {"OK"};
+                    Object defaultChoice = choices[0];
+                    JOptionPane.showOptionDialog(frame,
+                        "Please check the command line to get a URL to your QR code. Then scan the QR code in your Google Authenticator app.",
+                        "Two-Factor Auth Setup", JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.PLAIN_MESSAGE, null, choices, defaultChoice);
+                    System.out.println(qrUrl);
+                }
+
+                boolean success = frame.getApp().register(email, password, recovery, twoFactorSecret);
                 if (success) {
-                    frame.setPanel(new VaultPanel());
+                    frame.setPanel(new LoginPanel(false));
                 } else {
                     errorLabel.setText("Sorry there was a problem registering.");
                 }
@@ -101,7 +127,11 @@ public class RegisterPanel extends JPanel {
         add(back);
         add(new JPanel());
         add(errorLabel);
-        add(new JPanel());
         setLayout(new GridLayout(10, 4));
+    }
+
+    private static String getQRBarcodeURL(String email, String secret) {
+      String format = "https://www.google.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/%s%%3Fsecret%%3D%s%%26issuer%%3DSPAM";
+      return String.format(format, email, secret);
     }
 }

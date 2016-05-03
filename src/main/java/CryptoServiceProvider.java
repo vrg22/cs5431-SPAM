@@ -9,6 +9,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.BadPaddingException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.codec.binary.Base32;
 import java.nio.charset.StandardCharsets;
 
 public class CryptoServiceProvider {
@@ -19,6 +21,7 @@ public class CryptoServiceProvider {
 	private static final int HASHITERATIONS = 96000;
 	private static final int KEYGENITERATIONS = 64000;
 	private static final int KEYSIZE = 256;
+    private static final int TWO_FACTOR_SECRET_KEY_SIZE = 10; // Fixed by Google Authenticator
 
 	public static String b64encode(byte[] bytes) {
 		return Base64.getEncoder().encodeToString(bytes);
@@ -27,6 +30,14 @@ public class CryptoServiceProvider {
 	public static byte[] b64decode(String str) {
 		return Base64.getDecoder().decode(str.trim());
 	}
+
+    public static String b32encode(byte[] bytes) {
+        return new Base32().encodeToString(bytes);
+    }
+
+    public static byte[] b32decode(String str) {
+        return new Base32().decode(str);
+    }
 
 	static {
 		try {
@@ -132,4 +143,75 @@ public class CryptoServiceProvider {
 		}
 		return temp;
 	}
+
+
+    /**
+     * Generate secret key for two-factor authentication
+     * Source: http://thegreyblog.blogspot.com/2011/12/google-authenticator-using-it-in-your.html
+     */
+    public static String getNewTwoFactorSecretKey() {
+        byte[] temp = new byte[TWO_FACTOR_SECRET_KEY_SIZE];
+		secure.nextBytes(temp);
+        return b32encode(temp);
+    }
+
+    /**
+     * Verify that the specified code is valid for the user with the
+     * specified two-factor authentication secret key.
+     * Source: http://thegreyblog.blogspot.com/2011/12/google-authenticator-using-it-in-your.html
+     */
+    public static boolean verifyTwoFactorCodeWithSecret(String secret, long code) {
+        try {
+            byte[] decodedSecret = b32decode(secret);
+            long t = new Date().getTime() / TimeUnit.SECONDS.toMillis(30);
+
+            // Window is used to check codes generated in the near past.
+            // You can use this value to tune how far you're willing to go.
+            int window = 3;
+            for (int i = -window; i <= window; i++) {
+                long hash = getTwoFactorCode(decodedSecret, t + i);
+
+                if (hash == code) {
+                    return true;
+                }
+            }
+
+            // The validation code is invalid.
+            return false;
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            return false;
+        }
+    }
+
+    // Source: http://thegreyblog.blogspot.com/2011/12/google-authenticator-using-it-in-your.html
+    private static int getTwoFactorCode(byte[] key, long t)
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        byte[] data = new byte[8];
+        long value = t;
+        for (int i = 8; i-- > 0; value >>>= 8) {
+            data[i] = (byte) value;
+        }
+
+        SecretKeySpec signKey = new SecretKeySpec(key, "HmacSHA1");
+        Mac mac = Mac.getInstance("HmacSHA1");
+        mac.init(signKey);
+        byte[] hash = mac.doFinal(data);
+
+        int offset = hash[20 - 1] & 0xF;
+
+        // We're using a long because Java hasn't got unsigned int.
+        long truncatedHash = 0;
+        for (int i = 0; i < 4; ++i) {
+            truncatedHash <<= 8;
+            // We are dealing with signed bytes:
+            // we just keep the first byte.
+            truncatedHash |= (hash[offset + i] & 0xFF);
+        }
+
+        truncatedHash &= 0x7FFFFFFF;
+        truncatedHash %= 1000000;
+
+        return (int) truncatedHash;
+    }
+
 }

@@ -20,7 +20,8 @@ public class CentralServerControllerTest {
             CryptoServiceProvider.b64encode(new byte[64]), "saltedhash",
             "encryptedvault", CryptoServiceProvider.b64encode(new byte[64]),
             "0.0.0.0", passwordFile, "encryptedpass", CryptoServiceProvider.
-            b64encode(new byte[64]), "recoverypass");
+            b64encode(new byte[64]), "recoverypass",
+            CryptoServiceProvider.getNewTwoFactorSecretKey());
         assertNotNull(registered);
 
         int registeredId = registered.getId();
@@ -37,7 +38,8 @@ public class CentralServerControllerTest {
             CryptoServiceProvider.b64encode(new byte[64]), "newsaltedhash",
             "newencryptedvault", CryptoServiceProvider.b64encode(new byte[64]),
             "0.0.0.0", passwordFile, "encryptedpass", CryptoServiceProvider.
-            b64encode(new byte[64]), "recoverypass");
+            b64encode(new byte[64]), "recoverypass",
+            CryptoServiceProvider.getNewTwoFactorSecretKey());
         assertNotNull(registered);
 
         registeredId = registered.getId();

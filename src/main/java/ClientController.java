@@ -72,11 +72,11 @@ public class ClientController {
         });
 
         // If correct recovery password, send client's encrypted pass
-        // recovery IV
-        
+        // and recovery IV
         post("/recover", (request, response) -> {
           String email = request.queryParams("email");
           String saltedRecovery = request.queryParams("recovery");
+          String twoFactorCode = request.queryParams("twoFactorCode");
 
           PasswordStorageEntry entry = passwordFile.getWithUsername(email);
           if (entry == null) {
@@ -87,9 +87,10 @@ public class ClientController {
           }
 
           String correctSaltedRecovery = entry.getRecovery();
-          if (!saltedRecovery.equals(correctSaltedRecovery)) {
+          if (!saltedRecovery.equals(correctSaltedRecovery) ||
+                !isValidTwoFactorCodeForUser(email, twoFactorCode)) {
             server.getLogger().warning("[IP=" + request.ip() + "] "
-              + "Incorrect recovery password while attempting to recover "
+              + "Incorrect recovery credentials while attempting to recover "
               + "as user with username " + email + ".");
 			return "";
           }
@@ -101,12 +102,13 @@ public class ClientController {
           return gson.toJson(body);
         });
 
-        // If correct master password, send client user's ID,
+        // If correct master password & two-factor code, send client user's ID,
         // IV, and encrypted vault
         post("/auth", (request, response) -> {
             String email = request.queryParams("email");
             String saltedHash = request.queryParams("master");
             String initialAuthKey = request.queryParams("nextAuthKey");
+            String twoFactorCode = request.queryParams("twoFactorCode");
 
             PasswordStorageEntry entry = passwordFile.getWithUsername(email);
             if (entry == null) {
@@ -117,9 +119,10 @@ public class ClientController {
             }
 
             String correctSaltedHash = entry.getMaster();
-            if (!saltedHash.equals(correctSaltedHash)) {
+            if (!saltedHash.equals(correctSaltedHash) ||
+                    !isValidTwoFactorCodeForUser(entry.getUserId(), twoFactorCode)) {
                 server.getLogger().warning("[IP=" + request.ip() + "] "
-                    + "Incorrect password while attempting to authenticate "
+                    + "Incorrect credentials while attempting to authenticate "
                     + "as user with username " + email + ".");
 
                 int id = entry.getUserId();
@@ -156,6 +159,7 @@ public class ClientController {
 			String encPass = request.queryParams("encryptedPass");
 			String reciv = request.queryParams("reciv");
 			String recoveryHash = request.queryParams("recoveryHash");
+            String twoFactorSecret = request.queryParams("twoFactorSecret");
 
             if (!isEmailValid(email)) {
                 // Invalid email
@@ -164,7 +168,8 @@ public class ClientController {
             }
 
             User newUser = server.registerNewUser(email, salt, saltedHash,
-                vault, iv, request.ip(), passwordFile, encPass, reciv, recoveryHash);
+                vault, iv, request.ip(), passwordFile, encPass, reciv,
+                recoveryHash, twoFactorSecret);
             if (newUser == null) {
                 // User already exists, or other problem creating the user
                 RegisterResponse body = new RegisterResponse(false);
@@ -195,6 +200,7 @@ public class ClientController {
 
             if (isValidAuthKeyForUser(userId, authKey)) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
+
                 server.updateUserVault(userId, vault, iv, passwordFile);
 
                 SaveResponse body = new SaveResponse(true);
@@ -206,6 +212,8 @@ public class ClientController {
             }
         });
 
+        // Reset master password for user
+        // *Authorization required
         post("/users/:userid/resetpass", (request, response) -> {
             int userId = -1;
             try {
@@ -225,6 +233,7 @@ public class ClientController {
 
             if (isValidAuthKeyForUser(userId, authKey)) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
+
                 server.updateUser(userId, saltedHash, encPass, reciv, passwordFile);
 
                 SaveResponse body = new SaveResponse(true);
@@ -255,8 +264,9 @@ public class ClientController {
 
             if (isValidAuthKeyForUser(userId, authKey)) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
+
                 boolean result = server.obliterateUser(userId, request.ip(),
-                    passwordFile);
+                        passwordFile);
 
                 RegisterResponse body = new RegisterResponse(result);
                 return gson.toJson(body);
@@ -325,6 +335,28 @@ public class ClientController {
                 return;
             }
         }
+    }
+
+    private boolean isValidTwoFactorCodeForUser(int userId, String code) {
+        PasswordStorageEntry entry = passwordFile.getWithUserId("" + userId);
+        return isValidTwoFactorCodeForUser(entry, code);
+    }
+
+    private boolean isValidTwoFactorCodeForUser(String email, String code) {
+        PasswordStorageEntry entry = passwordFile.getWithUsername(email);
+        return isValidTwoFactorCodeForUser(entry, code);
+    }
+
+    private boolean isValidTwoFactorCodeForUser(PasswordStorageEntry entry, String code) {
+        long codeLong;
+        try {
+            codeLong = Long.parseLong(code);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        String secret = entry.getTwoFactorSecret();
+        return CryptoServiceProvider.verifyTwoFactorCodeWithSecret(secret, codeLong);
     }
 
     private void rateLimit(int numAttempts) {

@@ -12,6 +12,7 @@ public class PasswordStorageEntry extends StorageEntry {
         put("encpass", user.getEncPass());
         put("reciv", CryptoServiceProvider.b64encode(user.getRecIV()));
         put("recovery", user.getRecovery());
+        put("twoFactorSecret", user.getTwoFactorSecret());
     }
 
     public int getUserId() {
@@ -61,4 +62,12 @@ public class PasswordStorageEntry extends StorageEntry {
 	public void setEncPass(String hashPass) {
 	  update("encpass", hashPass);
 	}
+
+    public String getTwoFactorSecret() {
+        return get("twoFactorSecret");
+    }
+
+    public void setTwoFactorSecret(String secret) {
+        update("twoFactorSecret", secret);
+    }
 }
