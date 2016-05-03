@@ -91,6 +91,7 @@ public class ClientController {
             server.getLogger().warning("[IP=" + request.ip() + "] "
               + "Incorrect recovery password while attempting to recover "
               + "as user with username " + email + ".");
+			return "";
           }
 
           String encPass = entry.getEncPass();

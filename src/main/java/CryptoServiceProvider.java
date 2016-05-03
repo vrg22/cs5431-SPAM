@@ -6,6 +6,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.BadPaddingException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
@@ -72,6 +73,9 @@ public class CryptoServiceProvider {
 		} catch (IllegalBlockSizeException e) {
 			System.err.println(e.getMessage());
 			System.err.println("AES Decrypt Illegal block size exception");
+		} catch (BadPaddingException e) {
+			System.err.println(e.getMessage());
+			System.err.println("Incorrect password used for decryption");
 		} catch (Exception e) {
 			System.err.println("Exception raised while decrypting");
             e.printStackTrace();
