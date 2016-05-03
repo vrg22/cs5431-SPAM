@@ -149,7 +149,7 @@ public class PasswordStorageFile extends StorageFile {
             if (entry.getType().equals("admin")) {
                 amFile.putAdmin(new Admin(entry.getUsername(),
                     entry.getSalt(), entry.getMaster(), entry.getId(),
-                    entry.getIV(), entry.getEncPass(), entry.getRecIV(),
+                    entry.getEncPass(), entry.getRecIV(),
                     entry.getRecovery(), entry.getTwoFactorSecret()));
             }
         }

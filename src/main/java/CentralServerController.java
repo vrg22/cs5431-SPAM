@@ -221,10 +221,9 @@ public class CentralServerController implements ServerController {
      * @return the admin created (null if unsuccessful)
      */
     public Admin registerNewAdmin(String username, String adminSalt,
-            String saltedHash, String iv, String adminIp,
+            String saltedHash, String adminIp,
             PasswordStorageFile passwordFile, String encPass, String reciv,
 			String recoveryHash, String twoFactorSecret) {
-
     	if (passwordFile.containsWithType("admin", "username", username)) {
             // Admin with that username already exists
             logger.warning("[IP=" + adminIp + "] Attempt was made to "
@@ -236,7 +235,7 @@ public class CentralServerController implements ServerController {
         int newAdminId = Integer.parseInt(passwordFile.getNextAdminID());
 
         Admin newAdmin = new Admin(username, CryptoServiceProvider.b64decode(adminSalt),
-            saltedHash, newAdminId, CryptoServiceProvider.b64decode(iv), encPass,
+            saltedHash, newAdminId, encPass,
 			CryptoServiceProvider.b64decode(reciv), recoveryHash, twoFactorSecret);
 
         PasswordStorageEntry newAdminEntry = new PasswordStorageEntry(newAdmin);

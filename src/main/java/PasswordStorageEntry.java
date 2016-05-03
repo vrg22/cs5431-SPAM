@@ -9,7 +9,7 @@ public class PasswordStorageEntry extends StorageEntry {
         put("type", type);
         put("id", ""+client.getId());
         put("username", client.getUsername());
-		put("iv", CryptoServiceProvider.b64encode(client.getIV()));
+		put("iv", (client.getIV()==null) ? null : CryptoServiceProvider.b64encode(client.getIV()));
 		put("salt", CryptoServiceProvider.b64encode(client.getSalt()));
         put("master", client.getMaster());
         put("encpass", client.getEncPass());

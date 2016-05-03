@@ -8,9 +8,9 @@ public class AdminEntry extends StorageEntry {
         put("id", ""+admin.getId());
         put("username", admin.getUsername());
         put("master", admin.getMaster());
-        
+        //put("salt", CryptoServiceProvider.b64encode(client.getSalt()));
+
 		//put("iv", CryptoServiceProvider.b64encode(admin.getIV()));
-		//put("salt", CryptoServiceProvider.b64encode(client.getSalt()));
     }
 
 	public String getId() {

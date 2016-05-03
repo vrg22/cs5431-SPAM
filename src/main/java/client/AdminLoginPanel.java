@@ -69,18 +69,22 @@ public class AdminLoginPanel extends JPanel {
             add(new JPanel());
         }
 
+        add(superAdminLabel);
         add(emailLabel);
+        add(adminField);
         add(emailField);
+        add(superAdminMode);
         add(passwordLabel);
+        add(new JPanel());
         add(passwordField);
         add(twoFactorLabel);
         add(twoFactorField);
-        add(superAdminLabel);
-        add(adminField);
-        add(superAdminMode);
+        add(new JPanel());
         add(login);
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(5 + (expired ? 1 : 0), 2));
+        GridLayout origLayout = new GridLayout(6 + (expired ? 1 : 0), 2);
+        origLayout.setHgap(20);
+        setLayout(origLayout);
     }
 }

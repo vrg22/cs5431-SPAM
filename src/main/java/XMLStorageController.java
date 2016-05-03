@@ -276,10 +276,6 @@ public class XMLStorageController implements StorageController {
 	            salt.setTextContent(CryptoServiceProvider.b64encode(pEntry.getSalt()));
 	            newAdmin.appendChild(salt);
 
-	            Element iv = DOM.createElement("iv");
-	            iv.setTextContent(CryptoServiceProvider.b64encode(pEntry.getIV()));
-	            newAdmin.appendChild(iv);
-
                 Element encpass = DOM.createElement("encpass");
     			encpass.setTextContent(pEntry.getEncPass());
     			newAdmin.appendChild(encpass);

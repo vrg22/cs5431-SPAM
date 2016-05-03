@@ -169,10 +169,12 @@ public class ClientController {
 
         // Register new client (user or admin)
         post("/register", (request, response) -> {
-            String email = request.queryParams("email");
+            String email = request.queryParams("email"); //USER only
+            String username = request.queryParams("username"); //ADMIN only
+            String saltedHashAdmin = request.queryParams("saltedHashAdmin"); //ADMIN only
+            String saltedHash = request.queryParams("saltedHash");
             String type = request.queryParams("type");
             String salt = request.queryParams("salt");
-            String saltedHash = request.queryParams("saltedHash");
             String vault = request.queryParams("vault"); //CHECK: null for admins
             String iv = request.queryParams("iv");
 			String encPass = request.queryParams("encryptedPass");
@@ -187,6 +189,11 @@ public class ClientController {
             }
 
             if (type.equals("user")) {
+            	if (!isEmailValid(email)) {
+	                // Invalid email
+	                RegisterResponse body = new RegisterResponse(false);
+	                return gson.toJson(body);
+            	}
             	User newUser = server.registerNewUser(email, salt, saltedHash,
             			vault, iv, request.ip(), passwordFile, encPass, reciv,
                         recoveryHash, twoFactorSecret);
@@ -199,19 +206,27 @@ public class ClientController {
 	            RegisterResponse body = new RegisterResponse(true);
 	            return gson.toJson(body);
             }
-            else { //CHECK: Assume type=admin?
-            	Admin newAdmin = server.registerNewAdmin(email, salt,
-            			saltedHash, iv, request.ip(), passwordFile, encPass,
+            else { //TODO: Better to explicitly check type=admin?
+            	if (saltedHashAdmin.equals(server.getSaltedHashedAdminPhrase())) {
+                    Admin newAdmin = server.registerNewAdmin(email, salt,
+            			saltedHash, request.ip(), passwordFile, encPass,
                         reciv, recoveryHash, twoFactorSecret);
 
-            	if (newAdmin == null) {
-	                // Admin already exists, or other problem creating the admin
+
+                	if (newAdmin == null) {
+    	                // Admin already exists, or other problem creating the admin
+    	                RegisterResponse body = new RegisterResponse(false);
+    	                return gson.toJson(body);
+    	            }
+
+    	            RegisterResponse body = new RegisterResponse(true);
+    	            return gson.toJson(body);
+            	}
+            	else {
+            		//TODO: AUTHORIZATION FAILURE! raise hell!
 	                RegisterResponse body = new RegisterResponse(false);
 	                return gson.toJson(body);
-	            }
-
-	            RegisterResponse body = new RegisterResponse(true);
-	            return gson.toJson(body);
+            	}
             }
 
         });
@@ -328,10 +343,10 @@ public class ClientController {
         // Authorize for admin-management privileges
         post("/admin", (request, response) -> {
             String type = request.queryParams("type");
-            String saltedHash = request.queryParams("saltedHash");
+            String saltedHash = request.queryParams("saltedHashAdmin"); //TODO: ensure this isn't null!
 
             //If salted hash matches, return list of admins
-            String correctSaltedHash = server.getSaltedHashedAdminPhrase();
+            //String correctSaltedHash = server.getSaltedHashedAdminPhrase();
             if (!server.authManageAdmin(saltedHash, request.ip())) {
                 server.getLogger().warning("[IP=" + request.ip() + "] "
                     + "Incorrect password while attempting to gain "
