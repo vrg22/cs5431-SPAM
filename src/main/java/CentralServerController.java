@@ -2,6 +2,8 @@ import java.util.logging.*;
 import org.w3c.dom.Document;
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.*;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
@@ -21,6 +23,13 @@ public class CentralServerController implements ServerController {
 
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
+
+            Set<PosixFilePermission> perms = new HashSet<>();
+            perms.add(PosixFilePermission.OWNER_READ);
+            perms.add(PosixFilePermission.OWNER_WRITE);
+            try {
+                Files.setPosixFilePermissions(Paths.get(logLocation), perms);
+            } catch (IOException e) {}
 
             logger.info("Starting up SPAM...");
         } catch (SecurityException | IOException e) {

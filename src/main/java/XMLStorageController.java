@@ -1,5 +1,7 @@
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
+import java.nio.file.*;
+import java.nio.file.attribute.PosixFilePermission;
 
 //Imported for synchronization of files
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -27,13 +29,13 @@ public class XMLStorageController implements StorageController {
     private String passwordFilename;
     //TODO: Standardize use of THIS DOM vs an arbitrary DOM in this class
     private Document DOM;
-    
+
     private ReentrantReadWriteLock   pwd_lock; //Used to manage reads and writes to users.xml
     private ReentrantReadWriteLock[] user_locks; //Used to manage reads and writes to individual vaults //TODO: Is this necessary?
 
     public XMLStorageController(String passwordFilename) {
         this.passwordFilename = passwordFilename;
-        
+
         pwd_lock = new ReentrantReadWriteLock(); //Initialize main RRWL
         user_locks = new ReentrantReadWriteLock[User.MAX_USERS];
       //TODO: Only initialize a particular RRWL for a user when we KNOW that user exists??
@@ -86,11 +88,27 @@ public class XMLStorageController implements StorageController {
         //Instantiates and prepares the DOM to be saved to disk
         createMainDOM();
         writeDOMtoStream(DOM, out);
+
+        // Set permissions on passwords file
+        Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+        perms.add(PosixFilePermission.OWNER_READ);
+        perms.add(PosixFilePermission.OWNER_WRITE);
+        try {
+            Files.setPosixFilePermissions(Paths.get(getPasswordsFilename()), perms);
+        } catch (IOException e) {}
     }
 
     public void createFileForUserOnStream(int userId, FileOutputStream out) {
         Document userDOM = createUserDOM(userId);
         writeDOMtoStream(userDOM, out);
+
+        // Set permissions on vault file
+        Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+        perms.add(PosixFilePermission.OWNER_READ);
+        perms.add(PosixFilePermission.OWNER_WRITE);
+        try {
+            Files.setPosixFilePermissions(Paths.get(getFilenameForUser(userId)), perms);
+        } catch (IOException e) {}
     }
 
     public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
@@ -322,7 +340,7 @@ public class XMLStorageController implements StorageController {
 			//StringBuilder xmlStringBuilder = new StringBuilder(); //TODO: Make private variable?
 
 			in.close();
-			
+
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -370,18 +388,18 @@ public class XMLStorageController implements StorageController {
     // Convert the provided String (assumed to be well-formed XML) to a Document object
     // Adapted from http://www.java2s.com/Code/Java/XML/ParseanXMLstringUsingDOMandaStringReader.htm
     private Document stringToDOM(String in_XML) {
-    	
+
 		Document doc = null;
-		
+
 		try {
 	    	DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			
+
 			InputSource is = new InputSource();
 			is.setCharacterStream(new StringReader(in_XML));
 
 			doc = dBuilder.parse(is);
-		
+
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -392,15 +410,15 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
+
 		return doc;
     }
-    
+
     // Convert the provided Document object to a well-formed XML String
     // Adapted from http://www.java2s.com/Code/Java/XML/ExtractinganXMLformattedstringoutofaDOMobject.htm
     private String writeDOMtoString(Document theDOM) {
     	String resultString = null;
-    	
+
     	TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer;
     	try{
@@ -409,10 +427,10 @@ public class XMLStorageController implements StorageController {
 	        StreamResult result = new StreamResult(writer);
 	        transformer = transformerFactory.newTransformer();
 	        transformer.transform(source, result);
-	        
+
 	        StringBuffer strBuf = writer.getBuffer();
 	        resultString = strBuf.toString();
-	        
+
 	    } catch (TransformerConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -420,10 +438,10 @@ public class XMLStorageController implements StorageController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
+
     	return resultString;
     }
-    
+
     //XML File parsing methods
 	//At all times, have entirety of the password file in memory???
 	//Or is the event-based triggering in SAX more secure?
@@ -459,6 +477,7 @@ public class XMLStorageController implements StorageController {
         String encPass;
         String recovery;
         byte[] reciv;
+        String twoFactorSecret;
 
 		//Get the "users" element
 		Element usersElement = getTagElement("users", DOM);
@@ -481,8 +500,10 @@ public class XMLStorageController implements StorageController {
             	recovery = uElt.getElementsByTagName("recovery").item(0).getTextContent();
                 reciv = CryptoServiceProvider.b64decode(
                     uElt.getElementsByTagName("reciv").item(0).getTextContent());
-                
-            	User u = new User(username, salt, password, id, iv, encPass, reciv, recovery);
+                twoFactorSecret = uElt.getElementsByTagName("twoFactorSecret").item(0).getTextContent();
+
+            	User u = new User(username, salt, password, id, iv, encPass,
+                    reciv, recovery, twoFactorSecret);
 
             	users.add(u);
             }

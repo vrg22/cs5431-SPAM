@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.PosixFilePermission;
 
 import static spark.Spark.*;
 import spark.template.handlebars.HandlebarsTemplateEngine;
@@ -138,9 +140,14 @@ public class Main {
                     pw.write(encrypted);
                     pw.close();
 
+                    // Set permissions on log file
+                    Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+                    perms.add(PosixFilePermission.OWNER_READ);
+                    perms.add(PosixFilePermission.OWNER_WRITE);
+                    Files.setPosixFilePermissions(Paths.get(curIV + ".enclog"), perms);
+
                     // delete current log file
-                    if (true) {
-                    //if (file.delete()) {
+                    if (file.delete()) {
                         System.out.println("Deleted log file:" + logLocation);
                     } else {
                         System.err.println("Error deleting log file:" + logLocation);
