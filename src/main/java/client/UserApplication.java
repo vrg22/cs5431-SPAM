@@ -39,6 +39,7 @@ public class UserApplication extends ClientApplication
     public boolean login(String email, String password, String twoFactorCode) {
         // Request server for salt with user's email
         Map<String, String> saltParams = new HashMap<>();
+        saltParams.put("type", USER_TYPE);
         saltParams.put("email", email);
         String saltResponseJson;
         try {
@@ -55,7 +56,7 @@ public class UserApplication extends ClientApplication
 
         String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
 
-        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        String initialAuthKey = CryptoServiceProvider.genRequestAuthKey();
 
         // Request user for user's ID, IV, and encrypted vault
         Map<String, String> authParams = new HashMap<>();
@@ -63,7 +64,7 @@ public class UserApplication extends ClientApplication
         authParams.put("email", email);
         authParams.put("master", saltedHash);
         authParams.put("twoFactorCode", twoFactorCode);
-        authParams.put("nextAuthKey", nextAuthKey);
+        authParams.put("nextAuthKey", initialAuthKey);
         String authResponseJson;
         try {
             authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/auth",
@@ -109,7 +110,7 @@ public class UserApplication extends ClientApplication
         userId = authResponse.getId();
         userSalt = salt;
         master = password;
-        authKey = nextAuthKey;
+        authKey = initialAuthKey;
 
         return true;
 	}
@@ -296,6 +297,9 @@ public class UserApplication extends ClientApplication
         params.put("type", USER_TYPE); //TODO: Check!
         params.put("vault", encVault);
         params.put("iv", CryptoServiceProvider.b64encode(iv));
+        params.put("authKey", authKey);
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        params.put("nextAuthKey", nextAuthKey);
 
         String responseJson;
         try {
@@ -306,6 +310,7 @@ public class UserApplication extends ClientApplication
             return false;
         }
         SaveResponse response = gson.fromJson(responseJson, SaveResponse.class);
+        authKey = nextAuthKey;
 
         return response.success();
     }
@@ -357,6 +362,7 @@ public class UserApplication extends ClientApplication
     public boolean recoverPass(String email, String recovery, String twoFactorCode,
             String newPass) {
         Map<String, String> saltParams = new HashMap<>();
+        saltParams.put("type", USER_TYPE);
         saltParams.put("email", email);
         String saltResponseJson;
         try {

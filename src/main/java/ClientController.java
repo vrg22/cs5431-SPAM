@@ -182,12 +182,6 @@ public class ClientController {
 			String recoveryHash = request.queryParams("recoveryHash");
             String twoFactorSecret = request.queryParams("twoFactorSecret");
 
-            if (!isEmailValid(email)) {
-                // Invalid email
-                RegisterResponse body = new RegisterResponse(false);
-                return gson.toJson(body);
-            }
-
             if (type.equals("user")) {
             	if (!isEmailValid(email)) {
 	                // Invalid email
@@ -208,7 +202,7 @@ public class ClientController {
             }
             else { //TODO: Better to explicitly check type=admin?
             	if (saltedHashAdmin.equals(server.getSaltedHashedAdminPhrase())) {
-                    Admin newAdmin = server.registerNewAdmin(email, salt,
+                    Admin newAdmin = server.registerNewAdmin(username, salt,
             			saltedHash, request.ip(), passwordFile, encPass,
                         reciv, recoveryHash, twoFactorSecret);
 
@@ -364,6 +358,7 @@ public class ClientController {
         });
 
         // Obliterate entire admin account
+        // TODO: require auth key
         delete("/admin/:adminid", (request, response) -> {
             int adminId = -1;
             try {

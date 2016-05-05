@@ -83,7 +83,7 @@ public class AdminLoginPanel extends JPanel {
         add(login);
         add(errorLabel);
         add(new JPanel());
-        GridLayout origLayout = new GridLayout(6 + (expired ? 1 : 0), 2);
+        GridLayout origLayout = new GridLayout(7 + (expired ? 1 : 0), 2);
         origLayout.setHgap(20);
         setLayout(origLayout);
     }
