@@ -28,6 +28,8 @@ public class ShowAdminsPanel extends JPanel {
 
             view.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e){
+                	//TODO: Show a page that allows you to change passwords
+                	
                 	//UserFrame frame = UserFrame.getFrameForComponent(view);
                     //Account fullAccount = frame.getApp().getAccount(account.getId());
                     //frame.setPanel(new ShowAccountPanel(fullAccount));
