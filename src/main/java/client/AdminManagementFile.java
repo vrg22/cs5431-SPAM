@@ -1,11 +1,21 @@
+import java.util.List;
 import java.util.ArrayList;
+
+import java.lang.reflect.Type;
+
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 //Representation of all existing administrator accounts
 public class AdminManagementFile extends StorageFile {
 	
 	//Metadata for managing admins
-	int nextAdminID;
-	int numAdmins;
+	private int nextAdminID;
+	private int numAdmins;
 	
 	//Constructor
 	public AdminManagementFile() {
@@ -34,6 +44,11 @@ public class AdminManagementFile extends StorageFile {
     	return Integer.toString(nextAdminID);
     }
     
+    // Gets the current num admins
+    public int getNumAdmins() {
+    	return numAdmins;
+    }
+    
 	public void putAdmin(Admin admin) {
     	if (numAdmins < Admin.MAX_ADMINS) {
     		numAdmins++;
@@ -58,10 +73,50 @@ public class AdminManagementFile extends StorageFile {
         Admin.Header[] headers = new Admin.Header[entries.size()];
 
         for (int i = 0; i < headers.length; i++) {
-            AdminEntry entry = (AdminEntry)entries.get(i);
+        	StorageEntry entry_test = entries.get(i);
+        	if (! (entry_test instanceof AdminEntry) ) {
+        		System.out.println(entry_test.toString());
+        	}
+        	AdminEntry entry = (AdminEntry) entry_test;
+            //AdminEntry entry = (AdminEntry)entries.get(i);
             headers[i] = entry.getHeader();
         }
 
         return headers;
     }
+    
+    // Return Java array of admins in "entries"
+    public AdminEntry[] getEntries() {
+    //public ArrayList<AdminEntry> getEntries() {
+        //StorageEntry[] admins = new StorageEntry[entries.size()];
+
+        AdminEntry[] admins = new AdminEntry[entries.size()];
+        return entries.toArray(admins);
+    	
+    	/*
+    	ArrayList<AdminEntry> admins = new ArrayList<AdminEntry>();
+    	for (StorageEntry e : entries) {
+    		admins.add((AdminEntry) e);
+    	}
+    	
+    	return admins;
+
+    	*/
+    	
+    }
+    
+    //Serialization of AdminManagementFile
+    /*
+    public static class AdminManagementFileSerializer implements JsonSerializer<AdminManagementFile> {
+        public JsonElement serialize(final AdminManagementFile amfile, final Type type, final JsonSerializationContext context) {
+            JsonObject result = new JsonObject();
+            result.add("nxtid", new JsonPrimitive(amfile.getNextAdminID()));
+            result.add("numadmins", new JsonPrimitive(amfile.getNumAdmins())); //Should make get string?
+            result.add("admins", new JsonPrimitive(amfile.getEntries()));
+            
+            return result;
+        }
+    }
+    */
+    
 }

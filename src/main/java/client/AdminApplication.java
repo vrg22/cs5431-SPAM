@@ -3,7 +3,10 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.*;
+import java.lang.reflect.Type;
 import java.net.*;
 
 public class AdminApplication extends ClientApplication
@@ -122,6 +125,11 @@ public class AdminApplication extends ClientApplication
             System.out.println("Problem connecting to server.");
             return false;
         }
+        
+        //Deserialization
+        //Type responseType = new TypeToken<AdminManageAuthResponse/*<AdminEntry>*/>() {}.getType();
+        //AdminManageAuthResponse/*<AdminEntry>*/ authResponse = gson.fromJson(authResponseJson,
+        //		responseType);
         AdminManageAuthResponse authResponse = gson.fromJson(authResponseJson,
         		AdminManageAuthResponse.class);
         if (authResponse == null) {
