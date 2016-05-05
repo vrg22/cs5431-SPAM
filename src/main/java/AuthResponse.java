@@ -6,7 +6,7 @@ public class AuthResponse {
 
     public AuthResponse(int id, String vault, byte[] iv) {
         this.id = id;
-        this.iv = iv.clone();
+        this.iv = iv != null ? iv.clone() : null;
         this.vault = vault;
     }
 
