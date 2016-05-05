@@ -223,9 +223,9 @@ public class ClientController {
 
             //Would take to management pane (mimic the "get account info" pane)
 
-            AdminManageAuthResponse body;
+            AdminManageAuthResponse/*<AdminEntry>*/ body;
             AdminManagementFile amFile = passwordFile.getAdminFile();
-            body = new AdminManageAuthResponse(amFile);
+            body = new AdminManageAuthResponse/*<AdminEntry>*/(amFile);
 
             return gson.toJson(body);
         });
