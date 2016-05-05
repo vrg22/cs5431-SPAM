@@ -258,6 +258,10 @@ public class XMLStorageController implements StorageController {
                 recovery.setTextContent(pEntry.getRecovery());
                 newUser.appendChild(recovery);
 
+                Element twoFactorSecret = DOM.createElement("twoFactorSecret");
+                twoFactorSecret.setTextContent(pEntry.getTwoFactorSecret());
+                newUser.appendChild(twoFactorSecret);
+
 		        uElement.appendChild(newUser);
 			}
 			else if (type.equals("admin")) {
@@ -287,6 +291,10 @@ public class XMLStorageController implements StorageController {
                 Element recovery = DOM.createElement("recovery");
                 recovery.setTextContent(pEntry.getRecovery());
                 newAdmin.appendChild(recovery);
+
+                Element twoFactorSecret = DOM.createElement("twoFactorSecret");
+                twoFactorSecret.setTextContent(pEntry.getTwoFactorSecret());
+                newAdmin.appendChild(twoFactorSecret);
 
 	            aElement.appendChild(newAdmin);
 			}

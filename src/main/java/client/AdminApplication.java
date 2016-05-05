@@ -20,6 +20,7 @@ public class AdminApplication extends ClientApplication
     //private byte[] adminSalt;
     //private String master;
     private AdminFrame frame;
+    private String authKey;
 
 	public AdminApplication() {
         gson = new Gson();
@@ -41,6 +42,7 @@ public class AdminApplication extends ClientApplication
      public boolean login(String email, String password, String twoFactorCode) {
          // Request server for salt with user's email
          Map<String, String> saltParams = new HashMap<>();
+         saltParams.put("type", ADMIN_TYPE);
          saltParams.put("email", email);
          String saltResponseJson;
          try {
@@ -57,12 +59,16 @@ public class AdminApplication extends ClientApplication
 
          String saltedHash = CryptoServiceProvider.genSaltedHash(password, salt);
 
+         String initialAuthKey = CryptoServiceProvider.genRequestAuthKey();
+
          // Request user for user's ID
          Map<String, String> authParams = new HashMap<>();
          authParams.put("type", ADMIN_TYPE);
          authParams.put("email", email);
          authParams.put("master", saltedHash);
+         authParams.put("nextAuthKey", initialAuthKey);
          authParams.put("twoFactorCode", twoFactorCode);
+
          String authResponseJson;
          try {
              authResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/auth",
@@ -77,6 +83,7 @@ public class AdminApplication extends ClientApplication
 
          // Successful login
          adminId = authResponse.getId();
+         authKey = initialAuthKey;
 
          return true;
  	}
@@ -125,7 +132,7 @@ public class AdminApplication extends ClientApplication
             System.out.println("Problem connecting to server.");
             return false;
         }
-        
+
         //Deserialization
         //Type responseType = new TypeToken<AdminManageAuthResponse/*<AdminEntry>*/>() {}.getType();
         //AdminManageAuthResponse/*<AdminEntry>*/ authResponse = gson.fromJson(authResponseJson,
@@ -242,6 +249,7 @@ public class AdminApplication extends ClientApplication
     public boolean recoverPass(String email, String recovery, String twoFactorCode,
             String newPass) {
         Map<String, String> saltParams = new HashMap<>();
+        saltParams.put("type", ADMIN_TYPE);
         saltParams.put("email", email);
         String saltResponseJson;
         try {
