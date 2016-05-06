@@ -200,29 +200,35 @@ public class ClientController {
 	            RegisterResponse body = new RegisterResponse(true);
 	            return gson.toJson(body);
             }
-            else { //TODO: Better to explicitly check type=admin?
-            	if (saltedHashAdmin.equals(server.getSaltedHashedAdminPhrase())) {
+            else { // explicitly checking for admin type throws some lambda void error
+
+                if (saltedHashAdmin.equals(server.getSaltedHashedAdminPhrase())) {
+                    if (!isEmailValid(username)) {
+                        // Invalid email
+                        RegisterResponse body = new RegisterResponse(false);
+                        return gson.toJson(body);
+                    }
+
                     Admin newAdmin = server.registerNewAdmin(username, salt,
-            			saltedHash, request.ip(), passwordFile, encPass,
-                        reciv, recoveryHash, twoFactorSecret);
+                            saltedHash, request.ip(), passwordFile, encPass,
+                            reciv, recoveryHash, twoFactorSecret);
 
 
-                	if (newAdmin == null) {
-    	                // Admin already exists, or other problem creating the admin
-    	                RegisterResponse body = new RegisterResponse(false);
-    	                return gson.toJson(body);
-    	            }
+                    if (newAdmin == null) {
+                        // Admin already exists, or other problem creating the admin
+                        RegisterResponse body = new RegisterResponse(false);
+                        return gson.toJson(body);
+                    }
 
-    	            RegisterResponse body = new RegisterResponse(true);
-    	            return gson.toJson(body);
-            	}
-            	else {
-            		//TODO: AUTHORIZATION FAILURE! raise hell!
-	                RegisterResponse body = new RegisterResponse(false);
-	                return gson.toJson(body);
-            	}
+                    RegisterResponse body = new RegisterResponse(true);
+                    return gson.toJson(body);
+                }
+                else {
+                    //TODO: AUTHORIZATION FAILURE! raise hell!
+                    RegisterResponse body = new RegisterResponse(false);
+                    return gson.toJson(body);
+                }
             }
-
         });
 
         // Update user vault
