@@ -2,9 +2,9 @@
 <metadata>
 <nextAdminID>0</nextAdminID>
 <numAdmins>0</numAdmins>
-<nextUserID>2</nextUserID>
+<nextUserID>0</nextUserID>
 <numUsers>-1</numUsers>
 </metadata>
-<users><user ID="1"><username>Bob</username><password>newsaltedhash</password><salt>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</salt><iv>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</iv><encpass>encryptedpass</encpass><reciv>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</reciv><recovery>recoverypass</recovery><twoFactorSecret>UORPOJMTWXMEHQAD</twoFactorSecret></user></users>
+<users><user ID="0"><username>Bob</username><password>newsaltedhash</password><salt>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</salt><iv>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</iv><encpass>encryptedpass</encpass><reciv>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==</reciv><recovery>recoverypass</recovery><twoFactorSecret>N5JA2Q23RP65QHGJ</twoFactorSecret></user></users>
 <admins/>
 </usersXML>
