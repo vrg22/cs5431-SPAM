@@ -5,7 +5,8 @@ import java.util.*;
 
 //Allow to escalate to admin-management mode, or log in as an admin to view logs
 public class AdminLoginPanel extends JPanel {
-    public AdminLoginPanel(boolean expired) {
+    //public AdminLoginPanel(boolean expired) {
+    public AdminLoginPanel() {
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
         JTextField emailField = new JTextField();
@@ -31,7 +32,7 @@ public class AdminLoginPanel extends JPanel {
                 boolean success = frame.getApp().login(email, password, twoFactorCode);
 
                 if (success) {
-                	frame.setPanel(new LogPanel());
+                	frame.setPanel(new AdminHomePanel());
                 } else {
                     errorLabel.setText("Invalid email and/or password.");
                 }
@@ -61,6 +62,7 @@ public class AdminLoginPanel extends JPanel {
             }
         });
 
+        /*
         if (expired) {
             System.out.println("expired");
             JLabel expiredLabel = new JLabel();
@@ -68,6 +70,7 @@ public class AdminLoginPanel extends JPanel {
             add(expiredLabel);
             add(new JPanel());
         }
+        */
 
         add(superAdminLabel);
         add(emailLabel);
@@ -83,7 +86,8 @@ public class AdminLoginPanel extends JPanel {
         add(login);
         add(errorLabel);
         add(new JPanel());
-        GridLayout origLayout = new GridLayout(7 + (expired ? 1 : 0), 2);
+        GridLayout origLayout = new GridLayout(7, 2);
+        //GridLayout origLayout = new GridLayout(7 + (expired ? 1 : 0), 2);
         origLayout.setHgap(20);
         setLayout(origLayout);
     }

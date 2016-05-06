@@ -12,7 +12,8 @@ public class ShowAdminsPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 AdminFrame frame = AdminFrame.getFrameForComponent(back);
                 frame.getApp().endAdminManagement();
-                frame.setPanel(new AdminLoginPanel(false));
+                //frame.setPanel(new AdminLoginPanel(false));
+                frame.setPanel(new AdminLoginPanel());
             }
         });
         add(new JPanel());

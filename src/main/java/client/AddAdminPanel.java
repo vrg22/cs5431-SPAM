@@ -8,11 +8,11 @@ import java.io.*;
 public class AddAdminPanel extends JPanel {
     public AddAdminPanel() {
         JLabel emailLabel = new JLabel();
-        emailLabel.setText("Email:");
+        emailLabel.setText("Admin Username:");
         JTextField emailField = new JTextField();
 
         JLabel passwordLabel = new JLabel();
-        passwordLabel.setText("Master Password:");
+        passwordLabel.setText("Admin Master Password:");
 		passwordLabel.setForeground(Color.red);
         JPasswordField passwordField = new JPasswordField(10);
 

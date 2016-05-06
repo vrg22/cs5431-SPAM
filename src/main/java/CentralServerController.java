@@ -1,19 +1,21 @@
+import java.util.*;
 import java.util.logging.*;
 import org.w3c.dom.Document;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
+import java.nio.charset.Charset;
+//import org.apache.commons.io.FilenameUtils;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
 	private Logger logger;
     private StorageController store;
     private String passwordFilename;
-    private String saltedAdminPassphrase;
+    private String adminPassword;
     private byte[] systemSalt;
 
-    public CentralServerController(String logLocation, String passwordFilename, String saltedAdminPassphrase, byte[] sysSalt)
+    public CentralServerController(String logLocation, String passwordFilename, String adminPassword, byte[] sysSalt)
             throws SecurityException, IOException {
         //Set up logging
         try {
@@ -47,8 +49,8 @@ public class CentralServerController implements ServerController {
             store.createPasswordsFileOnStream(store.getPasswordsOutput());
         }
 
-        // Store salted-hashed-adminphrase and salt
-        this.saltedAdminPassphrase = saltedAdminPassphrase;
+        // Store adminphrase and salt
+        this.adminPassword = adminPassword;
         this.systemSalt = sysSalt.clone();
     }
 
@@ -190,7 +192,10 @@ public class CentralServerController implements ServerController {
      * @return "Was attempt successful?"
      */
     public boolean authManageAdmin(String saltedHash, String clientIp) {
-        //If salted hash matches, return list of admins
+    	// Generate salted hashed admin passphrase
+    	String saltedAdminPassphrase = getSaltedHashedAdminPhrase();
+    	
+    	//If salted hash matches, return list of admins
         if (!saltedHash.equals(saltedAdminPassphrase)) {
             logger.warning("[IP=" + clientIp + "] "
                 + "Incorrect password while attempting to gain "
@@ -206,14 +211,14 @@ public class CentralServerController implements ServerController {
      * @return the system salt
      */
     public byte[] getSysSalt() {
-    	return systemSalt;
+    	return systemSalt.clone();
     }
 
     /**
      * @return the salted hashed admin passphrase
      */
     public String getSaltedHashedAdminPhrase() {
-    	return saltedAdminPassphrase;
+    	return CryptoServiceProvider.genSaltedHash(adminPassword, systemSalt);
     }
 
     /**
@@ -270,4 +275,54 @@ public class CentralServerController implements ServerController {
 
         return true;
     }
+    
+    /**
+     * @return the readable contents of all logs on disk at server
+     */
+	public String[] getLogs() {
+		// Get all .enclog files
+		Path currentRelativePath = Paths.get("");
+		String dir = currentRelativePath.toAbsolutePath().toString();
+		File[] enclogs = getEncLogs(dir);
+		String[] logs = new String[enclogs.length];
+		
+		// Populate logs with the decrypted log contents
+		for (int i=0; i<enclogs.length; i++) {
+			//Read file into string
+			File f = enclogs[i];
+			String encrypted;
+			try {
+				encrypted = readFile(f.getPath(), Charset.defaultCharset());
+
+				String plainName = f.getName();
+				String fileNameWithOutExt = plainName.substring(0, (plainName.length()-(".enclog".length())));
+				//FilenameUtils.removeExtension(f.getName());
+				byte[] iv = CryptoServiceProvider.b64decode(Main.filenameToB64(fileNameWithOutExt));
+				logs[i] = CryptoServiceProvider.decrypt(encrypted, adminPassword, getSysSalt(), iv);
+				
+				//System.out.println(logs[i]); //REMOVE
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return logs;
+	}
+	
+	/* HELPERS */
+	//From: http://stackoverflow.com/questions/1384947/java-find-txt-files-in-specified-folder
+	private File[] getEncLogs(String dirName) {
+    	File dir = new File(dirName);
+
+    	return dir.listFiles(new FilenameFilter() { 
+    	         public boolean accept(File dir, String filename)
+    	              { return filename.endsWith(".enclog"); }
+    	} );
+    }
+	
+	//From: http://stackoverflow.com/questions/326390/how-do-i-create-a-java-string-from-the-contents-of-a-file
+	private String readFile(String path, Charset encoding) throws IOException {
+	  byte[] encoded = Files.readAllBytes(Paths.get(path));
+	  return new String(encoded, encoding);
+	}
 }

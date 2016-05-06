@@ -82,4 +82,9 @@ public interface ServerController {
     public boolean obliterateAdmin(int adminId, String clientIp,
             PasswordStorageFile passwordFile);
     //TODO: Need to add master-password updating methods?
+    
+    /**
+     * @return the readable contents of all logs on disk at server
+     */
+	public String[] getLogs();
 }

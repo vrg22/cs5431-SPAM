@@ -376,6 +376,17 @@ public class ClientController {
             RegisterResponse body = new RegisterResponse(result);
             return gson.toJson(body);
         });
+    
+	    // Return list of logs on system  //TODO: NEED TO AUTHORIZE THIS LOGGED IN ADMIN!
+	    post("/log", (request, response) -> {
+	        String type = request.queryParams("type");
+	        //String id = request.queryParams("id");
+	
+	        String[] logs = server.getLogs();
+	        GetLogsResponse body = new GetLogsResponse(logs);
+	
+	        return gson.toJson(body);
+	    });
     }
 
     // Check that `email` is a valid email address (e.g., some@email.com)

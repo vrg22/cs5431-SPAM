@@ -90,7 +90,8 @@ public class AdminApplication extends ClientApplication
 
     public void logout(boolean expired) {
         adminId = -1;
-        frame.setPanel(new AdminLoginPanel(expired));
+        //frame.setPanel(new AdminLoginPanel(expired));
+        frame.setPanel(new AdminLoginPanel());
     }
 
     // Admin management functions
@@ -149,7 +150,7 @@ public class AdminApplication extends ClientApplication
 
         return true;
     }
-
+    
 	/**
      * Create new admin (NOTE: This "registration" should only be successfully invoked by an authorized admin manager)
      * This method updates the local copy of admins (Admin file) with the new admin IFF the admin was successfully registered on the server.
@@ -198,7 +199,8 @@ public class AdminApplication extends ClientApplication
     }
 
     /**
-     * Obliterate logged-in admin
+     * Obliterate specified admin (NOTE: This "deletion" should only be successfully invoked by an authorized admin manager)
+     * This method updates the local copy of admins (Admin file) with the new admin IFF the admin was successfully deleted from the server.
      *
      * @return Was admin successfully obliterated
      */
@@ -230,14 +232,43 @@ public class AdminApplication extends ClientApplication
         }
     }
 
-    // Admin management functions
-	// Model: Any time a change is made, persist it to (the server), revert? if failed
-	// Do we want to only allow one "logged in guy" at a time?
+	/**
+	 * Retrieve logs for viewing by currently-logged in admin
+	 *
+	 * @return actual log contents
+	 */
+	public String[] getLogs() {
+		
+        // Request server for admin's ID
+        Map<String, String> getlogParams = new HashMap<>();
+        getlogParams.put("type", ADMIN_TYPE);
+        getlogParams.put("id", Integer.toString(adminId));
 
+        String getlogResponseJson;
+        try {
+        	getlogResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/log",
+        			getlogParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return null;
+        }
+        GetLogsResponse getlogResponse = gson.fromJson(getlogResponseJson,
+        		GetLogsResponse.class);
+        if (getlogResponse == null) return null;
+
+        // Successfully obtained array of readable logs
+        return getlogResponse.getLogs();
+	}
+	
+	// Log out from an admin's log-viewing session
+    public void logout() {
+        adminId = -1;
+    }
+    
     /**
-     * Get list of accounts associated with logged-in user
+     * Get list of admins
      *
-     * @return Array of account headers for user's accounts
+     * @return Array of admin headers
      */
     public Admin.Header[] getAdmins() {
     	// If not currently privileged...
@@ -297,10 +328,6 @@ public class AdminApplication extends ClientApplication
 
         return true;
 	}
-
-    //Delete admin from "Authorized" position
-
-    //Add admin from "Authorized" position
 
     // Log out from an admin-manager's session
     public void endAdminManagement() {

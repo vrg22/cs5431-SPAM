@@ -12,7 +12,8 @@ public class AdminFrame extends JFrame
 
     public void start()
     {
-        setPanel(new AdminLoginPanel(false));
+        setPanel(new AdminLoginPanel());
+    	//setPanel(new AdminLoginPanel(false));
         setLayout(new FlowLayout());
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
