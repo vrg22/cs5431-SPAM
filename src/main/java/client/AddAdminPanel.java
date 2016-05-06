@@ -31,18 +31,6 @@ public class AddAdminPanel extends JPanel {
 		rpasswordLabel.setForeground(Color.red);
         JPasswordField rpasswordField = new JPasswordField(10);
 
-		rpasswordField.addCaretListener(new CaretListener() {
-		  public void caretUpdate(CaretEvent ce) {
-			String rpwd = new String(rpasswordField.getPassword());
-			String pwd = new String(passwordField.getPassword());
-			if (pwd.equals(rpwd)) {
-			  rpasswordLabel.setForeground(Color.green);
-			} else {
-			  rpasswordLabel.setForeground(Color.red);
-			}
-		  }
-		});
-
         JLabel recoveryQuestion1 = new JLabel();
         recoveryQuestion1.setText("Recovery Question1:");
         JPasswordField recoveryAnswer1 = new JPasswordField(10);
@@ -57,6 +45,7 @@ public class AddAdminPanel extends JPanel {
 
         JButton register = new JButton();
         register.setText("Register");
+        register.setEnabled(false);
 
         JLabel errorLabel = new JLabel();
         register.addActionListener(new ActionListener(){
@@ -67,6 +56,12 @@ public class AddAdminPanel extends JPanel {
 				String recovery2 = recoveryAnswer2.getText();
 				String recovery3 = recoveryAnswer3.getText();
 				String recovery = recovery1 + recovery2 + recovery3;
+
+                if (email.equals("") || password.equals("") || recovery1.equals("") ||
+                    recovery2.equals("") || recovery3.equals("")) {
+                    errorLabel.setText("Please fill out all the fields");
+                    return;
+                }
 
                 String twoFactorSecret = CryptoServiceProvider.getNewTwoFactorSecretKey();
                 String qrUrl = getQRBarcodeURL(email, twoFactorSecret);
@@ -97,6 +92,20 @@ public class AddAdminPanel extends JPanel {
                     frame.setPanel(new ShowAdminsPanel(admins));
                 } else {
                     errorLabel.setText("Sorry there was a problem registering.");
+                }
+            }
+        });
+
+        rpasswordField.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent ce) {
+                String rpwd = new String(rpasswordField.getPassword());
+                String pwd = new String(passwordField.getPassword());
+                if (pwd.equals(rpwd)) {
+                    rpasswordLabel.setForeground(Color.green);
+                    register.setEnabled(true);
+                } else {
+                    rpasswordLabel.setForeground(Color.red);
+                    register.setEnabled(false);
                 }
             }
         });
