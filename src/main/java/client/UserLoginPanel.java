@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
+import javax.swing.event.*;
 
 //Modified to handle both user and admin login attempts
 public class UserLoginPanel extends JPanel {
@@ -20,6 +21,7 @@ public class UserLoginPanel extends JPanel {
 
         JButton login = new JButton();
         login.setText("Login");
+        login.setEnabled(false);
 
         JLabel errorLabel = new JLabel();
         login.addActionListener(new ActionListener() {
@@ -27,6 +29,13 @@ public class UserLoginPanel extends JPanel {
                 String email = emailField.getText();
                 String password = passwordField.getText();
                 String twoFactorCode = twoFactorField.getText();
+
+                // Check if form has all fields filled up
+                if (email.equals("") || password.equals("") || twoFactorCode.equals("")) {
+                    errorLabel.setText("Please fill all login information");
+                    return;
+                }
+
                 UserFrame frame = UserFrame.getFrameForComponent(login);
                 boolean success = frame.getApp().login(email, password, twoFactorCode);
 
@@ -63,6 +72,19 @@ public class UserLoginPanel extends JPanel {
             public void actionPerformed(ActionEvent e){
                 UserFrame frame = UserFrame.getFrameForComponent(forgot);
                 frame.setPanel(new ForgotPasswordPanel());
+            }
+        });
+
+        twoFactorField.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent ce) {
+                String email = emailField.getText();
+                String password = passwordField.getText();
+                String twoFactorCode = twoFactorField.getText();
+                if (email.equals("") || password.equals("") || twoFactorCode.equals("")) {
+                    login.setEnabled(false);
+                } else {
+                    login.setEnabled(true);
+                }
             }
         });
 

@@ -25,6 +25,13 @@ public class StoreNewAccountPanel extends JPanel {
                 String name = nameField.getText();
                 String username = emailField.getText();
                 String password = passwordField.getText();
+
+                // check if the fields are filled out
+                if (name.equals("") || username.equals("") || password.equals("")) {
+                    errorLabel.setText("Please fill out the account details");
+                    return;
+                }
+
                 UserFrame frame = UserFrame.getFrameForComponent(save);
                 boolean success = frame.getApp().storeNewAccount(name,
                     username, password);

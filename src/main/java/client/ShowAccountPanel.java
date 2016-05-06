@@ -70,6 +70,12 @@ public class ShowAccountPanel extends JPanel {
                 String name = nameField.getText();
                 String username = emailField.getText();
                 String password = passwordField.getText();
+
+                if (name.equals("") || username.equals("") || password.equals("")) {
+                    errorLabel.setText("Please fill out the account details");
+                    return;
+                }
+
                 Account updated = new Account(id, name, username, password);
                 boolean success = frame.getApp().updateAccount(updated);
 
