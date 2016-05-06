@@ -213,7 +213,6 @@ public class ClientController {
                             saltedHash, request.ip(), passwordFile, encPass,
                             reciv, recoveryHash, twoFactorSecret);
 
-
                     if (newAdmin == null) {
                         // Admin already exists, or other problem creating the admin
                         RegisterResponse body = new RegisterResponse(false);
@@ -356,15 +355,15 @@ public class ClientController {
 
             //Would take to management pane (mimic the "get account info" pane)
 
-            AdminManageAuthResponse/*<AdminEntry>*/ body;
+            AdminManageAuthResponse body;
             AdminManagementFile amFile = passwordFile.getAdminFile();
-            body = new AdminManageAuthResponse/*<AdminEntry>*/(amFile);
+            body = new AdminManageAuthResponse(amFile);
 
             return gson.toJson(body);
         });
 
         // Obliterate entire admin account
-        // TODO: require auth key
+        // TODO: require auth key - see code below!
         delete("/admin/:adminid", (request, response) -> {
             int adminId = -1;
             try {
@@ -376,6 +375,15 @@ public class ClientController {
                 return gson.toJson(body);
             }
 
+            /*
+            String authKey = request.queryParams("authKey");
+            String nextAuthKey = request.queryParams("nextAuthKey");
+
+            if (isValidAuthKeyForUser(adminid, authKey)) {
+                updateAuthKeyForUser(adminid, authKey, nextAuthKey);
+            }
+            */
+            
             boolean result = server.obliterateAdmin(adminId, request.ip(),
                 passwordFile);
 

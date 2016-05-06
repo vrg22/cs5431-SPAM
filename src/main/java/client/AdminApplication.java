@@ -176,7 +176,7 @@ public class AdminApplication extends ClientApplication
         params.put("recoveryHash", recoveryHash);
         params.put("twoFactorSecret", twoFactorSecret);
         params.put("saltedHashAdmin", saltedAdminPassphrase); // Force this to be provided   //TODO: Check: what if null?
-
+        
         String responseJson;
         try {
             responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
@@ -185,7 +185,7 @@ public class AdminApplication extends ClientApplication
             return false;
         }
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class); //CHECK: Need to make new Response type for this situation?
-
+        
         if (response != null && response.success()) {
         	// Add the admin to the local file IFF was a success at server
         	adminFile.putAdmin(new Admin(email, salt, saltedHash,
@@ -204,18 +204,21 @@ public class AdminApplication extends ClientApplication
      *
      * @return Was admin successfully obliterated
      */
+    //public boolean obliterateAdmin(String username, int adminID) {
     public boolean obliterateAdmin(String username) {
-    	/*
-    	//TODO: How to get params in there for deletion? -> would we NEED to go to sessions like for rest of auth scheme? Would .delete even work then?
-        Map<String, String> params = new HashMap<>();
-        params.put("type", ADMIN_TYPE);
-        params.put("saltedHashAdmin", saltedAdminPassphrase); // Force this to be provided
-        */
 
+    	//TODO: CHECK THAT PARAMS ARE BEING SENT OVER!!!
+    	Map<String, String> params = new HashMap<>();
+        params.put("authKey", authKey);
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        params.put("nextAuthKey", nextAuthKey);
+
+        int adminID = adminFile.getAdmin(username).getId();
+        
         String responseJson;
         try {
             responseJson = SendHttpsRequest.delete(HTTPS_ROOT
-                + "/admin/" + adminId);
+                + "/admin/" + adminID);
         } catch (IOException e) {
             System.out.println("Problem connecting to server.");
             return false;
@@ -225,7 +228,6 @@ public class AdminApplication extends ClientApplication
         if (response.success()) {
         	// Remove admin from local file
         	adminFile.deleteAdmin(username);
-            endAdminManagement();
             return true;
         } else {
             return false;

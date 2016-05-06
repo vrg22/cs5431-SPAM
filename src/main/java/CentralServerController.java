@@ -235,10 +235,10 @@ public class CentralServerController implements ServerController {
                 + "register a new admin with existing username " + username + ".");
             return null;
         }
-
+    	
         // Add admin to main password file
         int newAdminId = Integer.parseInt(passwordFile.getNextAdminID());
-
+        
         Admin newAdmin = new Admin(username, CryptoServiceProvider.b64decode(adminSalt),
             saltedHash, newAdminId, encPass, CryptoServiceProvider.b64decode(reciv),
             recoveryHash, twoFactorSecret);

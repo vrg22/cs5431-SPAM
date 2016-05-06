@@ -6,7 +6,7 @@ import java.awt.*;
 public class ShowAdminsPanel extends JPanel {
     public ShowAdminsPanel(Admin.Header[] admins) {
         JButton back = new JButton();
-        back.setText("Back");
+        back.setText("Logout");
         add(back);
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -18,22 +18,29 @@ public class ShowAdminsPanel extends JPanel {
         });
         add(new JPanel());
 
+        JLabel errorLabel = new JLabel();
+
         for (Admin.Header admin : admins) {
             JLabel nameLabel = new JLabel();
             nameLabel.setText(admin.getUsername());
             add(nameLabel);
 
-            JButton view = new JButton();
-            view.setText("View/Edit");
-            add(view);
+            JButton delete = new JButton();
+            delete.setText("Delete");
+            add(delete);
 
-            view.addActionListener(new ActionListener(){
+            delete.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e){
-                	//TODO: Show a page that allows you to change passwords
-                	
-                	//UserFrame frame = UserFrame.getFrameForComponent(view);
-                    //Account fullAccount = frame.getApp().getAccount(account.getId());
-                    //frame.setPanel(new ShowAccountPanel(fullAccount));
+                	AdminFrame frame = AdminFrame.getFrameForComponent(back);
+                    //boolean success = frame.getApp().obliterateAdmin(admin.getUsername(), admin.getId());
+                    boolean success = frame.getApp().obliterateAdmin(admin.getUsername());
+                    if (success) {
+                    	Admin.Header[] admins = frame.getApp().getAdmins();
+                    	frame.setPanel(new ShowAdminsPanel(admins));
+                    } else {
+                        //TODO: Implement some sort of timeout for failure?
+                        errorLabel.setText("Invalid admin passphrase.");
+                    }
                 }
             });
         }
@@ -43,21 +50,24 @@ public class ShowAdminsPanel extends JPanel {
             add(emptyLabel);
             add(new JPanel());
         }
-
+        
         JButton add = new JButton();
         add.setText("Add Admin");
         add(add);
 
-        //TODO: Handle case where max admins already WHERE??
         add.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
+            public void actionPerformed(ActionEvent e) {
             	AdminFrame frame = AdminFrame.getFrameForComponent(add);
-                frame.setPanel(new AddAdminPanel());
+            	if (frame.getApp().getAdmins().length == Admin.MAX_ADMINS) {
+            		errorLabel.setText("Maximum number of admins reached.");
+            	}
+            	else {
+                    frame.setPanel(new AddAdminPanel());
+            	}
             }
         });
 
-        //setLayout(new GridLayout(admins.length + 1, 2));
-        //IF logic?
+        add(errorLabel);
         setLayout(new GridLayout(admins.length + 2, 2));
     }
 }

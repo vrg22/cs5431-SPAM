@@ -37,9 +37,13 @@ public class AdminManagementFile extends StorageFile {
     }
     
     //Obtains AN unused ID for an admin, assuming Admin.MAX_ADMINS is not reached.
+    // Check values in set [0, Admin.MAX_ADMINS-1] until find open value
     public String getNextAdminID() {
-    	while(containsWithId("admin", Integer.toString(nextAdminID)) && numAdmins < Admin.MAX_ADMINS) {
-    		nextAdminID++;
+    	int cnt = 0;
+    	nextAdminID %= Admin.MAX_ADMINS; //Ensure next ID is in proper range to start
+    	while(containsWithId("admin", Integer.toString(nextAdminID)) && cnt < Admin.MAX_ADMINS) {
+    		nextAdminID = (nextAdminID+1) % Admin.MAX_ADMINS;
+    		cnt++;
     	}
     	return Integer.toString(nextAdminID);
     }
@@ -75,7 +79,7 @@ public class AdminManagementFile extends StorageFile {
         for (int i = 0; i < headers.length; i++) {
         	StorageEntry entry_test = entries.get(i);
         	if (! (entry_test instanceof AdminEntry) ) {
-        		System.out.println(entry_test.toString());
+        		System.out.println(entry_test.toString()); //TODO: REMOVE!
         	}
         	AdminEntry entry = (AdminEntry) entry_test;
             //AdminEntry entry = (AdminEntry)entries.get(i);
@@ -102,7 +106,10 @@ public class AdminManagementFile extends StorageFile {
     	return admins;
 
     	*/
-    	
+    }
+    
+    public void setNextAdminID(int nextID) {
+    	nextAdminID = nextID;
     }
     
     //Serialization of AdminManagementFile

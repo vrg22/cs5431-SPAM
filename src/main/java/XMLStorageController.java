@@ -194,7 +194,7 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a PasswordStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(PasswordStorageFile file) {
-
+    	
     	Document initialDOM, DOM = null;
 
 	    FileInputStream fis = getPasswordsInput();
@@ -207,19 +207,19 @@ public class XMLStorageController implements StorageController {
 		Element numAElement = getTagElement("numAdmins", DOM);
 		numAElement.setTextContent(file.getNumAdmins());
 		Element nextAdminIDElement = getTagElement("nextAdminID", DOM);
-		nextAdminIDElement.setTextContent(file.getNextAdminID());
-
+		nextAdminIDElement.setTextContent(file.getNextAdminIdVerbatim());
+		
     	Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
 		Element nextUserIDElement = getTagElement("nextUserID", DOM);
-		nextUserIDElement.setTextContent(file.getNextUserID());
-
+		nextUserIDElement.setTextContent(file.getNextUserIdVerbatim());
+		
 		// Make user and admin data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
-		uElement.setTextContent(""); //CHECK!
+		uElement.setTextContent("");
 
 		Element aElement = getTagElement("admins", DOM);
-		aElement.setTextContent(""); //CHECK!
+		aElement.setTextContent("");
 
 		PasswordStorageEntry pEntry;
 		for (StorageEntry entry : file.entries) {
@@ -299,7 +299,7 @@ public class XMLStorageController implements StorageController {
 	            aElement.appendChild(newAdmin);
 			}
 		}
-
+		
     	return DOM;
     }
 

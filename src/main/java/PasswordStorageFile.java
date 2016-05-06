@@ -99,18 +99,35 @@ public class PasswordStorageFile extends StorageFile {
     // Retrieving metadata
 
     //Obtains AN unused ID for a user, assuming User.MAX_USERS is not reached.
+    // Check values in set [0, User.MAX_USERS-1] until find open value
     public String getNextUserID() {
-    	while(containsWithId("user", Integer.toString(nextUserID)) && numUsers < User.MAX_USERS) {
-    		nextUserID++;
+    	int cnt = 0;
+    	nextUserID %= User.MAX_USERS; //Ensure next ID is in proper range to start
+    	while(containsWithId("user", Integer.toString(nextUserID)) && cnt < User.MAX_USERS) {
+    		nextUserID = (nextUserID+1) % User.MAX_USERS;
+    		cnt++;
     	}
     	return Integer.toString(nextUserID);
     }
 
     //Obtains AN unused ID for an admin, assuming Admin.MAX_ADMINS is not reached.
+    // Check values in set [0, Admin.MAX_ADMINS-1] until find open value
     public String getNextAdminID() {
-    	while(containsWithId("admin", Integer.toString(nextAdminID)) && numAdmins < Admin.MAX_ADMINS) {
-    		nextAdminID++;
+    	int cnt = 0;
+    	nextAdminID %= Admin.MAX_ADMINS; //Ensure next ID is in proper range to start
+    	while(containsWithId("admin", Integer.toString(nextAdminID)) && cnt < Admin.MAX_ADMINS) {
+    		nextAdminID = (nextAdminID+1) % Admin.MAX_ADMINS;
+    		cnt++;
     	}
+    	return Integer.toString(nextAdminID);
+    }
+    
+    //VERBATIM
+    public String getNextUserIdVerbatim() {
+    	return Integer.toString(nextUserID);
+    }
+    
+    public String getNextAdminIdVerbatim() {
     	return Integer.toString(nextAdminID);
     }
 
@@ -140,6 +157,7 @@ public class PasswordStorageFile extends StorageFile {
 
     /**
      * Extracts admins as file prepared for Admin management.
+     * Note: ensures that the returned file's nextID field is IDENTICAL to the nextID field of this file AFTER putting all admins
      * @return the produced file abstraction
      */
     public AdminManagementFile getAdminFile() {
@@ -153,6 +171,7 @@ public class PasswordStorageFile extends StorageFile {
                     entry.getRecovery(), entry.getTwoFactorSecret()));
             }
         }
+    	amFile.setNextAdminID(nextAdminID); //TODO: CHECK!
 
     	return amFile;
     }
