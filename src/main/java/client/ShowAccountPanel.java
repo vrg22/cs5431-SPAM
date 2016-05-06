@@ -120,6 +120,19 @@ public class ShowAccountPanel extends JPanel {
             }
         });
 
+        JButton delete = new JButton();
+        delete.setText("Delete Account");
+        delete.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                UserFrame frame = UserFrame.getFrameForComponent(back);
+
+                frame.getApp().deleteAccount(account.getId());
+
+                Account.Header[] accounts = frame.getApp().getAccounts();
+                frame.setPanel(new ShowAccountsPanel(accounts));
+            }
+        });
+
         add(back);
         add(new JPanel());
         add(nameLabel);
@@ -134,8 +147,10 @@ public class ShowAccountPanel extends JPanel {
         add(passwordField);
         add(generatePassword);
         add(save);
+        add(delete);
+        add(new JPanel());
         add(errorLabel);
         add(new JPanel());
-        setLayout(new GridLayout(8, 2));
+        setLayout(new GridLayout(9, 2));
     }
 }
