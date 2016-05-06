@@ -11,9 +11,12 @@ public class ViewLogPanel extends JPanel {
     
 	public ViewLogPanel(String log) {
 		
-		//Display with the log text, scrollable?
-		JTextArea textArea = new JTextArea(5, 20); //CHECK
-		JScrollPane scrollPane = new JScrollPane(textArea); 
+        setLayout(new GridLayout(3, 1)); //CHECK
+		
+		//Display with the log text
+		JTextArea textArea = new JTextArea(30, 70); //CHECK
+		textArea.setText(log);
+		JScrollPane scrollPane = new JScrollPane(textArea);
 		textArea.setEditable(false);
 		
 		//Back to all logs
@@ -22,14 +25,13 @@ public class ViewLogPanel extends JPanel {
         back.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	AdminFrame frame = AdminFrame.getFrameForComponent(back);
-                String[] logs = frame.getApp().getLogs(); //TODO: CHANGE!!!!!
+                String[] logs = frame.getApp().getLogs(); //TODO: CHANGE!!!
                 frame.setPanel(new AllLogsPanel(logs));
             }
         });
         
-        add(textArea);
+        add(scrollPane);
         add(back);
-        setLayout(new GridLayout(3, 1)); //CHECK
 	}
 	
 }

@@ -68,7 +68,7 @@ public class AllLogsPanel extends JPanel {
     	}
     	
     	// Fill up remaining buttons in last row with empty panels
-    	for (int i = logs.length; i < 3 * ((int) Math.ceil(logs.length / 3)); i++) {
+    	for (int i = logs.length; i < 3 * ((int) Math.ceil(logs.length / 3.0)); i++) {
             add(new JPanel());
     	}
     	    	

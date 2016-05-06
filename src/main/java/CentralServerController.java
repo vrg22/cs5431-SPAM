@@ -277,7 +277,7 @@ public class CentralServerController implements ServerController {
 				byte[] iv = CryptoServiceProvider.b64decode(Main.filenameToB64(fileNameWithOutExt));
 				logs[i] = CryptoServiceProvider.decrypt(encrypted, adminPassword, getSysSalt(), iv);
 				
-				System.out.println(logs[i]); //REMOVE
+				//System.out.println(logs[i]); //REMOVE
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
