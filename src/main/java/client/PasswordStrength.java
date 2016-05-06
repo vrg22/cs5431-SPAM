@@ -99,13 +99,13 @@ public class PasswordStrength {
 	password = password.toLowerCase();
 	password = getPlainText(password);
 	for (String word : dictWords) {
-	  if (word.length() > 4 && password.contains(word)) {
+	  if (word.length() > 3 && password.contains(word)) {
 		return false;
 	  }
 	}
 
 	for (String word : myspaceWords) {
-	  if (word.length() > 4 && password.contains(word)) {
+	  if (word.length() > 3 && password.contains(word)) {
 		return false;
 	  }
 	}
@@ -136,6 +136,11 @@ public class PasswordStrength {
 
   public static boolean check(String password) {
 	boolean ret = false;
+
+    if (password.length() >= 16) {
+        ret = true;
+    }
+
 	if (password.length() >= 10) {
 	  if (checkEntropy(password) && checkBannedWords(password)) {
 		ret = true;
