@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
+import javax.swing.event.*;
 
 //Allow to escalate to admin-management mode, or log in as an admin to view logs
 public class AdminLoginPanel extends JPanel {
@@ -21,6 +22,7 @@ public class AdminLoginPanel extends JPanel {
 
         JButton login = new JButton();
         login.setText("Login");
+        login.setEnabled(false);
 
         JLabel errorLabel = new JLabel();
         login.addActionListener(new ActionListener() {
@@ -28,6 +30,13 @@ public class AdminLoginPanel extends JPanel {
                 String email = emailField.getText();
                 String password = passwordField.getText();
                 String twoFactorCode = twoFactorField.getText();
+
+                // Check if form has all fields filled up
+                if (email.equals("") || password.equals("") || twoFactorCode.equals("")) {
+                    errorLabel.setText("Please fill all login information");
+                    return;
+                }
+
                 AdminFrame frame = AdminFrame.getFrameForComponent(login);
                 boolean success = frame.getApp().login(email, password, twoFactorCode);
 
@@ -71,6 +80,19 @@ public class AdminLoginPanel extends JPanel {
             add(new JPanel());
         }
         */
+
+        twoFactorField.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent ce) {
+                String email = emailField.getText();
+                String password = passwordField.getText();
+                String twoFactorCode = twoFactorField.getText();
+                if (email.equals("") || password.equals("") || twoFactorCode.equals("")) {
+                    login.setEnabled(false);
+                } else {
+                    login.setEnabled(true);
+                }
+            }
+        });
 
         add(superAdminLabel);
         add(emailLabel);
