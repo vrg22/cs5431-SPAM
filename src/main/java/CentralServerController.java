@@ -243,8 +243,7 @@ public class CentralServerController implements ServerController {
             saltedHash, newAdminId, encPass, CryptoServiceProvider.b64decode(reciv),
             recoveryHash, twoFactorSecret);
 
-        PasswordStorageEntry newAdminEntry = new PasswordStorageEntry(newAdmin);
-        passwordFile.put(newAdminEntry);
+        passwordFile.putAdmin(newAdmin);
 
         store.writeFileToDisk(passwordFile);
 
