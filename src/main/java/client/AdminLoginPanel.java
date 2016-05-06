@@ -26,7 +26,9 @@ public class AdminLoginPanel extends JPanel {
                 boolean success = frame.getApp().login(email, password);
 
                 if (success) {
-                	frame.setPanel(new LogPanel());
+                	frame.setPanel(new AdminHomePanel());
+                	//String[] logNames = frame.getApp().getLogs();
+                	//frame.setPanel(new AllLogsPanel(logNames));
                 } else {
                     errorLabel.setText("Invalid email and/or password.");
                 }

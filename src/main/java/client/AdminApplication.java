@@ -81,6 +81,34 @@ public class AdminApplication extends ClientApplication
         return true;
 	}
 	
+	/**
+	 * Retrieve logs for viewing by currently-logged in admin
+	 *
+	 * @return actual log contents
+	 */
+	public String[] getLogs() {
+		
+        // Request server for admin's ID
+        Map<String, String> getlogParams = new HashMap<>();
+        getlogParams.put("type", ADMIN_TYPE);
+        getlogParams.put("id", Integer.toString(adminId));
+
+        String getlogResponseJson;
+        try {
+        	getlogResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/log",
+        			getlogParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return null;
+        }
+        GetLogsResponse getlogResponse = gson.fromJson(getlogResponseJson,
+        		GetLogsResponse.class);
+        if (getlogResponse == null) return null;
+
+        // Successfully obtained array of readable logs
+        return getlogResponse.getLogs();
+	}
+	
 	// Log out from an admin's log-viewing session
     public void logout() {
         adminId = -1;
@@ -182,7 +210,8 @@ public class AdminApplication extends ClientApplication
 	
     
     /**
-     * Obliterate logged-in admin
+     * Obliterate logged-in admin (NOTE: This "deletion" should only be successfully invoked by an authorized admin manager)
+     * This method updates the local copy of admins (Admin file) with the new admin IFF the admin was successfully deleted from the server.
      *
      * @return Was admin successfully obliterated
      */
@@ -204,7 +233,7 @@ public class AdminApplication extends ClientApplication
         }
         ObliterateResponse response = gson.fromJson(responseJson, ObliterateResponse.class);
 
-        if (response.success()) {
+        if (response != null && response.success()) {
         	// Remove admin from local file
         	adminFile.deleteAdmin(username);
             return true;

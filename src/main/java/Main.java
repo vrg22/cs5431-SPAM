@@ -157,11 +157,8 @@ public class Main {
 
         try {
             if (startupRoutine()) {
-            	// Generate salted hashed admin passphrase
-            	String saltedAdminPassphrase = CryptoServiceProvider.genSaltedHash(adminpassphrase, salt);
-            	
                 ServerController server = new CentralServerController(logLocation,
-                    passwordsLocation, saltedAdminPassphrase, salt);
+                    passwordsLocation, getAdminPassword(), salt);
                 new ClientController(server);
             }
         } catch (SecurityException | IOException e) {
