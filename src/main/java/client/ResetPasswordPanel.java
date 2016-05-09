@@ -11,23 +11,23 @@ public class ResetPasswordPanel extends JPanel {
         JTextField emailField = new JTextField();
 
         JLabel recoveryQuestion1 = new JLabel();
-        recoveryQuestion1.setText("Recovery Question1:");
+        recoveryQuestion1.setText("What is the name of your first pet?");
         JPasswordField recoveryAnswer1 = new JPasswordField(10);
 
         JLabel recoveryQuestion2 = new JLabel();
-        recoveryQuestion2.setText("Recovery Question2:");
+        recoveryQuestion2.setText("What is the hospital you were born in?");
         JPasswordField recoveryAnswer2 = new JPasswordField(10);
 
         JLabel recoveryQuestion3 = new JLabel();
-        recoveryQuestion3.setText("Recovery Question3:");
+        recoveryQuestion3.setText("What is the last name of your first grade teacher?");
         JPasswordField recoveryAnswer3 = new JPasswordField(10);
 
         JLabel twoFactorLabel = new JLabel();
-        twoFactorLabel.setText("Two-Factor Code:");
+        twoFactorLabel.setText("6-digit Two-Factor Code:");
         JPasswordField twoFactorField = new JPasswordField(6);
 
         JLabel newPasswordLabel1 = new JLabel();
-        newPasswordLabel1.setText("New Master Password:");
+        newPasswordLabel1.setText("Choose New Master Password:");
         newPasswordLabel1.setForeground(Color.red);
         JPasswordField newPasswordField1 = new JPasswordField(10);
 

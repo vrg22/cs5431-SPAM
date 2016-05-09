@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.*;
 
 import com.google.gson.Gson;
 
@@ -81,13 +82,6 @@ public class ClientController {
           String email = request.queryParams("email");
           String saltedRecovery = request.queryParams("recovery");
           String twoFactorCode = request.queryParams("twoFactorCode");
-        //   int twoFactorCode;
-        //   try {
-        //       twoFactorCode = Integer.parseInt(request.queryParams("twoFactorCode"));
-        //   } catch (NumberFormatException e) {
-        //       return "";
-        //   }
-
 
           PasswordStorageEntry entry = passwordFile.getWithUsername(type, email);
           if (entry == null) {
@@ -185,6 +179,9 @@ public class ClientController {
             if (type.equals("user")) {
             	if (!isEmailValid(email)) {
 	                // Invalid email
+                    server.getLogger().info("[IP=" + request.ip() + "] "
+                        + "Attempted to register new user with an invalid "
+                        + "email address.");
 	                RegisterResponse body = new RegisterResponse(false);
 	                return gson.toJson(body);
             	}
@@ -205,6 +202,9 @@ public class ClientController {
                 if (saltedHashAdmin.equals(server.getSaltedHashedAdminPhrase())) {
                     if (!isEmailValid(username)) {
                         // Invalid email
+                        server.getLogger().info("[IP=" + request.ip() + "] "
+                            + "Attempted to register new admin with an invalid "
+                            + "email address.");
                         RegisterResponse body = new RegisterResponse(false);
                         return gson.toJson(body);
                     }
@@ -223,7 +223,9 @@ public class ClientController {
                     return gson.toJson(body);
                 }
                 else {
-                    //TODO: AUTHORIZATION FAILURE! raise hell!
+                    server.getLogger().warning("[IP=" + request.ip() + "] "
+                        + "Attempted to register new admin with an invalid "
+                        + "admin passphrase.");
                     RegisterResponse body = new RegisterResponse(false);
                     return gson.toJson(body);
                 }
@@ -238,6 +240,9 @@ public class ClientController {
                 userId = Integer.parseInt(request.params("userid"));
             } catch (NumberFormatException e) {
                 // Bad request
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to update vault for non-existent user with "
+                    + "id " + userId);
                 response.status(400);
                 SaveResponse body = new SaveResponse(false);
                 return gson.toJson(body);
@@ -248,7 +253,7 @@ public class ClientController {
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
 
-            if (isValidAuthKeyForUser(userId, authKey)) {
+            if (isValidAuthKeyForUser(userId, authKey, server.getLogger())) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
 
                 server.updateUserVault(userId, vault, iv, passwordFile);
@@ -257,6 +262,9 @@ public class ClientController {
                 return gson.toJson(body);
             } else {
                 // Invalid authentication key -> Authorization failed
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to update vault for user with invalid "
+                    + "auth key.");
                 SaveResponse body = new SaveResponse(false);
                 return gson.toJson(body);
             }
@@ -270,6 +278,9 @@ public class ClientController {
                 userId = Integer.parseInt(request.params("userid"));
             } catch (NumberFormatException e) {
                 // Bad request
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to reset master password for non-existent "
+                    + "user with id " + userId);
                 response.status(400);
                 SaveResponse body = new SaveResponse(false);
                 return gson.toJson(body);
@@ -281,7 +292,7 @@ public class ClientController {
 			String encPass = request.queryParams("encryptedPass");
 			String reciv = request.queryParams("reciv");
 
-            if (isValidAuthKeyForUser(userId, authKey)) {
+            if (isValidAuthKeyForUser(userId, authKey, server.getLogger())) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
 
                 server.updateUser(userId, saltedHash, encPass, reciv, passwordFile);
@@ -290,7 +301,9 @@ public class ClientController {
                 return gson.toJson(body);
             } else {
                 // Invalid authentication key -> Authorization failed
-				System.out.println("Authorization failed for resetpass");
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to reset master password for user with invalid "
+                    + "auth key.");
                 SaveResponse body = new SaveResponse(false);
                 return gson.toJson(body);
             }
@@ -304,6 +317,9 @@ public class ClientController {
                 userId = Integer.parseInt(request.params("userid"));
             } catch (NumberFormatException e) {
                 // Bad request
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to obliterate account for non-existent "
+                    + "user with id " + userId);
                 response.status(400);
                 RegisterResponse body = new RegisterResponse(false);
                 return gson.toJson(body);
@@ -312,7 +328,7 @@ public class ClientController {
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
 
-            if (isValidAuthKeyForUser(userId, authKey)) {
+            if (isValidAuthKeyForUser(userId, authKey, server.getLogger())) {
                 updateAuthKeyForUser(userId, authKey, nextAuthKey);
 
                 boolean result = server.obliterateUser(userId, request.ip(),
@@ -322,6 +338,9 @@ public class ClientController {
                 return gson.toJson(body);
             } else {
                 // Invalid authentication key -> Authorization failed
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to obliterate account for user with invalid "
+                    + "auth key.");
                 RegisterResponse body = new RegisterResponse(false);
                 return gson.toJson(body);
             }
@@ -370,6 +389,9 @@ public class ClientController {
                 adminId = Integer.parseInt(request.params("adminid"));
             } catch (NumberFormatException e) {
                 // Bad request
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Attempted to obliterate account for non-existent "
+                    + "user with id " + adminId);
                 response.status(400);
                 RegisterResponse body = new RegisterResponse(false);
                 return gson.toJson(body);
@@ -379,26 +401,26 @@ public class ClientController {
             String authKey = request.queryParams("authKey");
             String nextAuthKey = request.queryParams("nextAuthKey");
 
-            if (isValidAuthKeyForUser(adminid, authKey)) {
+            if (isValidAuthKeyForUser(adminid, authKey, server.getLogger())) {
                 updateAuthKeyForUser(adminid, authKey, nextAuthKey);
             }
             */
-            
+
             boolean result = server.obliterateAdmin(adminId, request.ip(),
                 passwordFile);
 
             RegisterResponse body = new RegisterResponse(result);
             return gson.toJson(body);
         });
-    
+
 	    // Return list of logs on system  //TODO: NEED TO AUTHORIZE THIS LOGGED IN ADMIN!
 	    post("/log", (request, response) -> {
 	        String type = request.queryParams("type");
 	        //String id = request.queryParams("id");
-	
+
 	        String[] logs = server.getLogs();
 	        GetLogsResponse body = new GetLogsResponse(logs);
-	
+
 	        return gson.toJson(body);
 	    });
     }
@@ -415,11 +437,10 @@ public class ClientController {
         return password != null && password.length() > 0;
     }
 
-    private boolean isValidAuthKeyForUser(int userId, String key) {
+    private boolean isValidAuthKeyForUser(int userId, String key, Logger logger) {
         ArrayList<AuthenticationKey> userKeys = authKeys.get(userId);
-		System.out.println("isValidAuthKeyForUser key:" +key);
         if (userKeys == null) {
-			System.err.println("isValidAuthKeyForUser userKeys is null");
+			logger.warning("isValidAuthKeyForUser userKeys is null");
             return false;
         }
 
@@ -433,7 +454,6 @@ public class ClientController {
             }
         }
 
-		System.err.println("isValidAuthKeyForUser is false");
         return false;
     }
 

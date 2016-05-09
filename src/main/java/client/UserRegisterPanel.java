@@ -4,12 +4,23 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.net.*;
 import java.io.*;
+import java.util.regex.*;
 
 public class UserRegisterPanel extends JPanel {
 	public UserRegisterPanel() {
         JLabel emailLabel = new JLabel();
         emailLabel.setText("Email:");
         JTextField emailField = new JTextField();
+
+        emailField.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent ce) {
+                if (isEmailValid(emailField.getText())) {
+                    emailLabel.setForeground(Color.green);
+                } else {
+                    emailLabel.setForeground(Color.red);
+                }
+            }
+        });
 
         JLabel passwordLabel = new JLabel();
         passwordLabel.setText("Master Password:");
@@ -32,15 +43,15 @@ public class UserRegisterPanel extends JPanel {
         JPasswordField rpasswordField = new JPasswordField(10);
 
         JLabel recoveryQuestion1 = new JLabel();
-        recoveryQuestion1.setText("Recovery Question1:");
+        recoveryQuestion1.setText("What is the name of your first pet?");
         JPasswordField recoveryAnswer1 = new JPasswordField(10);
 
         JLabel recoveryQuestion2 = new JLabel();
-        recoveryQuestion2.setText("Recovery Question2:");
+        recoveryQuestion2.setText("What is the hospital you were born in?");
         JPasswordField recoveryAnswer2 = new JPasswordField(10);
 
         JLabel recoveryQuestion3 = new JLabel();
-        recoveryQuestion3.setText("Recovery Question3:");
+        recoveryQuestion3.setText("What is the last name of your first grade teacher?");
         JPasswordField recoveryAnswer3 = new JPasswordField(10);
 
         JButton register = new JButton();
@@ -60,10 +71,13 @@ public class UserRegisterPanel extends JPanel {
 
                 // Check if all the fields are filled out as required
                 if (email.equals("") || password.equals("") || rpassword.equals("")
-                    || recovery1.equals("") || recovery2.equals("") || recovery3.equals("")) {
-                        errorLabel.setText("Please fill out all the fields");
-                        return;
-                    }
+                        || recovery1.equals("") || recovery2.equals("") || recovery3.equals("")) {
+                    errorLabel.setText("Please fill out all the fields");
+                    return;
+                } else if (!isEmailValid(email)) {
+                    errorLabel.setText("Please enter a valid email address");
+                    return;
+                }
 
                 String twoFactorSecret = CryptoServiceProvider.getNewTwoFactorSecretKey();
                 String qrUrl = getQRBarcodeURL(email, twoFactorSecret);
@@ -144,5 +158,11 @@ public class UserRegisterPanel extends JPanel {
     private static String getQRBarcodeURL(String email, String secret) {
       String format = "https://www.google.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/%s%%3Fsecret%%3D%s%%26issuer%%3DSPAM";
       return String.format(format, email, secret);
+    }
+
+    // Check that `email` is a valid email address (e.g., some@email.com)
+    private static boolean isEmailValid(String email) {
+        Pattern emailPattern = Pattern.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+        return email != null && emailPattern.matcher(email).matches();
     }
 }

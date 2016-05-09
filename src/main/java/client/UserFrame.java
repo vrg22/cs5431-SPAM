@@ -13,9 +13,10 @@ public class UserFrame extends JFrame
     public void start()
     {
         setPanel(new UserLoginPanel(false));
-        setLayout(new FlowLayout());
+        setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        pack();
     }
 
     public void setPanel(JPanel newView) {
