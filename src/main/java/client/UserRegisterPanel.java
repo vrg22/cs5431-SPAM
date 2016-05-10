@@ -88,7 +88,7 @@ public class UserRegisterPanel extends JPanel {
                     Object[] choices = {"Get QR Code"};
                     Object defaultChoice = choices[0];
                     JOptionPane.showOptionDialog(frame,
-                        "Please scan the following QR code in your Google Authenticator app.",
+                        "Please scan the following QR code in your Google Authenticator app. If you don't, you won't be able to access your account. Return here once you're done.",
                         "Two-Factor Auth Setup", JOptionPane.DEFAULT_OPTION,
                         JOptionPane.PLAIN_MESSAGE, null, choices, defaultChoice);
                     Desktop.getDesktop().browse(uri);
