@@ -418,8 +418,19 @@ public class ClientController {
 	        String type = request.queryParams("type");
 	        //String id = request.queryParams("id");
 
-	        String[] logs = server.getLogs();
-	        GetLogsResponse body = new GetLogsResponse(logs);
+	        String[][] logInfo = server.getLogInfo();
+	        GetLogsResponse body = new GetLogsResponse(logInfo[0], logInfo[1]);
+
+	        return gson.toJson(body);
+	    });
+	    
+	    // Delete the log with specified name  //TODO: NEED TO AUTHORIZE THIS LOGGED IN ADMIN!
+	    post("/deletelog", (request, response) -> {
+	        String logName = request.queryParams("logName");
+	        //String id = request.queryParams("id");
+
+	        boolean success = server.deleteLog(logName);
+	        DeleteLogResponse body = new DeleteLogResponse(success);
 
 	        return gson.toJson(body);
 	    });

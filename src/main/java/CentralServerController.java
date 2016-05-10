@@ -278,12 +278,12 @@ public class CentralServerController implements ServerController {
     /**
      * @return the readable contents of all logs on disk at server
      */
-	public String[] getLogs() {
+	public String[][] getLogInfo() { //TODO: Log for failures?
 		// Get all .enclog files
 		Path currentRelativePath = Paths.get("");
 		String dir = currentRelativePath.toAbsolutePath().toString();
 		File[] enclogs = getEncLogs(dir);
-		String[] logs = new String[enclogs.length];
+		String[][] logInfo = new String[2][enclogs.length];
 		
 		// Populate logs with the decrypted log contents
 		for (int i=0; i<enclogs.length; i++) {
@@ -297,15 +297,35 @@ public class CentralServerController implements ServerController {
 				String fileNameWithOutExt = plainName.substring(0, (plainName.length()-(".enclog".length())));
 				//FilenameUtils.removeExtension(f.getName());
 				byte[] iv = CryptoServiceProvider.b64decode(Main.filenameToB64(fileNameWithOutExt));
-				logs[i] = CryptoServiceProvider.decrypt(encrypted, adminPassword, getSysSalt(), iv);
-				
-				//System.out.println(logs[i]); //REMOVE
+				logInfo[1][i] = plainName;
+				logInfo[0][i] = CryptoServiceProvider.decrypt(encrypted, adminPassword, getSysSalt(), iv);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		return logs;
+		return logInfo;
+	}
+	
+    /**
+     * Attempts to delete the encrypted logfile with the specified name.
+     * 
+     * @return "Was a log with specified name successfully deleted?"
+     */
+	public boolean deleteLog(String logName) {		//TODO: Include IP in log entry?
+		try {
+			// Basic Sanitization: ends in .enclog
+			if (!(logName.length() > ".enclog".length()) || !logName.endsWith(".enclog")) {
+	            logger.warning("Attempt was made to "
+	            		+ "obliterate nonexistent encrypted log file \"" + logName + "\".");
+	            return false;
+			}
+			return Files.deleteIfExists(Paths.get(logName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 	/* HELPERS */

@@ -9,10 +9,10 @@ import javax.swing.JPanel;
 
 public class AllLogsPanel extends JPanel {
 
-	public AllLogsPanel(String[] logs) {
+	public AllLogsPanel(String[] logNames) {
 		
 		//Create button display for all existing logNames
-		loadLogs(logs);
+		loadLogButtons(logNames);
 		
 		// Logout button
         JButton logout = new JButton();
@@ -32,15 +32,15 @@ public class AllLogsPanel extends JPanel {
     }
 	
     
-    //Load display with all the currently available logs, one button per file (?)
-    private void loadLogs(String[] logs) {
+    //Load display with all the currently available logs, one button per log
+    private void loadLogButtons(String[] logNames) {
     	
-    	// Some error retrieving log files, put that on Error label
-    	if (logs == null) {
+    	// Some error retrieving log names that should NOT have happened, put that on Error label
+    	if (logNames == null) {
         	setLayout(new GridLayout(2, 3));
 
             JLabel errorLabel = new JLabel();
-            errorLabel.setText("Error retrieving logs.");
+            errorLabel.setText("Unknown error with log names.");
             
             add(errorLabel);
             add(new JPanel());
@@ -50,18 +50,19 @@ public class AllLogsPanel extends JPanel {
     	}
     	
     	// Set Layout with one extra button 
-    	setLayout(new GridLayout((int) (Math.ceil(logs.length / 3)) + 1, 3));
+    	setLayout(new GridLayout((int) (Math.ceil(logNames.length / 3)) + 2, 3)); //TODO: CHECK!
     	
-    	for (int i=0; i<logs.length; i++) {
+    	for (int i=0; i<logNames.length; i++) {
     		
-    		String log = logs[i];
             JButton thisLog = new JButton();
-            thisLog.setText("Log " + i);
+            int logNo = i;
+            thisLog.setText("Log " + logNo);
             
             thisLog.addActionListener(new ActionListener(){
                 public void actionPerformed(ActionEvent e){
                     AdminFrame frame = AdminFrame.getFrameForComponent(thisLog);
-                    frame.setPanel(new ViewLogPanel(log));
+                    String log = frame.getApp().getLogs()[logNo];
+                    frame.setPanel(new ViewLogPanel(logNo, log));
                 }
             });
             
@@ -69,7 +70,7 @@ public class AllLogsPanel extends JPanel {
     	}
     	
     	// Fill up remaining buttons in last row with empty panels
-    	for (int i = logs.length; i < 3 * ((int) Math.ceil(logs.length / 3.0)); i++) {
+    	for (int i = logNames.length; i < 3 * ((int) Math.ceil(logNames.length / 3.0)); i++) {
             add(new JPanel());
     	}
     	    	

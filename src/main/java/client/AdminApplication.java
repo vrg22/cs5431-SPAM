@@ -13,15 +13,20 @@ public class AdminApplication extends ClientApplication
 {
 
 	public static final String ADMIN_TYPE = "admin";
+    
+	private AdminFrame frame;
+    private String authKey;
 
     private int adminId; // ID of currently logged-in admin
     private String saltedAdminPassphrase; // Must accompany any privileged admin management action  //TODO: MAKE NULL when quit management mode!
     private AdminManagementFile adminFile; // Represents managed admins; set to null when done!
     //private byte[] adminSalt;
     //private String master;
-    private AdminFrame frame;
-    private String authKey;
-
+    
+    private boolean validLogs = false; //CHECK
+    private String[] logs;
+    private String[] logNames;
+    
 	public AdminApplication() {
         gson = new Gson();
         frame = new AdminFrame(this);
@@ -237,9 +242,9 @@ public class AdminApplication extends ClientApplication
 	/**
 	 * Retrieve logs for viewing by currently-logged in admin
 	 *
-	 * @return actual log contents
+	 * @return "Were logs (and names) successfully obtained?"
 	 */
-	public String[] getLogs() {
+	public boolean retrieveLogs() {
 		
         // Request server for admin's ID
         Map<String, String> getlogParams = new HashMap<>();
@@ -252,14 +257,74 @@ public class AdminApplication extends ClientApplication
         			getlogParams);
         } catch (IOException e) {
             System.out.println("Problem connecting to server.");
-            return null;
+            return false;
         }
         GetLogsResponse getlogResponse = gson.fromJson(getlogResponseJson,
         		GetLogsResponse.class);
-        if (getlogResponse == null) return null;
+        if (getlogResponse == null) return false;
 
         // Successfully obtained array of readable logs
-        return getlogResponse.getLogs();
+        validLogs = true;
+        logs = getlogResponse.getLogs();
+        logNames = getlogResponse.getLogNames();
+        return true;
+	}
+	
+	/**
+	 * Delete log with specified ID on command by currently-logged in admin, re-obtain logs.
+	 *
+	 * @return "Was log with ID=logNo successfully deleted?"
+	 */
+	public boolean deleteLog(int logNo) { //TODO: Authorization!
+		
+		// Ensure valid input
+        if (!validLogs) return false;
+        if (logNo < 0 || logNo >= logNames.length) return false;
+		
+        // Request server to delete log
+        Map<String, String> deletelogParams = new HashMap<>();
+        deletelogParams.put("type", ADMIN_TYPE);
+        deletelogParams.put("logName", logNames[logNo]);
+        deletelogParams.put("id", Integer.toString(adminId));
+
+        String deletelogResponseJson;
+        try {
+        	deletelogResponseJson = SendHttpsRequest.post(HTTPS_ROOT + "/deletelog",
+        			deletelogParams);
+        } catch (IOException e) {
+            System.out.println("Problem connecting to server.");
+            return false;
+        }
+        DeleteLogResponse deletelogResponse = gson.fromJson(deletelogResponseJson,
+        		DeleteLogResponse.class);
+        if (deletelogResponse == null) return false;
+
+        if (deletelogResponse.success()) {
+        	// TODO: Should log retrieval be done HERE itself, or separate from this?
+        	return true;
+        } else {
+            return false;
+        }
+	}
+	
+	/**
+	 * Get previously-retrieved logs for viewing by currently-logged in admin
+	 *
+	 * @return Logs, if valid; null otherwise
+	 */
+	public String[] getLogs() {
+		if (!validLogs) return null;
+		return logs;
+	}
+	
+	/**
+	 * Get previously-retrieved log names for currently-logged in admin
+	 *
+	 * @return Log names, if valid; null otherwise
+	 */
+	public String[] getLogNames() {
+		if (!validLogs) return null;
+		return logNames;
 	}
 	
 	// Log out from an admin's log-viewing session

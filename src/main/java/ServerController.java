@@ -84,7 +84,12 @@ public interface ServerController {
     //TODO: Need to add master-password updating methods?
     
     /**
-     * @return the readable contents of all logs on disk at server
+     * @return the readable contents of all logs on disk at server as well as their original names
      */
-	public String[] getLogs();
+	public String[][] getLogInfo();
+
+    /**
+     * @return "Was a log with specified name successfully deleted?"
+     */
+	public boolean deleteLog(String logName);
 }
