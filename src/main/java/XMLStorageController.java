@@ -73,21 +73,21 @@ public class XMLStorageController implements StorageController {
     //TODO: Ensure getPasswordsOutput() gets executed AFTER fileToDOM
     public void writeFileToDisk(PasswordStorageFile file) {
     	pwd_lock.writeLock().lock();
-    	writeDOMtoStream(fileToDOM(file), getPasswordsOutput());
-    	pwd_lock.writeLock().unlock();
+        writeDOMtoStream(fileToDOM(file), getPasswordsOutput(),
+            pwd_lock.writeLock());
     }
 
     //TODO: Remove if unused
     public void writeFileToDisk(UserStorageFile file, int userId) {
     	user_locks[userId].writeLock().lock();
-        writeDOMtoStream(fileToDOM(file), getOutputForUser(userId));
-    	user_locks[userId].writeLock().unlock();
+        writeDOMtoStream(fileToDOM(file), getOutputForUser(userId),
+            user_locks[userId].writeLock());
     }
 
     public void createPasswordsFileOnStream(FileOutputStream out) {
         //Instantiates and prepares the DOM to be saved to disk
         createMainDOM();
-        writeDOMtoStream(DOM, out);
+        writeDOMtoStream(DOM, out, null);
 
         // Set permissions on passwords file
         Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
@@ -100,7 +100,7 @@ public class XMLStorageController implements StorageController {
 
     public void createFileForUserOnStream(int userId, FileOutputStream out) {
         Document userDOM = createUserDOM(userId);
-        writeDOMtoStream(userDOM, out);
+        writeDOMtoStream(userDOM, out, null);
 
         // Set permissions on vault file
         Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
@@ -112,24 +112,24 @@ public class XMLStorageController implements StorageController {
     }
 
     public void writeFileToStream(PasswordStorageFile file, FileOutputStream out) {
-    	writeDOMtoStream(fileToDOM(file), out);
+    	writeDOMtoStream(fileToDOM(file), out, null);
     }
 
     public void writeFileToStream(UserStorageFile file, FileOutputStream out) {
-        writeDOMtoStream(fileToDOM(file), out);
+        writeDOMtoStream(fileToDOM(file), out, null);
     }
 
     public void writeEncryptedUserFileToDisk(int userId, String contents) {
+        ReentrantReadWriteLock.WriteLock lck = user_locks[userId].writeLock();
+        lck.lock();
         try {
-        	user_locks[userId].writeLock().lock();
             PrintWriter out = new PrintWriter(getFilenameForUser(userId));
             out.println(contents);
             out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
-        	//System.out.println("Writelock for " + userId + ": " + user_locks[userId]==null);
-        	user_locks[userId].writeLock().unlock();
+        	lck.unlock();
         }
     }
 
@@ -194,7 +194,7 @@ public class XMLStorageController implements StorageController {
     // Populate a Document with the contents of a PasswordStorageFile
     // ASSUMPTION: We can load a "preliminary" DOM from disk, which we expect to have the basic structure
     private Document fileToDOM(PasswordStorageFile file) {
-    	
+
     	Document initialDOM, DOM = null;
 
 	    FileInputStream fis = getPasswordsInput();
@@ -208,12 +208,12 @@ public class XMLStorageController implements StorageController {
 		numAElement.setTextContent(file.getNumAdmins());
 		Element nextAdminIDElement = getTagElement("nextAdminID", DOM);
 		nextAdminIDElement.setTextContent(file.getNextAdminIdVerbatim());
-		
+
     	Element numUElement = getTagElement("numUsers", DOM);
 		numUElement.setTextContent(file.getNumUsers());
 		Element nextUserIDElement = getTagElement("nextUserID", DOM);
 		nextUserIDElement.setTextContent(file.getNextUserIdVerbatim());
-		
+
 		// Make user and admin data match by simply overwriting content
 		Element uElement = getTagElement("users", DOM);
 		uElement.setTextContent("");
@@ -299,7 +299,7 @@ public class XMLStorageController implements StorageController {
 	            aElement.appendChild(newAdmin);
 			}
 		}
-		
+
     	return DOM;
     }
 
@@ -410,8 +410,12 @@ public class XMLStorageController implements StorageController {
     }
 
     // Convert a Document into file-writable format, write to output stream
-    private void writeDOMtoStream(Document theDOM, FileOutputStream out){
-		if (out == null) throw new IllegalArgumentException("No output filestream received.");
+    private void writeDOMtoStream(Document theDOM, FileOutputStream out,
+            ReentrantReadWriteLock.WriteLock lck){
+		if (out == null) {
+            if (lck != null) lck.unlock();
+            throw new IllegalArgumentException("No output filestream received.");
+        }
 
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer transformer;
@@ -430,7 +434,9 @@ public class XMLStorageController implements StorageController {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} finally {
+            if (lck != null) lck.unlock();
+        }
 
     }
 

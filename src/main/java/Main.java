@@ -62,6 +62,10 @@ public class Main {
             BufferedReader br = new BufferedReader(fr);
             String sa = br.readLine();
             System.out.println("Read system salt:" +sa);
+            if (sa == null) {
+                System.err.println("System salt is null");
+                return ret;
+            }
             salt = CryptoServiceProvider.b64decode(sa);
             String ivString = br.readLine();
 
