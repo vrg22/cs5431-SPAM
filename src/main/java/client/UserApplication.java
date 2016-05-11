@@ -179,7 +179,7 @@ public class UserApplication extends ClientApplication
         String responseJson;
         try {
             responseJson = SendHttpsRequest.delete(HTTPS_ROOT
-                + "/users/" + userId);
+                + "/users/" + userId, null);
         } catch (IOException e) {
             System.out.println("Problem connecting to server.");
             return false;

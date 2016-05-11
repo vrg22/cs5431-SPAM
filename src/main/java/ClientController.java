@@ -382,8 +382,8 @@ public class ClientController {
         });
 
         // Obliterate entire admin account
-        // TODO: require auth key - see code below!
-        delete("/admin/:adminid", (request, response) -> {
+        // *Authorization required
+        post("/admin/delete/:adminid", (request, response) -> {
             int adminId = -1;
             try {
                 adminId = Integer.parseInt(request.params("adminid"));
@@ -391,43 +391,79 @@ public class ClientController {
                 // Bad request
                 server.getLogger().warning("[IP=" + request.ip() + "] "
                     + "Attempted to obliterate account for non-existent "
-                    + "user with id " + adminId);
+                    + "admin with id " + adminId);
                 response.status(400);
-                RegisterResponse body = new RegisterResponse(false);
+                ObliterateResponse body = new ObliterateResponse(false);
                 return gson.toJson(body);
             }
 
-            /*
-            String authKey = request.queryParams("authKey");
-            String nextAuthKey = request.queryParams("nextAuthKey");
+            String saltedHash = request.queryParams("saltedHashAdmin");
 
-            if (isValidAuthKeyForUser(adminid, authKey, server.getLogger())) {
-                updateAuthKeyForUser(adminid, authKey, nextAuthKey);
+            //If salted hash matches, return list of admins
+            //String correctSaltedHash = server.getSaltedHashedAdminPhrase();
+            if (!server.authManageAdmin(saltedHash, request.ip())) {
+                server.getLogger().warning("[IP=" + request.ip() + "] "
+                    + "Incorrect password while attempting to obliterate "
+                    + "admin.");
+                return "";
             }
-            */
 
             boolean result = server.obliterateAdmin(adminId, request.ip(),
                 passwordFile);
 
-            RegisterResponse body = new RegisterResponse(result);
+            ObliterateResponse body = new ObliterateResponse(result);
             return gson.toJson(body);
         });
 
-	    // Return list of logs on system  //TODO: NEED TO AUTHORIZE THIS LOGGED IN ADMIN!
+	    // Return list of logs on system
+        // *Authorization required
 	    post("/log", (request, response) -> {
 	        String type = request.queryParams("type");
-	        //String id = request.queryParams("id");
+	        int id = -1;
+            String authKey = request.queryParams("authKey");
+            String nextAuthKey = request.queryParams("nextAuthKey");
+            try {
+                id = Integer.parseInt(request.queryParams("id"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                GetLogsResponse body = new GetLogsResponse(null, null);
+                return gson.toJson(body);
+            }
+
+            if (!isValidAuthKeyForUser(id, authKey, server.getLogger())) {
+                return gson.toJson(new GetLogsResponse(null, null));
+            }
+
+            updateAuthKeyForUser(id, authKey, nextAuthKey);
 
 	        String[][] logInfo = server.getLogInfo();
 	        GetLogsResponse body = new GetLogsResponse(logInfo[0], logInfo[1]);
 
 	        return gson.toJson(body);
 	    });
-	    
-	    // Delete the log with specified name  //TODO: NEED TO AUTHORIZE THIS LOGGED IN ADMIN!
+
+	    // Delete the log with specified name
+        // *Authorization required
 	    post("/deletelog", (request, response) -> {
 	        String logName = request.queryParams("logName");
-	        //String id = request.queryParams("id");
+            String authKey = request.queryParams("authKey");
+            String nextAuthKey = request.queryParams("nextAuthKey");
+            int id = -1;
+            try {
+                id = Integer.parseInt(request.queryParams("id"));
+            } catch (NumberFormatException e) {
+                // Bad request
+                response.status(400);
+                DeleteLogResponse body = new DeleteLogResponse(false);
+                return gson.toJson(body);
+            }
+
+            if (!isValidAuthKeyForUser(id, authKey, server.getLogger())) {
+                return gson.toJson(new DeleteLogResponse(false));
+            }
+
+            updateAuthKeyForUser(id, authKey, nextAuthKey);
 
 	        boolean success = server.deleteLog(logName);
 	        DeleteLogResponse body = new DeleteLogResponse(success);

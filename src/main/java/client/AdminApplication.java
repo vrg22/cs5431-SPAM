@@ -13,7 +13,7 @@ public class AdminApplication extends ClientApplication
 {
 
 	public static final String ADMIN_TYPE = "admin";
-    
+
 	private AdminFrame frame;
     private String authKey;
 
@@ -22,11 +22,11 @@ public class AdminApplication extends ClientApplication
     private AdminManagementFile adminFile; // Represents managed admins; set to null when done!
     //private byte[] adminSalt;
     //private String master;
-    
+
     private boolean validLogs = false; //CHECK
     private String[] logs;
     private String[] logNames;
-    
+
 	public AdminApplication() {
         gson = new Gson();
         frame = new AdminFrame(this);
@@ -155,7 +155,7 @@ public class AdminApplication extends ClientApplication
 
         return true;
     }
-    
+
 	/**
      * Create new admin (NOTE: This "registration" should only be successfully invoked by an authorized admin manager)
      * This method updates the local copy of admins (Admin file) with the new admin IFF the admin was successfully registered on the server.
@@ -181,7 +181,7 @@ public class AdminApplication extends ClientApplication
         params.put("recoveryHash", recoveryHash);
         params.put("twoFactorSecret", twoFactorSecret);
         params.put("saltedHashAdmin", saltedAdminPassphrase); // Force this to be provided   //TODO: Check: what if null?
-        
+
         String responseJson;
         try {
             responseJson = SendHttpsRequest.post(HTTPS_ROOT + "/register", params);
@@ -190,7 +190,7 @@ public class AdminApplication extends ClientApplication
             return false;
         }
         RegisterResponse response = gson.fromJson(responseJson, RegisterResponse.class); //CHECK: Need to make new Response type for this situation?
-        
+
         if (response != null && response.success()) {
         	// Add the admin to the local file IFF was a success at server
         	adminFile.putAdmin(new Admin(email, salt, saltedHash,
@@ -212,18 +212,16 @@ public class AdminApplication extends ClientApplication
     //public boolean obliterateAdmin(String username, int adminID) {
     public boolean obliterateAdmin(String username) {
 
-    	//TODO: CHECK THAT PARAMS ARE BEING SENT OVER!!!
     	Map<String, String> params = new HashMap<>();
-        params.put("authKey", authKey);
-        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
-        params.put("nextAuthKey", nextAuthKey);
+        System.out.println("saltedAdminPassphrase: "+saltedAdminPassphrase);
+        params.put("saltedHashAdmin", saltedAdminPassphrase);
 
         int adminID = adminFile.getAdmin(username).getId();
-        
+
         String responseJson;
         try {
-            responseJson = SendHttpsRequest.delete(HTTPS_ROOT
-                + "/admin/" + adminID);
+            responseJson = SendHttpsRequest.post(HTTPS_ROOT
+                + "/admin/delete/" + adminID, params);
         } catch (IOException e) {
             System.out.println("Problem connecting to server.");
             return false;
@@ -245,11 +243,14 @@ public class AdminApplication extends ClientApplication
 	 * @return "Were logs (and names) successfully obtained?"
 	 */
 	public boolean retrieveLogs() {
-		
+
         // Request server for admin's ID
         Map<String, String> getlogParams = new HashMap<>();
         getlogParams.put("type", ADMIN_TYPE);
         getlogParams.put("id", Integer.toString(adminId));
+        getlogParams.put("authKey", authKey);
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        getlogParams.put("nextAuthKey", nextAuthKey);
 
         String getlogResponseJson;
         try {
@@ -261,6 +262,7 @@ public class AdminApplication extends ClientApplication
         }
         GetLogsResponse getlogResponse = gson.fromJson(getlogResponseJson,
         		GetLogsResponse.class);
+        authKey = nextAuthKey;
         if (getlogResponse == null) return false;
 
         // Successfully obtained array of readable logs
@@ -269,23 +271,27 @@ public class AdminApplication extends ClientApplication
         logNames = getlogResponse.getLogNames();
         return true;
 	}
-	
+
 	/**
 	 * Delete log with specified ID on command by currently-logged in admin, re-obtain logs.
+     * *Authorization required
 	 *
 	 * @return "Was log with ID=logNo successfully deleted?"
 	 */
-	public boolean deleteLog(int logNo) { //TODO: Authorization!
-		
+	public boolean deleteLog(int logNo) {
+
 		// Ensure valid input
         if (!validLogs) return false;
         if (logNo < 0 || logNo >= logNames.length) return false;
-		
+
         // Request server to delete log
         Map<String, String> deletelogParams = new HashMap<>();
         deletelogParams.put("type", ADMIN_TYPE);
         deletelogParams.put("logName", logNames[logNo]);
         deletelogParams.put("id", Integer.toString(adminId));
+        deletelogParams.put("authKey", authKey);
+        String nextAuthKey = CryptoServiceProvider.genRequestAuthKey();
+        deletelogParams.put("nextAuthKey", nextAuthKey);
 
         String deletelogResponseJson;
         try {
@@ -297,6 +303,7 @@ public class AdminApplication extends ClientApplication
         }
         DeleteLogResponse deletelogResponse = gson.fromJson(deletelogResponseJson,
         		DeleteLogResponse.class);
+        authKey = nextAuthKey;
         if (deletelogResponse == null) return false;
 
         if (deletelogResponse.success()) {
@@ -306,7 +313,7 @@ public class AdminApplication extends ClientApplication
             return false;
         }
 	}
-	
+
 	/**
 	 * Get previously-retrieved logs for viewing by currently-logged in admin
 	 *
@@ -316,7 +323,7 @@ public class AdminApplication extends ClientApplication
 		if (!validLogs) return null;
 		return logs;
 	}
-	
+
 	/**
 	 * Get previously-retrieved log names for currently-logged in admin
 	 *
@@ -326,12 +333,12 @@ public class AdminApplication extends ClientApplication
 		if (!validLogs) return null;
 		return logNames;
 	}
-	
+
 	// Log out from an admin's log-viewing session
     public void logout() {
         adminId = -1;
     }
-    
+
     /**
      * Get list of admins
      *

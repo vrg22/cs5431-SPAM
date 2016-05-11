@@ -172,12 +172,35 @@ public class SendHttpsRequest {
         return response.toString();
     }
 
-    public static String delete(String urlStr) throws IOException {
+    public static String delete(String urlStr, Map<String, String> params) throws IOException {
+        DataOutputStream wr = null;
         InputStream ins = null;
         URL url = new URL(urlStr);
         HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
 
+        // configure SSL connection to use specific TLS version and cipher suite
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, null, null);
+            SSLSocketFactory factory = context.getSocketFactory();
+            SSLSocketFactoryWrapper wrapper = new SSLSocketFactoryWrapper(factory, new String[] { "TLSv1.2" },
+                new String[] { "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384" });
+            ((HttpsURLConnection)con).setSSLSocketFactory(wrapper.getFactory());
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println("NoSuchAlgorithmException raised");
+        } catch (KeyManagementException e) {
+            System.err.println("KeyManagementException raised");
+        }
+
         con.setRequestMethod("DELETE");
+        con.setDoOutput(true);
+        con.connect();
+
+        wr = new DataOutputStream(con.getOutputStream());
+        String paramsStr = SendHttpsRequest.formatParams(params);
+        wr.writeBytes(paramsStr);
+        wr.flush();
+        wr.close();
 
         ins = con.getInputStream();
         InputStreamReader isr = new InputStreamReader(ins);
