@@ -5,11 +5,15 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 //import org.apache.commons.io.FilenameUtils;
 
 // Provides public methods to complete user-level actions
 public class CentralServerController implements ServerController {
 	private Logger logger;
+	private FileHandler fh;
+    private String logLocation;
+    private File currentLogFile;
     private StorageController store;
     private String passwordFilename;
     private String adminPassword;
@@ -22,7 +26,9 @@ public class CentralServerController implements ServerController {
             String loggerName = CentralServerController.class.getName();
             logger = Logger.getLogger(loggerName);
 
-            FileHandler fh = new FileHandler(logLocation, true);
+            fh = new FileHandler(logLocation, true);
+            this.logLocation = logLocation;
+            this.currentLogFile = new File(logLocation);
             logger.addHandler(fh);
 
             SimpleFormatter formatter = new SimpleFormatter();
@@ -59,6 +65,25 @@ public class CentralServerController implements ServerController {
     }
 
     public Logger getLogger() {
+        if (currentLogFile.exists()) {
+            long bytes = currentLogFile.length();
+            // Log file size exceed 100 MB
+            if (bytes >= (1024 * 1024 * 100)) {
+                try {
+                    logger.removeHandler(fh);
+                    fh.close();
+                    Main.encryptLogFile(currentLogFile);
+                    logLocation = new SimpleDateFormat("yyyyMMddhhmm'.log'").format(new Date());
+                    System.out.println("new Log file name is " + logLocation);
+                    Main.setLogLocation(logLocation);
+                    fh = new FileHandler(logLocation, true);
+                    logger.addHandler(fh);
+                    currentLogFile = new File(logLocation);
+                } catch (IOException e) {
+                    System.out.println("IOException when resetting log file");
+                }
+            }
+        }
         return logger;
     }
 

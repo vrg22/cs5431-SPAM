@@ -95,6 +95,52 @@ public class Main {
     }
 
 
+    public static void encryptLogFile(File file) {
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+            fis.close();
+            String str = new String(data, "UTF-8");
+            String encrypted = CryptoServiceProvider.encrypt(str, adminpassphrase,
+                                            salt);
+            String curIV = CryptoServiceProvider.b64encode(CryptoServiceProvider.
+                                        getIV());
+
+            // Escape / with _ and + with - to generate valid file names
+            curIV = b64ToFilename(curIV);
+
+            // Save the log file with the IV used to encrypt as its name
+            File enclog = new File(curIV + ".enclog");
+            PrintWriter pw = new PrintWriter(enclog);
+            pw.write(encrypted);
+            pw.close();
+
+            // Set permissions on log file
+            Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+            perms.add(PosixFilePermission.OWNER_READ);
+            perms.add(PosixFilePermission.OWNER_WRITE);
+            Files.setPosixFilePermissions(Paths.get(curIV + ".enclog"), perms);
+
+            // delete current log file
+            if (file.delete()) {
+                System.out.println("Deleted log file:" + logLocation);
+            } else {
+                System.err.println("Error deleting log file:" + logLocation);
+            }
+        } catch (FileNotFoundException fne) {
+            System.err.println("FileNotFoundException raised" + fne.getMessage());
+        } catch (UnsupportedEncodingException use) {
+            System.err.println("UnsupportedEncodingException raised" + use.getMessage());
+        } catch (IOException e) {
+            System.err.println("IOException raised" + e.getMessage());
+        }
+    }
+
+    public static void setLogLocation(String logLocation) {
+        Main.logLocation = logLocation;
+    }
+
     public static void main(String[] args) {
         String logFileName = new SimpleDateFormat("yyyyMMddhhmm'.log'").
             format(new Date());
@@ -115,50 +161,8 @@ public class Main {
         {
             @Override
             public void run() {
-                System.out.println("Shutdown Hook: adminpassphrase -- " + adminpassphrase);
-                System.out.println("Shutdown Hook: logLocation -- " + logLocation);
-
-                try {
-                    File file = new File(logLocation);
-                    FileInputStream fis = new FileInputStream(file);
-                    byte[] data = new byte[(int) file.length()];
-                    fis.read(data);
-                    fis.close();
-                    String str = new String(data, "UTF-8");
-                    System.out.println("Shutdown Hook: str -- " + str);
-                    String encrypted = CryptoServiceProvider.encrypt(str, adminpassphrase,
-                                        salt);
-                    String curIV = CryptoServiceProvider.b64encode(CryptoServiceProvider.
-                                    getIV());
-
-                    // Escape / with _ and + with - to generate valid file names
-                    curIV = b64ToFilename(curIV);
-
-                    // Save the log file with the IV used to encrypt as its name
-                    File enclog = new File(curIV + ".enclog");
-                    PrintWriter pw = new PrintWriter(enclog);
-                    pw.write(encrypted);
-                    pw.close();
-
-                    // Set permissions on log file
-                    Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
-                    perms.add(PosixFilePermission.OWNER_READ);
-                    perms.add(PosixFilePermission.OWNER_WRITE);
-                    Files.setPosixFilePermissions(Paths.get(curIV + ".enclog"), perms);
-
-                    // delete current log file
-                    if (file.delete()) {
-                        System.out.println("Deleted log file:" + logLocation);
-                    } else {
-                        System.err.println("Error deleting log file:" + logLocation);
-                    }
-                } catch (FileNotFoundException fne) {
-                    System.err.println("FileNotFoundException raised" + fne.getMessage());
-                } catch (UnsupportedEncodingException use) {
-                    System.err.println("UnsupportedEncodingException raised" + use.getMessage());
-                } catch (IOException e) {
-                    System.err.println("IOException raised" + e.getMessage());
-                }
+                File file = new File(logLocation);
+                encryptLogFile(file);
             }
         });
 
