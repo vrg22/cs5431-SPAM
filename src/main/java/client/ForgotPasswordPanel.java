@@ -46,20 +46,9 @@ public class ForgotPasswordPanel extends JPanel {
 		newPasswordLabel2.setForeground(Color.red);
         JPasswordField newPasswordField2 = new JPasswordField(10);
 
-		newPasswordField2.addCaretListener(new CaretListener() {
-		  public void caretUpdate(CaretEvent ce) {
-			String rpwd = new String(newPasswordField2.getPassword());
-			String pwd = new String(newPasswordField1.getPassword());
-			if (pwd.equals(rpwd)) {
-			  newPasswordLabel2.setForeground(Color.green);
-			} else {
-			  newPasswordLabel2.setForeground(Color.red);
-			}
-		  }
-		});
-
         JButton recover = new JButton();
         recover.setText("Recover Password");
+        recover.setEnabled(false);
 
         JLabel errorLabel = new JLabel();
         recover.addActionListener(new ActionListener() {
@@ -86,6 +75,20 @@ public class ForgotPasswordPanel extends JPanel {
 			  }
 			}
 		  }
+        });
+
+        newPasswordField2.addCaretListener(new CaretListener() {
+          public void caretUpdate(CaretEvent ce) {
+            String rpwd = new String(newPasswordField2.getPassword());
+            String pwd = new String(newPasswordField1.getPassword());
+            if (pwd.equals(rpwd)) {
+              newPasswordLabel2.setForeground(Color.green);
+              recover.setEnabled(true);
+            } else {
+              newPasswordLabel2.setForeground(Color.red);
+              recover.setEnabled(false);
+            }
+          }
         });
 
         JButton back = new JButton();
