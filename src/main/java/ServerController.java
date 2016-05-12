@@ -26,16 +26,6 @@ public interface ServerController {
             PasswordStorageFile passwordFile);
 
     /**
-     * Attempts to update an existing user.
-     * Specified user must have an ID which matches an
-     * existing user.
-     * @param user updated version of the user
-     * @return "Was user successfully updated?"
-     */
-    public boolean updateUser1(User user, String clientIp,
-            PasswordStorageFile passwordFile);
-
-    /**
      * Saves an updated encrypted vault for existing user.
      */
     public void updateUserVault(int userId, String vault, String iv,
